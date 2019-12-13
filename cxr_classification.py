@@ -7,10 +7,9 @@ import psycopg2.extras
 import matplotlib.pyplot as plt
 import cv2
 from config import config
-
-def cxr_classification(image):
-    """PlaceholderDocstring."""
-    
+from scipy.ndimage.measurements import label
+import time
+from skimage.feature import hog
 
 def cycle_thru_table(config_file_name):
     """Cycles through the table and pulls one image at a time."""
@@ -32,7 +31,12 @@ def cycle_thru_table(config_file_name):
 
             image = preprocessing(image, record)
 
-            image_profile = 
+            # Profile features
+            (hor_profile, vert_profile) = calc_image_prof(image)
+
+            ratio = calc_body_size_ratio(image)
+
+            phog_vector = phog(image, n_bins=8, orient_range=(0, 360), levels=3)
 
             # plt.imshow(image, cmap='bone')
             # plt.show()
@@ -47,12 +51,139 @@ def cycle_thru_table(config_file_name):
         if conn is not None:
             conn.close()
 
+def phog(image, n_bins, orient_range, levels):
+    """Placeholder."""
+    # Going with this for now. If this doesn't work for some reason, try the cv2 one or try the
+    # imlementation of it at:
+    # https://github.com/ReseachWithDrSun/test/blob/fdae985309e488de42b7ac3c88306345b2d739e7/dtyu/xray_learning/phog_features/phog.py
+
+    # NOTE: might need to include some form of Canny edge detector in here somewhere
+
+    feature_vector0, hog_image0 = hog(image, orientations=n_bins, pixels_per_cell=image.shape, cells_per_block=(1, 1),
+                                    visualize=True, feature_vector=True)
+
+    cell_size = (int(image.shape[0]/2), int(image.shape[1]/2))
+    feature_vector1, hog_image1 = hog(image, orientations=n_bins, pixels_per_cell=cell_size, 
+                                    cells_per_block=(1, 1), visualize=True, feature_vector=True)
+
+    cell_size = (int(image.shape[0]/4), int(image.shape[1]/4))
+    feature_vector2, hog_image2 = hog(image, orientations=n_bins, pixels_per_cell=cell_size, 
+                                    cells_per_block=(1, 1), visualize=True, feature_vector=True)
+
+    cell_size = (int(image.shape[0]/8), int(image.shape[1]/8))
+    feature_vector3, hog_image3 = hog(image, orientations=n_bins, pixels_per_cell=cell_size, 
+                                    cells_per_block=(1, 1), visualize=True, feature_vector=True)
+    # NOTE: The size of the output descriptor is exactly the length from the paper: 8 + 32 + 128 + 512 = 680
+    # plt.subplot(1, 5, 1)
+    # plt.imshow(image, cmap='bone')
+    # plt.subplot(1, 5, 2)
+    # plt.imshow(hog_image0, cmap='bone')
+    # plt.subplot(1, 5, 3)
+    # plt.imshow(hog_image1, cmap='bone')
+    # plt.subplot(1, 5, 4)
+    # plt.imshow(hog_image2, cmap='bone')
+    # plt.subplot(1, 5, 5)
+    # plt.imshow(hog_image3, cmap='bone')
+    # plt.show()
+
+    return np.concatenate((feature_vector0, feature_vector1, feature_vector2, feature_vector3))
+
+
+def calc_body_size_ratio(image):
+    """Placeholder."""
+    median = np.median(image)
+    image_binarized = (image >= median).astype(np.uint8)
+
+    comp = getBiggestComp(image_binarized)
+
+    first_nonzeros_hor = first_nonzero(comp, axis=1, invalid_val=np.nan)
+    last_nonzeros_hor = last_nonzero(comp, axis=1, invalid_val=np.nan)
+
+    first_nonzeros_vert = first_nonzero(comp, axis=0, invalid_val=np.nan)
+    last_nonzeros_vert = last_nonzero(comp, axis=0, invalid_val=np.nan)
+
+    hor_cross_sections = last_nonzeros_hor - first_nonzeros_hor
+    vert_cross_sections = last_nonzeros_vert - first_nonzeros_vert
+
+    hor_median = np.nanmedian(hor_cross_sections)
+    vert_max = np.nanmax(vert_cross_sections)
+    vert_max_ind = np.nanargmax(vert_cross_sections)
+    hor_median_ind = np.argsort(hor_cross_sections)[len(hor_cross_sections)//2]
+
+    ratio = hor_median/vert_max
+
+    # plt.subplot(1, 3, 1)
+    # plt.imshow(image, cmap='bone')
+    # plt.subplot(1, 3, 2)
+    # plt.imshow(comp, cmap='bone')
+    # plt.plot(first_nonzeros_hor, np.arange(0, image.shape[0]), 'r.')
+    # plt.plot(last_nonzeros_hor, np.arange(0, image.shape[0]), 'r.')
+    # plt.plot([first_nonzeros_hor[hor_median_ind], last_nonzeros_hor[hor_median_ind]], [hor_median_ind, hor_median_ind], 'r-')
+    # plt.subplot(1, 3, 3)
+    # plt.imshow(comp, cmap='bone')
+    # plt.plot(np.arange(0, image.shape[1]), first_nonzeros_vert, 'g.')
+    # plt.plot(np.arange(0, image.shape[1]), last_nonzeros_vert, 'g.')
+    # plt.plot([vert_max_ind, vert_max_ind], [first_nonzeros_vert[vert_max_ind], last_nonzeros_vert[vert_max_ind]], 'g-')
+    # plt.suptitle('Ratio: ' + str(ratio))
+    # plt.show()
+
+    return ratio
+
+def first_nonzero(arr, axis, invalid_val=-1):
+    """Placeholder."""
+    mask = (arr!=0)
+    return np.where(mask.any(axis=axis), mask.argmax(axis=axis), invalid_val)
+
+def last_nonzero(arr, axis, invalid_val=-1):
+    """Placeholder."""
+    mask = (arr!=0)
+    val = arr.shape[axis] - np.flip(mask, axis=axis).argmax(axis=axis) - 1
+    return np.where(mask.any(axis=axis), val, invalid_val)
+
+def getBiggestComp(image):
+    """ Uses connected components to get the breast """
+    structure = np.ones([3,3], dtype=np.int) # Relational matrix (8-connected)
+    # Run connected components to label the various connected components
+    labeled_image, n_components = label(image, structure=structure) 
+
+    # Loop through the components and get the biggest component
+    nPixelsInBiggestComp = 0
+    biggestComp = 0
+    for i in range(1,n_components+1): # Start at 1 to avoid considering background 
+        component = (labeled_image == i)
+        pixelsInComp = np.sum(component)
+        if pixelsInComp > nPixelsInBiggestComp:
+            nPixelsInBiggestComp = pixelsInComp
+            biggestComp = component
+
+    # Create binary mask in the shape of the biggest component
+    img = np.zeros(image.shape)
+    img[biggestComp] = 1
+    return img
+
+def calc_image_prof(image):
+    """Placeholder."""
+    image_square = cv2.resize(image, (200, 200), interpolation=cv2.INTER_AREA)
+    
+    hor_profile = np.mean(image_square, axis=0)
+    vert_profile = np.mean(image_square, axis=1)
+
+    # plt.subplot(1, 2, 1)
+    # plt.imshow(image_square, cmap='bone')
+    # plt.subplot(1, 2, 2)
+    # plt.plot(np.arange(0, 200), hor_profile, label='Horizontal')
+    # plt.plot(np.arange(0, 200), vert_profile, label='Vertical')
+    # plt.legend()
+    # plt.show()
+
+    return hor_profile, vert_profile
 
 def preprocessing(image, record):
     """Placholder."""
     highest_possible_intensity = (np.power(2, record['bits_stored']) - 1)
     image_norm = image/highest_possible_intensity
 
+    # These images aren't in Hounsfield units and are most likely already windowed (VOI LUT)
     # window_center = record['window_center']/highest_possible_intensity
     # window_width = record['window_width']/highest_possible_intensity
     # min_I = window_center - (window_width/2)

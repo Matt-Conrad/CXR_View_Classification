@@ -1,0 +1,9 @@
+{
+    "elements": {
+        "label": {
+            "tag": "0x0010, 0x0020",
+            "db_datatype": "CHAR(1)",
+            "calculation_only": false
+        }
+    }
+}
