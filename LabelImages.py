@@ -19,6 +19,7 @@ class App(QWidget):
         self.top = 10
         self.width = 640
         self.height = 480
+        self.count = 0
         self.conn = None
         self.cur = None
         self.cur2 = None
@@ -32,7 +33,6 @@ class App(QWidget):
         self.close_connection()
  
     def initUI(self):
-        self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.connect()
         self.run_query()
@@ -118,7 +118,9 @@ class App(QWidget):
         image = pdm.dcmread(self.record['file_path']).pixel_array
         bits_stored = self.record['bits_stored']
         pixmap = self.arr_into_pixmap(image, bits_stored)
-        
+        self.count += 1
+        self.setWindowTitle(str(self.count))
+
         self.label.setPixmap(pixmap)
 
     def arr_into_pixmap(self, image, bits_stored):
