@@ -10,6 +10,7 @@ from config import config
 from scipy.ndimage.measurements import label
 import time
 from skimage.feature import hog
+# from sklearn import svm
 
 def cycle_thru_table(config_file_name):
     """Cycles through the table and pulls one image at a time."""
@@ -22,26 +23,56 @@ def cycle_thru_table(config_file_name):
         conn = psycopg2.connect(**params)
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         # Create the SQL query to be used
-        sql_query = 'SELECT * FROM ' + table_name + ' WHERE (window_center IS NOT NULL AND window_width IS NOT NULL);'
+        sql_query = 'SELECT * FROM ' + table_name + ';'
         # create table one by one
         cur.execute(sql_query)
+        count = 0
         for record in cur:
+            t1 = time.perf_counter()
             # Read the image data
             image = pdm.dcmread(record['file_path']).pixel_array
-
+            
             image = preprocessing(image, record)
 
             # Profile features
             (hor_profile, vert_profile) = calc_image_prof(image)
-
+            
             ratio = calc_body_size_ratio(image)
-
+            
             phog_vector = phog(image, n_bins=8, orient_range=(0, 360), levels=3)
+
+            store('config.ini', record['file_path'], ratio, hor_profile, vert_profile, phog_vector)
 
             # plt.imshow(image, cmap='bone')
             # plt.show()
-            print(record['file_path'])
+            count += 1
+            print('Number: ' + str(count) + ' File: ' + record['file_path'])
         # close communication with the PostgreSQL database server
+        cur.close()
+        # commit the changes
+        conn.commit()
+    except (psycopg2.DatabaseError) as error:
+        print(error)
+    finally:
+        if conn is not None:
+            conn.close()
+
+def store(config_file_name, file_path, ratio, hor_profile, vert_profile, phog):
+    """Placeholder."""
+    conn = None
+    try:
+        # read the connection parameters
+        params = config(filename=config_file_name, section='postgresql')
+        out_table_name = config(filename=config_file_name, section='feature_table_info')['table_name']
+        # connect to the PostgreSQL server
+        conn = psycopg2.connect(**params)
+        cur = conn.cursor()
+        # Create the SQL query to be used
+        sql_query = 'INSERT INTO ' + out_table_name + ' (file_path, body_size_ratio, hor_profile, vert_profile, phog) VALUES (%s, %s, %s, %s, %s);'
+        values = (file_path, ratio, hor_profile.tolist(), vert_profile.tolist(), phog.tolist())
+        # create table one by one
+        cur.execute(sql_query, values)
+
         cur.close()
         # commit the changes
         conn.commit()
@@ -146,20 +177,13 @@ def getBiggestComp(image):
     # Run connected components to label the various connected components
     labeled_image, n_components = label(image, structure=structure) 
 
-    # Loop through the components and get the biggest component
-    nPixelsInBiggestComp = 0
-    biggestComp = 0
-    for i in range(1,n_components+1): # Start at 1 to avoid considering background 
-        component = (labeled_image == i)
-        pixelsInComp = np.sum(component)
-        if pixelsInComp > nPixelsInBiggestComp:
-            nPixelsInBiggestComp = pixelsInComp
-            biggestComp = component
+    counts = np.bincount(labeled_image.flatten())
+    ind = np.argmax(counts[1:]) + 1
+    biggestComp = (labeled_image == ind).astype(np.uint8)
 
-    # Create binary mask in the shape of the biggest component
-    img = np.zeros(image.shape)
-    img[biggestComp] = 1
-    return img
+    # plt.imshow(biggestComp)
+    # plt.show()
+    return biggestComp
 
 def calc_image_prof(image):
     """Placeholder."""
@@ -226,7 +250,6 @@ def preprocessing(image, record):
     # plt.subplot(1,2,2)
     # plt.imshow(image_downsize, cmap='bone')
     # plt.show()
-    print(record['file_path'])
     
     return image_downsize
 
@@ -234,15 +257,23 @@ def contrast_stretch(image, min_I, max_I):
     """Placeholder."""
     # All values < min_I will be 0 and all values > max_I will be 1
     image_copy = image.copy()
-    image_copy[np.where(image < min_I)] = 0
-    image_copy[np.where(image > max_I)] = 1
 
-    A = np.array([[min_I, 1], [max_I, 1]])
-    B = [0, 1]
-    [slope, intercept] = np.linalg.solve(A, B)
+    try: 
+        A = np.array([[min_I, 1], [max_I, 1]])
+        B = [0, 1]
 
-    image_copy[np.where((image_copy >= min_I) & (image_copy <= max_I))] = \
-        slope * image_copy[np.where((image_copy >= min_I) & (image_copy <= max_I))] + intercept
+        [slope, intercept] = np.linalg.solve(A, B)
+
+        image_copy[np.where((image_copy >= min_I) & (image_copy <= max_I))] = \
+            slope * image_copy[np.where((image_copy >= min_I) & (image_copy <= max_I))] + intercept
+
+        image_copy[np.where(image < min_I)] = 0
+        image_copy[np.where(image > max_I)] = 1
+    except np.linalg.LinAlgError as err:
+        if 'Singular matrix' in str(err):
+            print('SINGULAR MATRIX: NOT DOING CONTRAST STRETCH')
+        else:
+            raise
 
     return image_copy
 
