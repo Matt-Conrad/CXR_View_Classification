@@ -11,6 +11,11 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton
 from PyQt5.QtGui import QIcon, QPixmap, QImage
 import numpy as np
 
+def run_app():
+    app = QApplication(sys.argv)
+    ex = App('config.ini')
+    sys.exit(app.exec_())
+
 class App(QWidget):
     def __init__(self,config_file_name):
         super().__init__()
