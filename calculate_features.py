@@ -27,7 +27,6 @@ def calculate_features(config_file_name):
         cur.execute(sql_query)
         count = 0
         for record in cur:
-            t1 = time.perf_counter()
             # Read the image data
             image = pdm.dcmread(record['file_path']).pixel_array
             

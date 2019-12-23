@@ -2,6 +2,7 @@
 import os
 import json
 import psycopg2
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from config import config
 
 def check_db_connection(db_config_file_name):
@@ -113,6 +114,27 @@ def add_table_to_db(table_name, elements_json, db_config_file_name):
         # close communication with the PostgreSQL database server
         cur.close()
         # commit the changes
+        conn.commit()
+    except (psycopg2.DatabaseError) as error:
+        print(error)
+    finally:
+        if conn is not None:
+            conn.close()
+
+def create_new_db(db_name):
+    """Create a new DB.
+
+    Parameters
+    ----------
+    db_name : string
+        Name of the new DB
+    """
+    try:
+        conn = psycopg2.connect(dbname='postgres', user='postgres', host='localhost', password='postgres')
+        conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+        cur = conn.cursor()
+        cur.execute('CREATE DATABASE ' + db_name + ';')
+        cur.close()
         conn.commit()
     except (psycopg2.DatabaseError) as error:
         print(error)

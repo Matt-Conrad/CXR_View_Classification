@@ -24,3 +24,4 @@ def unpack():
     tf = tarfile.open("NLMCXR_dcm.tgz")
     tf.extractall(path='./NLMCXR_dcm')
     print('done unpacking')
+    return os.path.dirname(os.path.abspath(__file__)) + '/NLMCXR_dcm'
