@@ -1,0 +1,8 @@
+{
+    "elements": {
+        "label": {
+            "db_datatype": "CHAR(1)",
+            "calculation_only": false
+        }
+    }
+}

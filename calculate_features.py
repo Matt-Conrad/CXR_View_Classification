@@ -41,8 +41,6 @@ def calculate_features(config_file_name):
 
             store('config.ini', record['file_path'], ratio, hor_profile, vert_profile, phog_vector)
 
-            # plt.imshow(image, cmap='bone')
-            # plt.show()
             count += 1
             print('Number: ' + str(count) + ' File: ' + record['file_path'])
         # close communication with the PostgreSQL database server
@@ -179,8 +177,6 @@ def getBiggestComp(image):
     ind = np.argmax(counts[1:]) + 1
     biggestComp = (labeled_image == ind).astype(np.uint8)
 
-    # plt.imshow(biggestComp)
-    # plt.show()
     return biggestComp
 
 def calc_image_prof(image):
@@ -242,12 +238,6 @@ def preprocessing(image, record):
     height = int(image_cropped.shape[0] * scale_percent)
     dim = (width, height)
     image_downsize = cv2.resize(image_cropped, dim, interpolation=cv2.INTER_AREA)
-
-    # plt.subplot(1,2,1)
-    # plt.imshow(image_cropped, cmap='bone')
-    # plt.subplot(1,2,2)
-    # plt.imshow(image_downsize, cmap='bone')
-    # plt.show()
     
     return image_downsize
 
@@ -274,6 +264,3 @@ def contrast_stretch(image, min_I, max_I):
             raise
 
     return image_copy
-
-if __name__ == '__main__':
-    calculate_features('config.ini')

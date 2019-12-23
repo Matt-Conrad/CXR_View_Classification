@@ -38,7 +38,7 @@ def config(filename, section):
     return db
 
 def update_config_file(filename, section, key, value):
-    """Update the database name in the specified config file.
+    """Update a key-value pair in the specified config file.
 
     Parameters
     ----------
@@ -69,3 +69,31 @@ def update_config_file(filename, section, key, value):
 
     with open(filename, 'w') as configfile:
         parser.write(configfile)
+
+def get_config_setting(filename, section, key):
+    """Get the database name in the specified config file.
+
+    Parameters
+    ----------
+    filename : string
+        Name of the config file
+    section : string
+        Name of the section in the config file
+    key : string
+        Name of the key in the section in the config file
+
+    Raises
+    ------
+    Exception
+        Raised when section is not found in the config file
+    """
+    # create a parser
+    parser = ConfigParser()
+    # read config file
+    parser.read(filename)
+
+    # get section, default to postgresql
+    if parser.has_section(section):
+        return parser[section][key]
+    else:
+        raise Exception('Section {0} not found in the {1} file'.format(section, filename))
