@@ -1,0 +1,5 @@
+# Implementation of Chest X-ray Image View Classification
+
+This project is an implementation of the paper "Chest X-ray Image View Classification" by Xue et al found [here](https://www.researchgate.net/publication/283778178_Chest_X-ray_Image_View_Classification). The final product of this project will be an app where the user can interactively go through the step of the paper. I chose this paper first and foremost to get more experience with various technologies such as Postgres and QT5. Secondly, I chose this project because a classifier such as this would be useful in industry. Medical software may rely on DICOM tags such as laterality (0020,0060), view position (0018,5101), or patient orientation (0020,0020) to perform some action. However, this tag is not always there such as in the image set from [NLM History of Medicine](https://openi.nlm.nih.gov/faq#collection). This automatic classifier can be used to label all of these images so that the medical software relying on these DICOM tags can perform their duty. 
+
+Currently, the project is a work in progress. I will improve it regularly and add more information to here as I go. 
