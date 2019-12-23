@@ -9,15 +9,11 @@ class controller:
 
     def download_dataset(self):
         """Download the dataset (tgz format) from the public repository."""
-        print("starting downloading")
         download_dataset()
-        print("download finished")
 
     def unpack_dataset(self):
         """Unpack the dataset from the tgz file."""
-        print('unpacking')
         unpack()
-        print('done unpacking')
 
     def store_metadata(self):
         """Move all desired DCM tag-values from a directory full of DCMs into a PostgreSQL DB."""
