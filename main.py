@@ -42,7 +42,7 @@ class controller:
         """Use an app to manually label images."""
         table_name = config.get_config_setting(self.config_file_name, section='label_table_info', key='table_name')
         bdo.add_table_to_db(table_name, self.label, self.config_file_name)
-        run_app()
+        run_app(self.config_file_name)
 
     def classification(self):
         """Performs the classification and gets the accuracy of the classifier."""
@@ -51,4 +51,4 @@ class controller:
 
 if __name__ == "__main__":
     controller = controller()
-    controller.classification()
+    controller.label_images()
