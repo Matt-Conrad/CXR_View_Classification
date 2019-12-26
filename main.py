@@ -51,4 +51,4 @@ class controller:
 
 if __name__ == "__main__":
     controller = controller()
-    controller.label_images()
+    controller.classification()

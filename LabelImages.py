@@ -46,6 +46,7 @@ class LabelImageApplication(QWidget):
     def __del__(self):
         """On exit of the app close the connection."""
         self.close_connection()
+        sys.exit(0)
 
     def connect(self):
         """Connect the app to the Postgres DB."""
@@ -64,6 +65,7 @@ class LabelImageApplication(QWidget):
         try:
             print('Closing Cursor')
             self.cur.close()
+            self.cur2.close()
             print('Cursor closed')
             print('Committing connection')
             self.conn.commit()
@@ -105,7 +107,7 @@ class LabelImageApplication(QWidget):
         # Get the next available record from the image list query
         self.record = self.cur.fetchone()
         if self.record is None:
-            sys.exit()
+            self.__del__()
         # Update the window title with the image count
         self.count += 1
         self.setWindowTitle('Image Count: ' + str(self.count))
@@ -148,8 +150,9 @@ class LabelImageApplication(QWidget):
         metadata_table_name = config(filename=self.config_file_name, section='table_info')['table_name']
         sql_query = 'SELECT file_path, bits_stored FROM ' + metadata_table_name + ' ORDER BY file_path;'
         try:
-            print('Running query')
+            print('Getting the image list')
             self.cur.execute(sql_query)
+            print('Done getting the image list')
         except (psycopg2.DatabaseError) as error:
             print(error)
 
@@ -164,8 +167,9 @@ class LabelImageApplication(QWidget):
         # Create the SQL query to be used
         sql_query = 'INSERT INTO image_labels (file_path, label) VALUES (\'' + self.record['file_path'] + '\', \'' + decision + '\');'
         try:
-            print('Running query')
+            print('Storing label')
             # create table one by one
             self.cur2.execute(sql_query)
+            print('Label is stored')
         except (psycopg2.DatabaseError) as error:
             print(error)
