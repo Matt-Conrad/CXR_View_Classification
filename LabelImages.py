@@ -147,7 +147,7 @@ class LabelImageApplication(QWidget):
 
     def query_image_list(self):
         """Run a query to get the list of all images in the DB."""
-        metadata_table_name = config(filename=self.config_file_name, section='table_info')['table_name']
+        metadata_table_name = config(filename=self.config_file_name, section='table_info')['metadata_table_name']
         sql_query = 'SELECT file_path, bits_stored FROM ' + metadata_table_name + ' ORDER BY file_path;'
         try:
             print('Getting the image list')

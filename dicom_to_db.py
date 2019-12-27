@@ -44,7 +44,7 @@ def dicom_to_db(elements_json, config_file_name):
         try:
             # read the connection parameters
             params = config(filename=config_file_name, section='postgresql')
-            table_name = config(filename=config_file_name, section='table_info')['table_name']
+            table_name = config(filename=config_file_name, section='table_info')['metadata_table_name']
             # connect to the PostgreSQL server
             conn = psycopg2.connect(**params)
             cur = conn.cursor()

@@ -17,7 +17,7 @@ def calculate_features(config_file_name):
     try:
         # read the connection parameters
         params = config(filename=config_file_name, section='postgresql')
-        table_name = config(filename=config_file_name, section='table_info')['table_name']
+        table_name = config(filename=config_file_name, section='table_info')['metadata_table_name']
         # connect to the PostgreSQL server
         conn = psycopg2.connect(**params)
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
@@ -59,7 +59,7 @@ def store(config_file_name, file_path, ratio, hor_profile, vert_profile, phog):
     try:
         # read the connection parameters
         params = config(filename=config_file_name, section='postgresql')
-        out_table_name = config(filename=config_file_name, section='feature_table_info')['table_name']
+        out_table_name = config(filename=config_file_name, section='table_info')['features_table_name']
         # connect to the PostgreSQL server
         conn = psycopg2.connect(**params)
         cur = conn.cursor()

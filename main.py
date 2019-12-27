@@ -13,14 +13,16 @@ class controller:
         self.features_list = 'features_list.json'
         self.label = 'label.json'
         self.classifier = None
+        self.url = 'https://github.com/Matt-Conrad/CXR_View_Classification/raw/master/NLMCXR_subset_dataset.tgz'
+        self.tgz_filename = None
 
     def download_dataset(self):
         """Download the dataset (tgz format) from the public repository."""
-        download_dataset()
+        self.tgz_filename = download_dataset(self.url)
 
     def unpack_dataset(self):
         """Unpack the dataset from the tgz file."""
-        folder = unpack()
+        folder = unpack(self.tgz_filename)
         config.update_config_file(filename=self.config_file_name, section='dicom_folder', key='folder_path', value=folder)
 
     def store_metadata(self):
@@ -28,19 +30,19 @@ class controller:
         db_name = 'test'
         bdo.create_new_db(db_name)
         config.update_config_file(filename=self.config_file_name, section='postgresql', key='database', value=db_name)
-        table_name = config.get_config_setting(self.config_file_name, section='table_info', key='table_name')
+        table_name = config.get_config_setting(self.config_file_name, section='table_info', key='metadata_table_name')
         bdo.add_table_to_db(table_name, self.elements_json, self.config_file_name)
         dicom_to_db(self.elements_json, self.config_file_name)
 
     def calculate_features(self):
         """Calculate features for each image in the Postgres DB."""
-        table_name = config.get_config_setting(self.config_file_name, section='feature_table_info', key='table_name')
+        table_name = config.get_config_setting(self.config_file_name, section='table_info', key='features_table_name')
         bdo.add_table_to_db(table_name, self.features_list, self.config_file_name)
         calculate_features(self.config_file_name)
 
     def label_images(self):
         """Use an app to manually label images."""
-        table_name = config.get_config_setting(self.config_file_name, section='label_table_info', key='table_name')
+        table_name = config.get_config_setting(self.config_file_name, section='table_info', key='label_table_name')
         bdo.add_table_to_db(table_name, self.label, self.config_file_name)
         run_app(self.config_file_name)
 
@@ -51,4 +53,9 @@ class controller:
 
 if __name__ == "__main__":
     controller = controller()
-    controller.classification()
+    # controller.download_dataset()
+    # controller.unpack_dataset()
+    # controller.store_metadata()
+    # controller.calculate_features()
+    # controller.label_images()
+    # controller.classification()

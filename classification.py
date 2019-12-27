@@ -17,7 +17,7 @@ def classification(config_file_name):
     try:
         # read the connection parameters
         params = config(filename=config_file_name, section='postgresql')
-        table_name = config(filename=config_file_name, section='feature_table_info')['table_name']
+        table_name = config(filename=config_file_name, section='table_info')['features_table_name']
         # connect to the PostgreSQL server
         conn = psycopg2.connect(**params)
         cur = conn.cursor()
@@ -38,7 +38,7 @@ def classification(config_file_name):
 
         X = np.concatenate((X1, X2), axis=1) 
 
-        label_table_name = config(filename=config_file_name, section='label_table_info')['table_name']
+        label_table_name = config(filename=config_file_name, section='table_info')['label_table_name']
         sql_query = 'SELECT label FROM ' + label_table_name + ' ORDER BY file_path ASC;'
         # create table one by one
         cur.execute(sql_query)
