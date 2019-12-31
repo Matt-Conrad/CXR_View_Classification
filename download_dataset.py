@@ -2,9 +2,6 @@ import requests
 import tarfile
 import os
 
-# URL = "https://openi.nlm.nih.gov/imgs/collections/NLMCXR_dcm.tgz"
-# FILENAME = URL.split("/")[-1]
-
 def download_dataset(url):
     print("starting downloading")
     filename = url.split("/")[-1]
