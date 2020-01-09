@@ -9,9 +9,7 @@ from classification import classification
 class controller:
     def __init__(self):
         self.config_file_name = 'config.ini'
-        self.elements_json = 'elements.json'
-        self.features_list = 'features_list.json'
-        self.label = 'label.json'
+        self.columns_info = 'columns_info.json'
         self.classifier = None
         self.url = 'https://github.com/Matt-Conrad/CXR_View_Classification/raw/master/NLMCXR_subset_dataset.tgz'
         self.tgz_filename = None
@@ -31,19 +29,19 @@ class controller:
         bdo.create_new_db(db_name)
         config.update_config_file(filename=self.config_file_name, section='postgresql', key='database', value=db_name)
         table_name = config.get_config_setting(self.config_file_name, section='table_info', key='metadata_table_name')
-        bdo.add_table_to_db(table_name, self.elements_json, self.config_file_name)
-        dicom_to_db(self.elements_json, self.config_file_name)
+        bdo.add_table_to_db(table_name, self.columns_info, self.config_file_name, 'elements')
+        dicom_to_db(self.columns_info, self.config_file_name, 'elements')
 
     def calculate_features(self):
         """Calculate features for each image in the Postgres DB."""
         table_name = config.get_config_setting(self.config_file_name, section='table_info', key='features_table_name')
-        bdo.add_table_to_db(table_name, self.features_list, self.config_file_name)
+        bdo.add_table_to_db(table_name, self.columns_info, self.config_file_name, 'features_list')
         calculate_features(self.config_file_name)
 
     def label_images(self):
         """Use an app to manually label images."""
         table_name = config.get_config_setting(self.config_file_name, section='table_info', key='label_table_name')
-        bdo.add_table_to_db(table_name, self.label, self.config_file_name)
+        bdo.add_table_to_db(table_name, self.columns_info, self.config_file_name, 'labels')
         run_app(self.config_file_name)
 
     def classification(self):
@@ -53,10 +51,10 @@ class controller:
 
 if __name__ == "__main__":
     controller = controller()
-    # controller.download_dataset()
-    # controller.unpack_dataset()
-    # controller.store_metadata()
-    # controller.calculate_features()
-    # controller.label_images()
-    # controller.classification()
+    controller.download_dataset()
+    controller.unpack_dataset()
+    controller.store_metadata()
+    controller.calculate_features()
+    controller.label_images()
+    controller.classification()
     print('heon')

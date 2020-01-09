@@ -35,5 +35,29 @@
             "db_datatype": "INT",
             "calculation_only": false
         }
+    },
+    "features_list": {
+        "body_size_ratio": {
+            "db_datatype": "DOUBLE PRECISION",
+            "calculation_only": false
+        },
+        "hor_profile": {
+            "db_datatype": "DOUBLE PRECISION[]",
+            "calculation_only": false
+        },
+        "vert_profile": {
+            "db_datatype": "DOUBLE PRECISION[]",
+            "calculation_only": false
+        },
+        "phog": {
+            "db_datatype": "DOUBLE PRECISION[]",
+            "calculation_only": false
+        }
+    },
+    "labels": {
+        "label": {
+            "db_datatype": "CHAR(1)",
+            "calculation_only": false
+        }
     }
 }
