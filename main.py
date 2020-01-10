@@ -1,8 +1,8 @@
 from download_dataset import download_dataset, unpack
-from dicom_to_db import dicom_to_db
+from DicomToDatabase.dicom_to_db import dicom_to_db
 from calculate_features import calculate_features
 from LabelImages import run_app
-import basic_db_ops as bdo
+import DicomToDatabase.basic_db_ops as bdo
 import config
 from classification import classification
 

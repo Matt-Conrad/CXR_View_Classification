@@ -1,0 +1,3 @@
+[submodule "DicomToDatabase"]
+	path = DicomToDatabase
+	url = https://github.com/Matt-Conrad/DicomToDatabase
