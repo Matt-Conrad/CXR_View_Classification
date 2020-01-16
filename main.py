@@ -5,6 +5,9 @@ from LabelImages import run_app
 import DicomToDatabase.basic_db_ops as bdo
 import config
 from classification import classification
+import logging
+
+logging.basicConfig(filename='CXR_Classification.log',level=logging.INFO)
 
 class controller:
     def __init__(self):
@@ -47,7 +50,7 @@ class controller:
     def classification(self):
         """Performs the classification and gets the accuracy of the classifier."""
         self.classifier, accuracy = classification(self.config_file_name)
-        print(accuracy)
+        logging.info(accuracy)
 
 if __name__ == "__main__":
     controller = controller()

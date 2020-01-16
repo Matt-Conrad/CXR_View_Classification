@@ -8,6 +8,7 @@ import numpy as np
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton
 from PyQt5.QtGui import QPixmap, QImage
 from config import config
+import logging
 
 def run_app(config_file_name):
     """Run application that helps the user label the images."""
@@ -51,32 +52,32 @@ class LabelImageApplication(QWidget):
     def connect(self):
         """Connect the app to the Postgres DB."""
         try:
-            print('Opening connection')
+            logging.info('Opening connection')
             # connect to the PostgreSQL server
             params = config(filename=self.config_file_name, section='postgresql')
             self.conn = psycopg2.connect(**params)
             self.cur = self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             self.cur2 = self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         except (psycopg2.DatabaseError) as error:
-            print(error)
+            logging.warning(error)
 
     def close_connection(self):
         """Close the connection set up between the app and the Postgres server."""
         try:
-            print('Closing Cursor')
+            logging.info('Closing Cursor')
             self.cur.close()
             self.cur2.close()
-            print('Cursor closed')
-            print('Committing connection')
+            logging.info('Cursor closed')
+            logging.info('Committing connection')
             self.conn.commit()
-            print('Done committing connection')
+            logging.info('Done committing connection')
         except (psycopg2.DatabaseError) as error:
-            print(error)
+            logging.warning(error)
         finally:
             if self.conn is not None:
-                print('Closing connection')
+                logging.info('Closing connection')
                 self.conn.close()
-                print('Connection closed')
+                logging.info('Connection closed')
 
     def fill_window(self):
         """Displays the content into the window."""
@@ -150,11 +151,11 @@ class LabelImageApplication(QWidget):
         metadata_table_name = config(filename=self.config_file_name, section='table_info')['metadata_table_name']
         sql_query = 'SELECT file_path, bits_stored FROM ' + metadata_table_name + ' ORDER BY file_path;'
         try:
-            print('Getting the image list')
+            logging.info('Getting the image list')
             self.cur.execute(sql_query)
-            print('Done getting the image list')
+            logging.info('Done getting the image list')
         except (psycopg2.DatabaseError) as error:
-            print(error)
+            logging.warning(error)
 
     def store_label(self, decision):
         """Run query that enters the decision into the label table.
@@ -167,9 +168,9 @@ class LabelImageApplication(QWidget):
         # Create the SQL query to be used
         sql_query = 'INSERT INTO image_labels (file_path, label) VALUES (\'' + self.record['file_path'] + '\', \'' + decision + '\');'
         try:
-            print('Storing label')
+            logging.info('Storing label')
             # create table one by one
             self.cur2.execute(sql_query)
-            print('Label is stored')
+            logging.info('Label is stored')
         except (psycopg2.DatabaseError) as error:
-            print(error)
+            logging.warning(error)
