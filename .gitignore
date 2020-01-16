@@ -5,4 +5,4 @@ NLMCXR_dcm.tgz
 NLMCXR_dcm
 NLMCXR_subset_dataset
 .pylintrc
-CXR_classification.log
+CXR_Classification.log

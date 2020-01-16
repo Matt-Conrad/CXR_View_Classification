@@ -60,4 +60,3 @@ if __name__ == "__main__":
     controller.calculate_features()
     controller.label_images()
     controller.classification()
-    print('heon')
