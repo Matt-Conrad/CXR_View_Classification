@@ -63,10 +63,10 @@ class Controller:
         logging.info(accuracy)
 
 if __name__ == "__main__":
-    controller = controller()
-    controller.download_dataset()
-    controller.unpack_dataset()
-    controller.store_metadata()
-    controller.calculate_features()
-    controller.label_images()
+    controller = Controller()
+    # controller.download_dataset()
+    # controller.unpack_dataset()
+    # controller.store_metadata()
+    # controller.calculate_features()
+    # controller.label_images()
     controller.classification()
