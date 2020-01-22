@@ -11,6 +11,7 @@ from DicomToDatabase.config import config
 from scipy.ndimage.measurements import label
 import time
 from skimage.feature import hog
+import logging
 
 def calculate_features(config_file_name):
     """Cycles through the table and pulls one image at a time."""
@@ -48,7 +49,9 @@ def calculate_features(config_file_name):
             store('config.ini', file_path, ratio, hor_profile, vert_profile, phog_vector)
 
             count += 1
+
             logging.info('Number: %s File: %s', str(count), file_path)
+
         # close communication with the PostgreSQL database server
         cur.close()
         # commit the changes
@@ -280,7 +283,7 @@ def contrast_stretch(image, min_I, max_I):
         image_copy[np.where(image > max_I)] = 1
     except np.linalg.LinAlgError as err:
         if 'Singular matrix' in str(err):
-            print('SINGULAR MATRIX: NOT DOING CONTRAST STRETCH')
+            logging.info('SINGULAR MATRIX: NOT DOING CONTRAST STRETCH')
         else:
             raise
 

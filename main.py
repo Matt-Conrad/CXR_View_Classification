@@ -7,6 +7,9 @@ from LabelImages import run_app
 import DicomToDatabase.basic_db_ops as bdo
 import DicomToDatabase.config as config
 from classification import classification
+import logging
+
+logging.basicConfig(filename='CXR_Classification.log',level=logging.INFO)
 
 class Controller:
     """Controller class that controls the logic of the application."""
@@ -67,4 +70,3 @@ if __name__ == "__main__":
     controller.calculate_features()
     controller.label_images()
     controller.classification()
-    print('heon')

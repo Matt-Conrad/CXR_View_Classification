@@ -2,10 +2,12 @@ import logging
 import requests
 import tarfile
 import os
+import logging
 
 def download_dataset(url):
     # Start download
     logging.info('Downloading dataset from %s', url)
+
     filename = url.split("/")[-1]
     with requests.get(url, stream=True) as r:
         r.raise_for_status()
@@ -27,4 +29,5 @@ def unpack(filename):
     folder_name = filename.split('.')[0]
     tf.extractall(path='./' + folder_name)
     logging.info('Done unpacking')
+
     return os.path.dirname(os.path.abspath(__file__)) + '/' + folder_name
