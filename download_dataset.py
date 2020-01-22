@@ -1,9 +1,11 @@
+import logging
 import requests
 import tarfile
 import os
 
 def download_dataset(url):
-    print("starting downloading")
+    # Start download
+    logging.info('Downloading dataset from %s', url)
     filename = url.split("/")[-1]
     with requests.get(url, stream=True) as r:
         r.raise_for_status()
@@ -15,13 +17,14 @@ def download_dataset(url):
     # if os.path.getsize('NLMCXR_dcm.tgz') != 80694582486:
     #     raise IOError('NLMCXR_dcm.tgz did not download properly!')
 
-    print("download finished")
+    logging.info('Download successful')
+
     return filename
 
 def unpack(filename):
-    print('unpacking')
+    logging.info('Unpacking dataset from %s', filename)
     tf = tarfile.open(filename)
     folder_name = filename.split('.')[0]
     tf.extractall(path='./' + folder_name)
-    print('done unpacking')
+    logging.info('Done unpacking')
     return os.path.dirname(os.path.abspath(__file__)) + '/' + folder_name

@@ -1,4 +1,5 @@
 """Contains the code for the app that helps the user label the data."""
+import logging
 import sys
 import psycopg2
 import psycopg2.extras
@@ -7,7 +8,7 @@ import cv2
 import numpy as np
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton
 from PyQt5.QtGui import QPixmap, QImage
-from config import config
+from DicomToDatabase.config import config
 
 def run_app(config_file_name):
     """Run application that helps the user label the images."""
@@ -27,6 +28,7 @@ class LabelImageApplication(QWidget):
         config_file_name : string
             File name of the INI file that contains the config information
         """
+        logging.info('Constructing app')
         super().__init__()
         
         # Variables
@@ -42,10 +44,13 @@ class LabelImageApplication(QWidget):
         self.query_image_list()
         # Set up GUI
         self.fill_window()
+        logging.info('Done constructing app')
 
     def __del__(self):
         """On exit of the app close the connection."""
+        logging.info('Attempting to close app')
         self.close_connection()
+        logging.info('Closing app')
         sys.exit(0)
 
     def connect(self):

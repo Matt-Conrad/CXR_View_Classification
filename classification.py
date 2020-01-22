@@ -1,10 +1,11 @@
+import logging
 import numpy as np
 import pydicom as pdm
 import psycopg2
 import psycopg2.extras
 import matplotlib.pyplot as plt
 import cv2
-from config import config
+from DicomToDatabase.config import config
 from scipy.ndimage.measurements import label
 import time
 from skimage.feature import hog
@@ -13,6 +14,7 @@ import random
 from sklearn.model_selection import KFold, cross_val_score, ShuffleSplit
 
 def classification(config_file_name):
+    logging.info('Running classification')
     conn = None
     try:
         # read the connection parameters
@@ -50,7 +52,7 @@ def classification(config_file_name):
         # commit the changes
         conn.commit()
     except (psycopg2.DatabaseError) as error:
-        print(error)
+        logging.info(error)
     finally:
         if conn is not None:
             conn.close()
@@ -61,4 +63,5 @@ def classification(config_file_name):
     scores = cross_val_score(clf, X, y, cv=kf, scoring='accuracy')
 
     accuracy = np.mean(scores)
+    logging.info('Done classifying')
     return clf, accuracy
