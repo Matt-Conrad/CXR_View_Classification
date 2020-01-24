@@ -22,10 +22,10 @@ def calculate_features(config_file_name):
         params = config(filename=config_file_name, section='postgresql')
         table_name = config(filename=config_file_name, section='table_info')['metadata_table_name']
         # connect to the PostgreSQL server
-        logging.info('Connecting to the PostgreSQL database...')
+        logging.debug('Connecting to the PostgreSQL database...')
         conn = psycopg2.connect(**params)
         cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        logging.info('Connection established')
+        logging.debug('Connection established')
         # Create the SQL query to be used
         sql_query = 'SELECT * FROM ' + table_name + ';'
         # create table one by one
@@ -34,7 +34,8 @@ def calculate_features(config_file_name):
         for record in cur:
             # Read the image data
             file_path = record['file_path']
-            logging.info('Reading %s', file_path)
+            count += 1
+            logging.info('Calculating for image number: %s File: %s', str(count), file_path)
             image = pdm.dcmread(file_path).pixel_array
             
             image = preprocessing(image, record)
@@ -48,16 +49,12 @@ def calculate_features(config_file_name):
 
             store('config.ini', file_path, ratio, hor_profile, vert_profile, phog_vector)
 
-            count += 1
-
-            logging.info('Number: %s File: %s', str(count), file_path)
-
         # close communication with the PostgreSQL database server
         cur.close()
         # commit the changes
         conn.commit()
     except (psycopg2.DatabaseError) as error:
-        logging.info(error)
+        logging.warning(error)
     finally:
         if conn is not None:
             conn.close()
@@ -65,7 +62,7 @@ def calculate_features(config_file_name):
 
 def store(config_file_name, file_path, ratio, hor_profile, vert_profile, phog):
     """Stores the calculated features into the database."""
-    logging.info('Storing the calculated features into the database.')
+    logging.debug('Storing the calculated features into the database.')
     conn = None
     try:
         # read the connection parameters
@@ -84,11 +81,11 @@ def store(config_file_name, file_path, ratio, hor_profile, vert_profile, phog):
         # commit the changes
         conn.commit()
     except (psycopg2.DatabaseError) as error:
-        print(error)
+        logging.warning(error)
     finally:
         if conn is not None:
             conn.close()
-            logging.info('Done storing.')
+            logging.debug('Done storing.')
 
 def phog(image, n_bins, orient_range, levels):
     """Calculates the pyramid histogram of oriented gradients."""
@@ -97,7 +94,7 @@ def phog(image, n_bins, orient_range, levels):
     # https://github.com/ReseachWithDrSun/test/blob/fdae985309e488de42b7ac3c88306345b2d739e7/dtyu/xray_learning/phog_features/phog.py
 
     # NOTE: might need to include some form of Canny edge detector in here somewhere
-    logging.info('Calculating the phog of the image')
+    logging.debug('Calculating the phog of the image')
 
     feature_vector0, hog_image0 = hog(image, orientations=n_bins, pixels_per_cell=image.shape, cells_per_block=(1, 1),
                                     visualize=True, feature_vector=True)
@@ -126,14 +123,14 @@ def phog(image, n_bins, orient_range, levels):
     # plt.imshow(hog_image3, cmap='bone')
     # plt.show()
 
-    logging.info('Done calculating the phog.')
+    logging.debug('Done calculating the phog.')
 
     return np.concatenate((feature_vector0, feature_vector1, feature_vector2, feature_vector3))
 
 
 def calc_body_size_ratio(image):
     """Calculates the body size ratio."""
-    logging.info('Calculating the body size ratio')
+    logging.debug('Calculating the body size ratio')
     median = np.median(image)
     image_binarized = (image >= median).astype(np.uint8)
 
@@ -170,7 +167,7 @@ def calc_body_size_ratio(image):
     # plt.suptitle('Ratio: ' + str(ratio))
     # plt.show()
 
-    logging.info('Done calculating the body size ratio')
+    logging.debug('Done calculating the body size ratio')
 
     return ratio
 
@@ -199,7 +196,7 @@ def getBiggestComp(image):
 
 def calc_image_prof(image):
     """Calculates the horizontal and vertical profiles of the images"""
-    logging.info('Calculating the profiles of the image')
+    logging.debug('Calculating the profiles of the image')
     image_square = cv2.resize(image, (200, 200), interpolation=cv2.INTER_AREA)
     
     hor_profile = np.mean(image_square, axis=0)
@@ -213,13 +210,13 @@ def calc_image_prof(image):
     # plt.legend()
     # plt.show()
 
-    logging.info('Done calculating the profiles of the image')
+    logging.debug('Done calculating the profiles of the image')
 
     return hor_profile, vert_profile
 
 def preprocessing(image, record):
     """Runs the preprocessing steps on the image."""
-    logging.info('Beginning preprocessing on %s', record['file_path'])
+    logging.debug('Beginning preprocessing on %s', record['file_path'])
     highest_possible_intensity = (np.power(2, record['bits_stored']) - 1)
     image_norm = image/highest_possible_intensity
 
@@ -261,7 +258,7 @@ def preprocessing(image, record):
     dim = (width, height)
     image_downsize = cv2.resize(image_cropped, dim, interpolation=cv2.INTER_AREA)
 
-    logging.info('Preprocessing completed.')
+    logging.debug('Preprocessing completed.')
     
     return image_downsize
 
@@ -283,7 +280,7 @@ def contrast_stretch(image, min_I, max_I):
         image_copy[np.where(image > max_I)] = 1
     except np.linalg.LinAlgError as err:
         if 'Singular matrix' in str(err):
-            logging.info('SINGULAR MATRIX: NOT DOING CONTRAST STRETCH')
+            logging.warning('SINGULAR MATRIX: NOT DOING CONTRAST STRETCH')
         else:
             raise
 

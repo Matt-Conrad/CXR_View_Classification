@@ -7,14 +7,12 @@ from LabelImages import run_app
 import DicomToDatabase.basic_db_ops as bdo
 import DicomToDatabase.config as config
 from classification import classification
-import logging
 
-logging.basicConfig(filename='CXR_Classification.log',level=logging.INFO)
+logging.basicConfig(filename='CXR_Classification.log', level=logging.INFO)
 
 class Controller:
     """Controller class that controls the logic of the application."""
     def __init__(self):
-        logging.basicConfig(filename='controller.log', level=logging.INFO)
         logging.info('Initializing Controller')
         self.config_file_name = 'config.ini'
         self.columns_info = 'columns_info.json'
@@ -22,8 +20,6 @@ class Controller:
         self.url = 'https://github.com/Matt-Conrad/CXR_View_Classification/raw/master/NLMCXR_subset_dataset.tgz'
         self.tgz_filename = None
         logging.info('Controller initialized')
-        logging.info('Reading from config file %s and the DB column info from %s',
-                     self.config_file_name, self.columns_info)
 
     def download_dataset(self):
         """Download the dataset (tgz format) from the public repository."""
@@ -36,14 +32,7 @@ class Controller:
 
     def store_metadata(self):
         """Move all desired DCM tag-values from a directory full of DCMs into a PostgreSQL DB."""
-        db_name = 'test'
-        logging.info('Storing desired DICOM metadata into DB named %s', db_name)
-        bdo.create_new_db(db_name)
-        config.update_config_file(filename=self.config_file_name, section='postgresql', key='database', value=db_name)
-        table_name = config.get_config_setting(self.config_file_name, section='table_info', key='metadata_table_name')
-        bdo.add_table_to_db(table_name, self.columns_info, self.config_file_name, 'elements')
         dicom_to_db(self.columns_info, self.config_file_name, 'elements')
-        logging.info('Done storing metadata')
 
     def calculate_features(self):
         """Calculate features for each image in the Postgres DB."""
@@ -60,13 +49,12 @@ class Controller:
     def classification(self):
         """Performs the classification and gets the accuracy of the classifier."""
         self.classifier, accuracy = classification(self.config_file_name)
-        logging.info(accuracy)
 
 if __name__ == "__main__":
     controller = Controller()
-    # controller.download_dataset()
-    # controller.unpack_dataset()
-    # controller.store_metadata()
-    # controller.calculate_features()
-    # controller.label_images()
+    controller.download_dataset()
+    controller.unpack_dataset()
+    controller.store_metadata()
+    controller.calculate_features()
+    controller.label_images()
     controller.classification()

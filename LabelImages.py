@@ -63,24 +63,21 @@ class LabelImageApplication(QWidget):
             self.conn = psycopg2.connect(**params)
             self.cur = self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             self.cur2 = self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            logging.info('Connection opened')
         except (psycopg2.DatabaseError) as error:
             logging.warning(error)
 
     def close_connection(self):
         """Close the connection set up between the app and the Postgres server."""
         try:
-            logging.info('Closing Cursor')
+            logging.info('Closing connection')
             self.cur.close()
             self.cur2.close()
-            logging.info('Cursor closed')
-            logging.info('Committing connection')
             self.conn.commit()
-            logging.info('Done committing connection')
         except (psycopg2.DatabaseError) as error:
             logging.warning(error)
         finally:
             if self.conn is not None:
-                logging.info('Closing connection')
                 self.conn.close()
                 logging.info('Connection closed')
 
@@ -156,9 +153,9 @@ class LabelImageApplication(QWidget):
         metadata_table_name = config(filename=self.config_file_name, section='table_info')['metadata_table_name']
         sql_query = 'SELECT file_path, bits_stored FROM ' + metadata_table_name + ' ORDER BY file_path;'
         try:
-            logging.info('Getting the image list')
+            logging.debug('Getting the image list')
             self.cur.execute(sql_query)
-            logging.info('Done getting the image list')
+            logging.debug('Done getting the image list')
         except (psycopg2.DatabaseError) as error:
             logging.warning(error)
 
@@ -173,9 +170,9 @@ class LabelImageApplication(QWidget):
         # Create the SQL query to be used
         sql_query = 'INSERT INTO image_labels (file_path, label) VALUES (\'' + self.record['file_path'] + '\', \'' + decision + '\');'
         try:
-            logging.info('Storing label')
+            logging.debug('Storing label')
             # create table one by one
             self.cur2.execute(sql_query)
-            logging.info('Label is stored')
+            logging.debug('Label is stored')
         except (psycopg2.DatabaseError) as error:
             logging.warning(error)
