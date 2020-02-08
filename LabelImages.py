@@ -9,7 +9,6 @@ import numpy as np
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton
 from PyQt5.QtGui import QPixmap, QImage
 from DicomToDatabase.config import config
-import logging
 
 def run_app(config_file_name):
     """Run application that helps the user label the images."""
@@ -176,3 +175,5 @@ class LabelImageApplication(QWidget):
             logging.debug('Label is stored')
         except (psycopg2.DatabaseError) as error:
             logging.warning(error)
+
+print('hello')

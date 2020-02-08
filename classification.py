@@ -1,17 +1,17 @@
 import logging
+import random
+import time
 import numpy as np
 import pydicom as pdm
 import psycopg2
 import psycopg2.extras
 import matplotlib.pyplot as plt
 import cv2
-from DicomToDatabase.config import config
-from scipy.ndimage.measurements import label
-import time
-from skimage.feature import hog
-from sklearn import svm
-import random
 from sklearn.model_selection import KFold, cross_val_score, ShuffleSplit
+from sklearn import svm
+from skimage.feature import hog
+from scipy.ndimage.measurements import label
+from DicomToDatabase.config import config
 
 def classification(config_file_name):
     logging.info('Running classification')

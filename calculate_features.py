@@ -1,17 +1,16 @@
 """Contains function that implements 'Orientation Correction for Chest Images'."""
 
 import logging
+import time
 import numpy as np
 import pydicom as pdm
 import psycopg2
 import psycopg2.extras
 import matplotlib.pyplot as plt
 import cv2
-from DicomToDatabase.config import config
 from scipy.ndimage.measurements import label
-import time
 from skimage.feature import hog
-import logging
+from DicomToDatabase.config import config
 
 def calculate_features(config_file_name):
     """Cycles through the table and pulls one image at a time."""

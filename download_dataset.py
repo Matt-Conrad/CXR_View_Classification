@@ -1,8 +1,7 @@
 import logging
-import requests
 import tarfile
 import os
-import logging
+import requests
 
 EXPECTED_SIZES = {
         'NLMCXR_subset_dataset.tgz': 88320855,
