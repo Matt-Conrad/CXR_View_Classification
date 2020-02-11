@@ -3,12 +3,10 @@ import logging
 from download_dataset import DatasetController
 from DicomToDatabase.dicom_to_db import dicom_to_db
 from calculate_features import calculate_features
-from LabelImages import run_app
+from LabelImages import LabelImageApplication
 import DicomToDatabase.basic_db_ops as bdo
 import DicomToDatabase.config as config
 from classification import classification
-
-logging.basicConfig(filename='CXR_Classification.log', level=logging.INFO)
 
 class Controller:
     """Controller class that controls the logic of the application."""
@@ -16,6 +14,7 @@ class Controller:
         logging.info('Initializing Controller')
         self.config_file_name = 'config.ini'
         self.columns_info = 'columns_info.json'
+        self.label_app = None
         self.classifier = None
         self.url = 'https://github.com/Matt-Conrad/CXR_View_Classification/raw/master/NLMCXR_subset_dataset.tgz'
         self.dataset_controller = DatasetController(self.url)
@@ -44,7 +43,7 @@ class Controller:
         """Use an app to manually label images."""
         table_name = config.get_config_setting(self.config_file_name, section='table_info', key='label_table_name')
         bdo.add_table_to_db(table_name, self.columns_info, self.config_file_name, 'labels')
-        run_app(self.config_file_name)
+        self.label_app = LabelImageApplication(self.config_file_name)
 
     def classification(self):
         """Performs the classification and gets the accuracy of the classifier."""

@@ -28,10 +28,10 @@ class LabelImageApplication(QWidget):
         config_file_name : string
             File name of the INI file that contains the config information
         """
-        logging.info('Constructing app')
+        logging.info('Constructing Labeling app')
         super().__init__()
         
-        # Variables
+        # # Variables
         self.count = 0
         self.conn = None
         self.cur = None # cursor to get image list
@@ -39,19 +39,18 @@ class LabelImageApplication(QWidget):
         self.config_file_name = config_file_name
         self.label = QLabel(self)
         self.record = None
-        # DB Preparation
+        # # DB Preparation
         self.connect()
         self.query_image_list()
-        # Set up GUI
+        # # Set up GUI
         self.fill_window()
-        logging.info('Done constructing app')
+        logging.info('Done constructing Labeling app')
 
     def __del__(self):
         """On exit of the app close the connection."""
-        logging.info('Attempting to close app')
+        logging.info('Attempting to close connection')
         self.close_connection()
-        logging.info('Closing app')
-        sys.exit(0)
+        logging.info('Closing Labeling app')
 
     def connect(self):
         """Connect the app to the Postgres DB."""
@@ -109,15 +108,16 @@ class LabelImageApplication(QWidget):
         # Get the next available record from the image list query
         self.record = self.cur.fetchone()
         if self.record is None:
-            self.__del__()
-        # Update the window title with the image count
-        self.count += 1
-        self.setWindowTitle('Image Count: ' + str(self.count))
-        # Read image and update it in the QLabel
-        image = pdm.dcmread(self.record['file_path']).pixel_array
-        bits_stored = self.record['bits_stored']
-        pixmap = self.arr_into_pixmap(image, bits_stored)
-        self.label.setPixmap(pixmap)
+            self.close()
+        else:
+            # Update the window title with the image count
+            self.count += 1
+            self.setWindowTitle('Image Count: ' + str(self.count))
+            # Read image and update it in the QLabel
+            image = pdm.dcmread(self.record['file_path']).pixel_array
+            bits_stored = self.record['bits_stored']
+            pixmap = self.arr_into_pixmap(image, bits_stored)
+            self.label.setPixmap(pixmap)
 
     def arr_into_pixmap(self, image, bits_stored):
         """Convert the image array into a QPixmap for display.
@@ -175,5 +175,3 @@ class LabelImageApplication(QWidget):
             logging.debug('Label is stored')
         except (psycopg2.DatabaseError) as error:
             logging.warning(error)
-
-print('hello')
