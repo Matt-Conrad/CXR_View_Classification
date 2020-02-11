@@ -40,55 +40,30 @@ class MainApplication(QWidget):
         """Displays the content into the window."""
 
         download_btn = QPushButton('Download', self)
-        download_btn.clicked.connect(self.download)
+        download_btn.clicked.connect(self.controller.download_dataset)
         download_btn.move(0, 150)
 
         unpack_btn = QPushButton('Unpack', self)
-        unpack_btn.clicked.connect(self.unpack)
+        unpack_btn.clicked.connect(self.controller.unpack_dataset)
         unpack_btn.move(200, 150)
 
         store_btn = QPushButton('Store Metadata', self)
-        store_btn.clicked.connect(self.store_metadata)
+        store_btn.clicked.connect(self.controller.store_metadata)
         store_btn.move(400, 150)
 
         features_btn = QPushButton('Calculate Features', self)
-        features_btn.clicked.connect(self.calculate_features)
+        features_btn.clicked.connect(self.controller.calculate_features)
         features_btn.move(0, 300)
 
         label_btn = QPushButton('Label Images', self)
-        label_btn.clicked.connect(self.label_images)
+        label_btn.clicked.connect(self.controller.label_images)
         label_btn.move(200, 300)
 
         classify_btn = QPushButton('Classify Images', self)
-        classify_btn.clicked.connect(self.classification)
+        classify_btn.clicked.connect(self.controller.classification)
         classify_btn.move(400, 300)
 
         self.show()
-
-    def download(self):
-        """Callback function for the download button."""
-        print('Download dummy')
-        self.controller.download_dataset()
-
-    def unpack(self):
-        """Callback function for the unpack button."""
-        self.controller.unpack_dataset()
-
-    def store_metadata(self):
-        """Callback function for the store metadata button."""
-        self.controller.store_metadata()
-    
-    def calculate_features(self):
-        """Callback function for the calculate_features button."""
-        self.controller.calculate_features()
-    
-    def label_images(self):
-        """Callback function for the label_images button."""
-        self.controller.label_images()
-    
-    def classification(self):
-        """Callback function for the classification button."""
-        self.controller.classification()
     
 if __name__ == "__main__":
     run_app()

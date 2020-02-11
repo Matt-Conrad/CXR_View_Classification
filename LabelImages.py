@@ -167,7 +167,8 @@ class LabelImageApplication(QWidget):
             The decision of whether the label for the current image is 'L' (lateral) or 'F' (frontal)
         """
         # Create the SQL query to be used
-        sql_query = 'INSERT INTO image_labels (file_path, label) VALUES (\'' + self.record['file_path'] + '\', \'' + decision + '\');'
+        label_table_name = config(filename=self.config_file_name, section='table_info')['label_table_name']
+        sql_query = 'INSERT INTO ' + label_table_name + ' (file_path, label) VALUES (\'' + self.record['file_path'] + '\', \'' + decision + '\');'
         try:
             logging.debug('Storing label')
             # create table one by one
