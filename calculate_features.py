@@ -11,6 +11,7 @@ import cv2
 from scipy.ndimage.measurements import label
 from skimage.feature import hog
 from DicomToDatabase.config import config
+from SharedImageProcessing.connectedComponents import getBiggestComp
 
 def calculate_features(config_file_name):
     """Cycles through the table and pulls one image at a time."""
@@ -126,7 +127,6 @@ def phog(image, n_bins, orient_range, levels):
 
     return np.concatenate((feature_vector0, feature_vector1, feature_vector2, feature_vector3))
 
-
 def calc_body_size_ratio(image):
     """Calculates the body size ratio."""
     logging.debug('Calculating the body size ratio')
@@ -180,18 +180,6 @@ def last_nonzero(arr, axis, invalid_val=-1):
     mask = (arr!=0)
     val = arr.shape[axis] - np.flip(mask, axis=axis).argmax(axis=axis) - 1
     return np.where(mask.any(axis=axis), val, invalid_val)
-
-def getBiggestComp(image):
-    """ Uses connected components to get the breast """
-    structure = np.ones([3,3], dtype=np.int) # Relational matrix (8-connected)
-    # Run connected components to label the various connected components
-    labeled_image, n_components = label(image, structure=structure) 
-
-    counts = np.bincount(labeled_image.flatten())
-    ind = np.argmax(counts[1:]) + 1
-    biggestComp = (labeled_image == ind).astype(np.uint8)
-
-    return biggestComp
 
 def calc_image_prof(image):
     """Calculates the horizontal and vertical profiles of the images"""
