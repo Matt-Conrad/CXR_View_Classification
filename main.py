@@ -8,7 +8,7 @@ import DicomToDatabase.basic_db_ops as bdo
 import DicomToDatabase.config as config
 from classification import classification
 
-class Controller:
+class Controller():
     """Controller class that controls the logic of the application."""
     def __init__(self):
         logging.info('Initializing Controller')
@@ -48,12 +48,3 @@ class Controller:
     def classification(self):
         """Performs the classification and gets the accuracy of the classifier."""
         self.classifier, accuracy = classification(self.config_file_name)
-
-if __name__ == "__main__":
-    controller = Controller()
-    controller.download_dataset()
-    controller.unpack_dataset()
-    controller.store_metadata()
-    controller.calculate_features()
-    controller.label_images()
-    controller.classification()

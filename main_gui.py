@@ -1,7 +1,8 @@
 """Contains the code for the app that guides the user through the process."""
 import logging
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton
+import os
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QProgressBar, QLabel
 from main import Controller
 
 logging.basicConfig(filename='CXR_Classification.log', level=logging.INFO)
@@ -38,32 +39,55 @@ class MainApplication(QWidget):
 
     def fill_window(self):
         """Displays the content into the window."""
+        upper_buttons = QHBoxLayout()
+        lower_buttons = QHBoxLayout()
+        all_buttons = QVBoxLayout()
 
-        download_btn = QPushButton('Download', self)
-        download_btn.clicked.connect(self.controller.download_dataset)
-        download_btn.move(0, 150)
+        msg_box = QLabel('Welcome to the CXR Classification Application')
+        pro_bar = QProgressBar(self)
 
-        unpack_btn = QPushButton('Unpack', self)
-        unpack_btn.clicked.connect(self.controller.unpack_dataset)
-        unpack_btn.move(200, 150)
+        self.download_btn = QPushButton('Download', self)
+        self.download_btn.clicked.connect(self.controller.download_dataset)
+        upper_buttons.addWidget(self.download_btn)
 
-        store_btn = QPushButton('Store Metadata', self)
-        store_btn.clicked.connect(self.controller.store_metadata)
-        store_btn.move(400, 150)
+        self.unpack_btn = QPushButton('Unpack', self)
+        self.unpack_btn.clicked.connect(self.controller.unpack_dataset)
+        upper_buttons.addWidget(self.unpack_btn)
 
-        features_btn = QPushButton('Calculate Features', self)
-        features_btn.clicked.connect(self.controller.calculate_features)
-        features_btn.move(0, 300)
+        self.store_btn = QPushButton('Store Metadata', self)
+        self.store_btn.clicked.connect(self.controller.store_metadata)
+        upper_buttons.addWidget(self.store_btn)
 
-        label_btn = QPushButton('Label Images', self)
-        label_btn.clicked.connect(self.controller.label_images)
-        label_btn.move(200, 300)
+        self.features_btn = QPushButton('Calculate Features', self)
+        self.features_btn.clicked.connect(self.controller.calculate_features)
+        lower_buttons.addWidget(self.features_btn)
 
-        classify_btn = QPushButton('Classify Images', self)
-        classify_btn.clicked.connect(self.controller.classification)
-        classify_btn.move(400, 300)
+        self.label_btn = QPushButton('Label Images', self)
+        self.label_btn.clicked.connect(self.controller.label_images)
+        lower_buttons.addWidget(self.label_btn)
+
+        self.classify_btn = QPushButton('Classify Images', self)
+        self.classify_btn.clicked.connect(self.controller.classification)
+        lower_buttons.addWidget(self.classify_btn)
+        
+        all_buttons.addWidget(msg_box)
+        all_buttons.addWidget(pro_bar)
+        all_buttons.addLayout(upper_buttons)
+        all_buttons.addLayout(lower_buttons)
+
+        self.setLayout(all_buttons)
+
+        self.init_gui_state()
 
         self.show()
+
+    def init_gui_state(self):
+        if not os.path.exists(self.controller.url):
+            self.unpack_btn.setDisabled(True)
+            self.store_btn.setDisabled(True)
+            self.features_btn.setDisabled(True)
+            self.label_btn.setDisabled(True)
+            self.classify_btn.setDisabled(True)
     
 if __name__ == "__main__":
     run_app()
