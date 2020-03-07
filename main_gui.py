@@ -39,15 +39,17 @@ class MainApplication(QWidget):
 
     def fill_window(self):
         """Displays the content into the window."""
+        self.feedback_dashboard = QVBoxLayout()
+        self.msg_box = QLabel('Welcome to the CXR Classification Application')
+        self.pro_bar = QProgressBar(self)
+        self.feedback_dashboard.addWidget(self.msg_box)
+        self.feedback_dashboard.addWidget(self.pro_bar)
+
         upper_buttons = QHBoxLayout()
         lower_buttons = QHBoxLayout()
-        all_buttons = QVBoxLayout()
-
-        msg_box = QLabel('Welcome to the CXR Classification Application')
-        pro_bar = QProgressBar(self)
 
         self.download_btn = QPushButton('Download', self)
-        self.download_btn.clicked.connect(self.controller.download_dataset)
+        self.download_btn.clicked.connect(self.download_dataset)
         upper_buttons.addWidget(self.download_btn)
 
         self.unpack_btn = QPushButton('Unpack', self)
@@ -70,8 +72,8 @@ class MainApplication(QWidget):
         self.classify_btn.clicked.connect(self.controller.classification)
         lower_buttons.addWidget(self.classify_btn)
         
-        all_buttons.addWidget(msg_box)
-        all_buttons.addWidget(pro_bar)
+        all_buttons = QVBoxLayout()
+        all_buttons.addLayout(self.feedback_dashboard)
         all_buttons.addLayout(upper_buttons)
         all_buttons.addLayout(lower_buttons)
 
@@ -81,13 +83,34 @@ class MainApplication(QWidget):
 
         self.show()
 
+    def download_dataset(self):
+        self.msg_box.setText('Downloading images')
+        self.controller.download_dataset(self.feedback_dashboard)
+        self.msg_box.setText('Image download complete')
+        self.stage2_ui()
+
     def init_gui_state(self):
-        if not os.path.exists(self.controller.url):
-            self.unpack_btn.setDisabled(True)
-            self.store_btn.setDisabled(True)
-            self.features_btn.setDisabled(True)
-            self.label_btn.setDisabled(True)
-            self.classify_btn.setDisabled(True)
+        if not os.path.exists(self.controller.dataset_controller.filename) and not os.path.isdir('self.controller.dataset_controller.filename'): # If the TGZ hasn't been downloaded
+            self.stage1_ui()
+        elif os.path.exists(self.controller.dataset_controller.filename) and not os.path.isdir('self.controller.dataset_controller.filename'):
+            self.stage2_ui()
+
+    def stage1_ui(self):
+        self.pro_bar.setMaximum(self.controller.dataset_controller.expected_size)
+        self.pro_bar.setMinimum(0)
+        self.unpack_btn.setDisabled(True)
+        self.store_btn.setDisabled(True)
+        self.features_btn.setDisabled(True)
+        self.label_btn.setDisabled(True)
+        self.classify_btn.setDisabled(True)
+
+    def stage2_ui(self):
+        self.download_btn.setDisabled(True)
+        self.unpack_btn.setDisabled(False)
+        self.store_btn.setDisabled(True)
+        self.features_btn.setDisabled(True)
+        self.label_btn.setDisabled(True)
+        self.classify_btn.setDisabled(True)
     
 if __name__ == "__main__":
     run_app()

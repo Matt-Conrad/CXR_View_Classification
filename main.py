@@ -20,9 +20,9 @@ class Controller():
         self.dataset_controller = DatasetController(self.url)
         logging.info('Controller initialized')
 
-    def download_dataset(self):
+    def download_dataset(self, feedback_dashboard):
         """Download the dataset (tgz format) from the public repository."""
-        self.dataset_controller.get_dataset()
+        self.dataset_controller.get_dataset(feedback_dashboard)
 
     def unpack_dataset(self):
         """Unpack the dataset from the tgz file."""
