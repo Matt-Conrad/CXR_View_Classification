@@ -2,6 +2,7 @@ import logging
 import tarfile
 import os
 import requests
+import time
 
 EXPECTED_SIZES = {
         'NLMCXR_subset_dataset.tgz': 88320855,
@@ -14,6 +15,8 @@ class DatasetController:
         self.expected_num_files = 10
         self.url = url
         self.filename = url.split("/")[-1]
+        self.folder_name = self.filename.split('.')[0]
+        self.folder_full_path = os.path.dirname(os.path.abspath(__file__)).replace('\\','/') + '/' + self.folder_name
         self.expected_size = EXPECTED_SIZES[self.filename]
 
     def get_dataset(self, feedback_dashboard):
@@ -54,14 +57,5 @@ class DatasetController:
     def unpack(self):
         logging.info('Unpacking dataset from %s', self.filename)
         tf = tarfile.open(self.filename)
-        folder_name = self.filename.split('.')[0]
-        tf.extractall(path='./' + folder_name)
+        tf.extractall(path='./')
         logging.info('Done unpacking')
-
-        return os.path.dirname(os.path.abspath(__file__)) + '/' + folder_name
-
-if __name__ == "__main__":
-    logging.basicConfig(filename='download_dataset.log', level=logging.INFO)
-    url = 'https://github.com/Matt-Conrad/CXR_View_Classification/raw/master/NLMCXR_subset_dataset.tgz'
-    controller = DatasetController(url)
-    controller.get_dataset()

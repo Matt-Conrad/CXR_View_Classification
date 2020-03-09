@@ -53,7 +53,7 @@ class MainApplication(QWidget):
         upper_buttons.addWidget(self.download_btn)
 
         self.unpack_btn = QPushButton('Unpack', self)
-        self.unpack_btn.clicked.connect(self.controller.unpack_dataset)
+        self.unpack_btn.clicked.connect(self.unpack_dataset)
         upper_buttons.addWidget(self.unpack_btn)
 
         self.store_btn = QPushButton('Store Metadata', self)
@@ -89,11 +89,19 @@ class MainApplication(QWidget):
         self.msg_box.setText('Image download complete')
         self.stage2_ui()
 
+    def unpack_dataset(self):
+        self.msg_box.setText('Unpacking images')
+        self.controller.unpack_dataset(self.feedback_dashboard)
+        self.msg_box.setText('Images unpacking complete')
+        self.stage3_ui()
+
     def init_gui_state(self):
-        if not os.path.exists(self.controller.dataset_controller.filename) and not os.path.isdir('self.controller.dataset_controller.filename'): # If the TGZ hasn't been downloaded
+        if not os.path.exists(self.controller.dataset_controller.filename) and not os.path.isdir(self.controller.dataset_controller.folder_name): # If the TGZ hasn't been downloaded
             self.stage1_ui()
-        elif os.path.exists(self.controller.dataset_controller.filename) and not os.path.isdir('self.controller.dataset_controller.filename'):
+        elif os.path.exists(self.controller.dataset_controller.filename) and not os.path.isdir(self.controller.dataset_controller.folder_name):
             self.stage2_ui()
+        elif os.path.exists(self.controller.dataset_controller.filename) and os.path.isdir(self.controller.dataset_controller.folder_name):
+            self.stage3_ui()
 
     def stage1_ui(self):
         self.pro_bar.setMaximum(self.controller.dataset_controller.expected_size)
@@ -105,9 +113,19 @@ class MainApplication(QWidget):
         self.classify_btn.setDisabled(True)
 
     def stage2_ui(self):
+        self.pro_bar.setMaximum(self.controller.dataset_controller.expected_num_files)
+        self.pro_bar.setMinimum(0)
         self.download_btn.setDisabled(True)
         self.unpack_btn.setDisabled(False)
         self.store_btn.setDisabled(True)
+        self.features_btn.setDisabled(True)
+        self.label_btn.setDisabled(True)
+        self.classify_btn.setDisabled(True)
+
+    def stage3_ui(self):
+        self.download_btn.setDisabled(True)
+        self.unpack_btn.setDisabled(True)
+        self.store_btn.setDisabled(False)
         self.features_btn.setDisabled(True)
         self.label_btn.setDisabled(True)
         self.classify_btn.setDisabled(True)
