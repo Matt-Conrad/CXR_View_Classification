@@ -19,7 +19,7 @@ class DatasetController:
         self.folder_full_path = os.path.dirname(os.path.abspath(__file__)).replace('\\','/') + '/' + self.folder_name
         self.expected_size = EXPECTED_SIZES[self.filename]
 
-    def get_dataset(self, feedback_dashboard):
+    def get_dataset(self):
         """Attempt to get the dataset TGZ as many times as it takes."""
         logging.info('Checking if %s already exists', self.filename)
         if os.path.isfile(self.filename):
@@ -32,27 +32,23 @@ class DatasetController:
                 logging.info('Removing %s', self.filename)
                 os.remove(self.filename)
                 logging.info('Successfully removed %s', self.filename)
-                self.download_dataset(feedback_dashboard)
+                self.download_dataset()
         else:
             logging.info('%s does not exist', self.filename)
-            self.download_dataset(feedback_dashboard)
+            self.download_dataset()
 
-    def download_dataset(self, feedback_dashboard):
+    def download_dataset(self):
         """Download the dataset, invoke the checks in get_dataset after."""
         # Start download
         logging.info('Downloading dataset from %s', self.url)
-        
         with requests.get(self.url, stream=True) as r:
             r.raise_for_status()
             with open(self.filename, 'wb') as f:
-                for chunk in r.iter_content(chunk_size=8192): 
+                for chunk in r.iter_content(chunk_size=8192):
                     if chunk: # filter out keep-alive new chunks
                         f.write(chunk)
-                        feedback_dashboard.itemAt(1).widget().setValue(os.path.getsize(self.filename))
-                        
-        feedback_dashboard.itemAt(1).widget().setValue(os.path.getsize(self.filename))
-        self.get_dataset(feedback_dashboard.itemAt(1).widget())
-        return self.filename
+                    
+        self.get_dataset()
 
     def unpack(self):
         logging.info('Unpacking dataset from %s', self.filename)
