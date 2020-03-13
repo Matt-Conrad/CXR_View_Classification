@@ -9,15 +9,20 @@ EXPECTED_SIZES = {
         'NLMCXR_dcm.tgz': 80694582486
     }
 
+EXPECTED_NUM_FILES = {
+        'NLMCXR_subset_dataset.tgz': 10,
+        'NLMCXR_dcm.tgz': 1939 #3852
+    }
+
 class DatasetController:
     """Controls logic of getting the dataset from online sources."""
     def __init__(self, url):
-        self.expected_num_files = 10
         self.url = url
         self.filename = url.split("/")[-1]
         self.folder_name = self.filename.split('.')[0]
         self.folder_full_path = os.path.dirname(os.path.abspath(__file__)).replace('\\','/') + '/' + self.folder_name
         self.expected_size = EXPECTED_SIZES[self.filename]
+        self.expected_num_files = EXPECTED_NUM_FILES[self.filename]
 
     def get_dataset(self):
         """Attempt to get the dataset TGZ as many times as it takes."""
@@ -53,5 +58,5 @@ class DatasetController:
     def unpack(self):
         logging.info('Unpacking dataset from %s', self.filename)
         tf = tarfile.open(self.filename)
-        tf.extractall(path='./')
+        tf.extractall(path='./' + self.folder_name)
         logging.info('Done unpacking')

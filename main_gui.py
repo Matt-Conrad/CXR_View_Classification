@@ -4,8 +4,6 @@ import sys
 import os
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QProgressBar, QLabel
 
-logging.basicConfig(filename='CXR_Classification.log', level=logging.INFO)
-
 class MainApplication(QWidget):
     """Contains code for the application used guide the user through the process."""
     def __init__(self):
@@ -65,12 +63,6 @@ class MainApplication(QWidget):
 
         self.show()
 
-    # def store_metadata(self):
-    #     self.msg_box.setText('Storing image metadata')
-    #     self.controller.store_metadata(self.feedback_dashboard)
-    #     self.msg_box.setText('Metadata stored')
-    #     self.stage4_ui()
-
     def stage1_ui(self):
         self.unpack_btn.setDisabled(True)
         self.store_btn.setDisabled(True)
@@ -87,8 +79,6 @@ class MainApplication(QWidget):
         self.classify_btn.setDisabled(True)
 
     def stage3_ui(self):
-        # self.pro_bar.setMinimum(0)
-        # self.pro_bar.setMaximum(self.controller.dataset_controller.expected_num_files)
         self.download_btn.setDisabled(True)
         self.unpack_btn.setDisabled(True)
         self.store_btn.setDisabled(False)
@@ -97,11 +87,25 @@ class MainApplication(QWidget):
         self.classify_btn.setDisabled(True)
 
     def stage4_ui(self):
-        # self.pro_bar.setMinimum(0)
-        # self.pro_bar.setMaximum(self.controller.dataset_controller.expected_num_files)
         self.download_btn.setDisabled(True)
         self.unpack_btn.setDisabled(True)
         self.store_btn.setDisabled(True)
         self.features_btn.setDisabled(False)
         self.label_btn.setDisabled(True)
         self.classify_btn.setDisabled(True)
+
+    def stage5_ui(self):
+        self.download_btn.setDisabled(True)
+        self.unpack_btn.setDisabled(True)
+        self.store_btn.setDisabled(True)
+        self.features_btn.setDisabled(True)
+        self.label_btn.setDisabled(False)
+        self.classify_btn.setDisabled(True)
+
+    def stage6_ui(self):
+        self.download_btn.setDisabled(True)
+        self.unpack_btn.setDisabled(True)
+        self.store_btn.setDisabled(True)
+        self.features_btn.setDisabled(True)
+        self.label_btn.setDisabled(True)
+        self.classify_btn.setDisabled(False)

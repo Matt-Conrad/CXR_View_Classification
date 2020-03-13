@@ -50,6 +50,7 @@ class LabelImageApplication(QWidget):
         """On exit of the app close the connection."""
         logging.info('Attempting to close connection')
         self.close_connection()
+        self.close()
         logging.info('Closing Labeling app')
 
     def connect(self):
@@ -81,6 +82,7 @@ class LabelImageApplication(QWidget):
 
     def fill_window(self):
         """Displays the content into the window."""
+        logging.debug('Filling window')
         self.display_next_image()
 
         frontal_btn = QPushButton('Frontal', self)
@@ -92,26 +94,32 @@ class LabelImageApplication(QWidget):
         lateral_btn.move(225, 300)
 
         self.show()
+        logging.debug('Done filling window')
 
     def frontal(self):
         """Callback function for the frontal button."""
+        logging.debug('Front')
         self.store_label('F')
         self.display_next_image()
 
     def lateral(self):
         """Callback function for the lateral button."""
+        logging.debug('Lateral')
         self.store_label('L')
         self.display_next_image()
 
     def display_next_image(self):
         """Display the next image."""
         # Get the next available record from the image list query
+        logging.debug('Displaying next image')
         self.record = self.cur.fetchone()
         if self.record is None:
-            self.close()
+            logging.info('End of query, deleting labeling app')
+            self.__del__()
         else:
             # Update the window title with the image count
             self.count += 1
+            logging.debug('Image Count: ' + str(self.count))
             self.setWindowTitle('Image Count: ' + str(self.count))
             # Read image and update it in the QLabel
             image = pdm.dcmread(self.record['file_path']).pixel_array
@@ -149,6 +157,7 @@ class LabelImageApplication(QWidget):
 
     def query_image_list(self):
         """Run a query to get the list of all images in the DB."""
+        logging.debug('Attempting to query records for image list')
         metadata_table_name = config(filename=self.config_file_name, section='table_info')['metadata_table_name']
         sql_query = 'SELECT file_path, bits_stored FROM ' + metadata_table_name + ' ORDER BY file_path;'
         try:
