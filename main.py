@@ -2,7 +2,7 @@
 import logging
 import os
 import sys
-import concurrent.futures
+import time
 from PyQt5.QtCore import QObject, QThreadPool, QRunnable, pyqtSlot, pyqtSignal
 from PyQt5.QtWidgets import QApplication
 from download_dataset import DatasetController
@@ -13,7 +13,6 @@ import DicomToDatabase.basic_db_ops as bdo
 import DicomToDatabase.config as config
 from classification import classification
 from main_gui import MainApplication
-import time
 
 logging.basicConfig(filename='CXR_Classification.log', level=logging.INFO)
 

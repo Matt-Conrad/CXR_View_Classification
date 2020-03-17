@@ -6,3 +6,6 @@ NLMCXR_dcm
 NLMCXR_subset_dataset
 .pylintrc
 *.log
+main.spec
+dist
+build

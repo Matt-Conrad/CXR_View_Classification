@@ -1,14 +1,14 @@
 """Contains function that implements 'Orientation Correction for Chest Images'."""
 
 import logging
-import time
+# import time
 import numpy as np
 import pydicom as pdm
 import psycopg2
 import psycopg2.extras
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import cv2
-from scipy.ndimage.measurements import label
+# from scipy.ndimage.measurements import label
 from skimage.feature import hog
 from DicomToDatabase.config import config
 from SharedImageProcessing.connectedComponents import getBiggestComp
