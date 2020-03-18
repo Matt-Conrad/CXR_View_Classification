@@ -1,3 +1,4 @@
+"""Contains function for training and predicting with the classifier."""
 import logging
 import numpy as np
 import psycopg2
@@ -7,35 +8,49 @@ from sklearn import svm
 from DicomToDatabase.config import config
 
 def classification(config_file_name):
+    """Train a SVM using the feature vectors and labels, then calculate the accuracy using the test set.
+    
+    Parameters
+    ----------
+    config_file_name : string
+        File name of the INI file with DB and folder config information
+    
+    Returns
+    -------
+    (sklearn classifier, float)
+        The trained classifier and the corresponding accuracy
+    """
     logging.info('Running classification')
     conn = None
     try:
         # read the connection parameters
         params = config(filename=config_file_name, section='postgresql')
         table_name = config(filename=config_file_name, section='table_info')['features_table_name']
+
         # connect to the PostgreSQL server
         conn = psycopg2.connect(**params)
         cur = conn.cursor()
-        # Create the SQL query to be used
+
+        # Put all horizontal profiles into feature matrix
         sql_query = 'SELECT hor_profile FROM ' + table_name + ' ORDER BY file_path ASC;'
-        # create table one by one
         cur.execute(sql_query)
         records = cur.fetchall()
         X1 = [record[0] for record in records]
         X1 = np.array(X1, dtype=np.float)
 
+        # Put all vertical profiles into feature matrix
         sql_query = 'SELECT vert_profile FROM ' + table_name + ' ORDER BY file_path ASC;'
-        # create table one by one
         cur.execute(sql_query)
         records = cur.fetchall()
         X2 = [record[0] for record in records]
         X2 = np.array(X2, dtype=np.float)
 
+        # Combine the 2 matrices, making feature vectors twice as long
         X = np.concatenate((X1, X2), axis=1) 
 
+        # Put all the labels into a list
         label_table_name = config(filename=config_file_name, section='table_info')['label_table_name']
         sql_query = 'SELECT label FROM ' + label_table_name + ' ORDER BY file_path ASC;'
-        # create table one by one
         cur.execute(sql_query)
         records = cur.fetchall()
         y = [record[0] for record in records]
@@ -49,7 +64,8 @@ def classification(config_file_name):
     finally:
         if conn is not None:
             conn.close()
-
+    
+    # Cross validate with the linear SVM, and calculate accuracy
     kf = KFold(n_splits=10, shuffle=True)
 
     clf = svm.SVC(kernel='linear')

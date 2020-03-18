@@ -1,5 +1,4 @@
 """Contains function that implements 'Orientation Correction for Chest Images'."""
-
 import logging
 # import time
 import numpy as np
@@ -14,7 +13,13 @@ from DicomToDatabase.config import config
 from SharedImageProcessing.connectedComponents import getBiggestComp
 
 def calculate_features(config_file_name):
-    """Cycles through the table and pulls one image at a time."""
+    """Cycles through the table and pulls one image at a time.
+    
+    Parameters
+    ----------
+    config_file_name : string
+        The INI file with DB and folder configuration information
+    """
     logging.info('Calculating features from images')
     conn = None
     try:
@@ -38,16 +43,18 @@ def calculate_features(config_file_name):
             logging.info('Calculating for image number: %s File: %s', str(count), file_path)
             image = pdm.dcmread(file_path).pixel_array
             
+            # Preprocess the image
             image = preprocessing(image, record)
 
-            # Profile features
+            # Calculate the various features
             (hor_profile, vert_profile) = calc_image_prof(image)
             
             ratio = calc_body_size_ratio(image)
             
             phog_vector = phog(image, n_bins=8, orient_range=(0, 360), levels=3)
 
-            store('config.ini', file_path, ratio, hor_profile, vert_profile, phog_vector)
+            # Store the data to the DB
+            store(config_file_name, file_path, ratio, hor_profile, vert_profile, phog_vector)
 
         # close communication with the PostgreSQL database server
         cur.close()
@@ -60,8 +67,24 @@ def calculate_features(config_file_name):
             conn.close()
             logging.info('Done calculating features from images')
 
-def store(config_file_name, file_path, ratio, hor_profile, vert_profile, phog):
-    """Stores the calculated features into the database."""
+def store(config_file_name, file_path, ratio, hor_profile, vert_profile, pyr_hog):
+    """Stores the calculated features into the database.
+    
+    Parameters
+    ----------
+    config_file_name : string
+        The INI file with DB and folder configuration information
+    file_path : string
+        Path to the image file
+    ratio : float
+        Ratio of torso dimensions
+    hor_profile : float[]
+        Vector containing horizontal profile of torso
+    vert_profile : float[]
+        Vector containing vertical profile of torso
+    pyr_hog : float[]
+        Vector containing the pyramid HOG
+    """
     logging.debug('Storing the calculated features into the database.')
     conn = None
     try:
@@ -73,7 +96,7 @@ def store(config_file_name, file_path, ratio, hor_profile, vert_profile, phog):
         cur = conn.cursor()
         # Create the SQL query to be used
         sql_query = 'INSERT INTO ' + out_table_name + ' (file_path, body_size_ratio, hor_profile, vert_profile, phog) VALUES (%s, %s, %s, %s, %s);'
-        values = (file_path, ratio, hor_profile.tolist(), vert_profile.tolist(), phog.tolist())
+        values = (file_path, ratio, hor_profile.tolist(), vert_profile.tolist(), pyr_hog.tolist())
         # create table one by one
         cur.execute(sql_query, values)
 
@@ -88,7 +111,24 @@ def store(config_file_name, file_path, ratio, hor_profile, vert_profile, phog):
             logging.debug('Done storing.')
 
 def phog(image, n_bins, orient_range, levels):
-    """Calculates the pyramid histogram of oriented gradients."""
+    """Calculates the pyramid histogram of oriented gradients.
+    
+    Parameters
+    ----------
+    image : ndarray
+        Image data
+    n_bins : int
+        Number of bins to use for each cell
+    orient_range : tuple?
+        Range of orientations
+    levels : int
+        Number of levels in the pyramid
+    
+    Returns
+    -------
+    float[]
+        The full PHOG vector
+    """
     # Going with this for now. If this doesn't work for some reason, try the cv2 one or try the
     # imlementation of it at:
     # https://github.com/ReseachWithDrSun/test/blob/fdae985309e488de42b7ac3c88306345b2d739e7/dtyu/xray_learning/phog_features/phog.py
@@ -96,6 +136,7 @@ def phog(image, n_bins, orient_range, levels):
     # NOTE: might need to include some form of Canny edge detector in here somewhere
     logging.debug('Calculating the phog of the image')
 
+    # Use skimage's hog at at different levels
     feature_vector0, hog_image0 = hog(image, orientations=n_bins, pixels_per_cell=image.shape, cells_per_block=(1, 1),
                                     visualize=True, feature_vector=True)
 
@@ -110,7 +151,10 @@ def phog(image, n_bins, orient_range, levels):
     cell_size = (int(image.shape[0]/8), int(image.shape[1]/8))
     feature_vector3, hog_image3 = hog(image, orientations=n_bins, pixels_per_cell=cell_size, 
                                     cells_per_block=(1, 1), visualize=True, feature_vector=True)
+
     # NOTE: The size of the output descriptor is exactly the length from the paper: 8 + 32 + 128 + 512 = 680
+    
+    # Visualize
     # plt.subplot(1, 5, 1)
     # plt.imshow(image, cmap='bone')
     # plt.subplot(1, 5, 2)
@@ -128,29 +172,49 @@ def phog(image, n_bins, orient_range, levels):
     return np.concatenate((feature_vector0, feature_vector1, feature_vector2, feature_vector3))
 
 def calc_body_size_ratio(image):
-    """Calculates the body size ratio."""
+    """Calculates the body size ratio.
+    
+    Parameters
+    ----------
+    image : ndarray
+        Image data
+    
+    Returns
+    -------
+    float
+        The body size ratio
+    """
     logging.debug('Calculating the body size ratio')
+
+    # Threshold the image at the median intensity
     median = np.median(image)
     image_binarized = (image >= median).astype(np.uint8)
 
+    # Get the biggest component of the threshold image
     comp = getBiggestComp(image_binarized)
 
+    # Get the first and last non-zero pixels along each horizontal
     first_nonzeros_hor = first_nonzero(comp, axis=1, invalid_val=np.nan)
     last_nonzeros_hor = last_nonzero(comp, axis=1, invalid_val=np.nan)
 
+    # Get the first and last non-zero pixels along each vertical
     first_nonzeros_vert = first_nonzero(comp, axis=0, invalid_val=np.nan)
     last_nonzeros_vert = last_nonzero(comp, axis=0, invalid_val=np.nan)
 
+    # Find the length of each cross-section
     hor_cross_sections = last_nonzeros_hor - first_nonzeros_hor
     vert_cross_sections = last_nonzeros_vert - first_nonzeros_vert
 
+    # Find median horizontal cross-section length and maximum vertical cross-section length & their indices
     hor_median = np.nanmedian(hor_cross_sections)
     vert_max = np.nanmax(vert_cross_sections)
     vert_max_ind = np.nanargmax(vert_cross_sections)
     hor_median_ind = np.argsort(hor_cross_sections)[len(hor_cross_sections)//2]
 
+    # Take the ratio
     ratio = hor_median/vert_max
 
+    # Visualize
     # plt.subplot(1, 3, 1)
     # plt.imshow(image, cmap='bone')
     # plt.subplot(1, 3, 2)
@@ -171,18 +235,59 @@ def calc_body_size_ratio(image):
     return ratio
 
 def first_nonzero(arr, axis, invalid_val=-1):
-    """Placeholder."""
+    """Get the first non-zero pixels along a dimension
+    
+    Parameters
+    ----------
+    arr : ndarray
+        2D array
+    axis : int
+        The axis to go along
+    invalid_val : int, optional
+        Value to use, by default -1
+    
+    Returns
+    -------
+    float[]
+        1D-array with all the first non-zero pixel indices
+    """
     mask = (arr!=0)
     return np.where(mask.any(axis=axis), mask.argmax(axis=axis), invalid_val)
 
 def last_nonzero(arr, axis, invalid_val=-1):
-    """Placeholder."""
+    """Get the last non-zero pixels along a dimension
+    
+    Parameters
+    ----------
+    arr : ndarray
+        2D array
+    axis : int
+        The axis to go along
+    invalid_val : int, optional
+        Value to use, by default -1
+    
+    Returns
+    -------
+    float[]
+        1D-array with all the last non-zero pixel indices
+    """
     mask = (arr!=0)
     val = arr.shape[axis] - np.flip(mask, axis=axis).argmax(axis=axis) - 1
     return np.where(mask.any(axis=axis), val, invalid_val)
 
 def calc_image_prof(image):
-    """Calculates the horizontal and vertical profiles of the images"""
+    """Calculate the mean horizontal and vertical profiles.
+    
+    Parameters
+    ----------
+    image : ndarray
+        Image data
+    
+    Returns
+    -------
+    (float[], float[])
+        The mean horizontal and vertical profiles
+    """
     logging.debug('Calculating the profiles of the image')
     image_square = cv2.resize(image, (200, 200), interpolation=cv2.INTER_AREA)
     
@@ -202,8 +307,28 @@ def calc_image_prof(image):
     return hor_profile, vert_profile
 
 def preprocessing(image, record):
-    """Runs the preprocessing steps on the image."""
+    """Runs the preprocessing steps on the image.
+    
+    Parameters
+    ----------
+    image : ndarray
+        Image data
+    record : psycopg2 record object?
+        The metadata record for the image
+    
+    Returns
+    -------
+    ndarray
+        Preprocessed image
+    
+    Raises
+    ------
+    ValueError
+        Raise error if image is not MONOCHROME1 or MONOCHROME2 as expected
+    """
     logging.debug('Beginning preprocessing on %s', record['file_path'])
+
+    # Normalize image
     highest_possible_intensity = (np.power(2, record['bits_stored']) - 1)
     image_norm = image/highest_possible_intensity
 
@@ -213,6 +338,7 @@ def preprocessing(image, record):
     # min_I = window_center - (window_width/2)
     # max_I = window_center + (window_width/2)
 
+    # Apply contrast stretch transform
     # image_norm = contrast_stretch(image_norm, min_I, max_I)
 
     # Invert the image if it's MONOCHROME1
@@ -223,22 +349,27 @@ def preprocessing(image, record):
     else:
         raise ValueError('Image is not MONOCHROME1 or MONOCHROME2 as expected.')
 
+    # Find the percentile intensities
     saturation_vals = np.percentile(image_norm.flatten(), [1, 99])
 
+    # Contrast stretch the image using the percentiles
     image_enhanced = contrast_stretch(image_norm, saturation_vals[0], saturation_vals[1])
 
+    # Threshold the image at the median intensity
     median = np.median(image_enhanced)
-    
     image_binarized = (image_enhanced >= median).astype(np.uint8)
 
     # get the bounding rect
     x, y, w, h = cv2.boundingRect(image_binarized)
+
     # draw a green rectangle to visualize the bounding rect
     image_enh_copy = image_enhanced.copy()
     cv2.rectangle(image_enh_copy, (x, y), (x+w, y+h), 1, 2)
 
+    # Crop the image
     image_cropped = image_enhanced[y:y+h, x:x+w]
 
+    # Downscale the image
     scale_percent = .5
     width = int(image_cropped.shape[1] * scale_percent)
     height = int(image_cropped.shape[0] * scale_percent)
@@ -250,11 +381,29 @@ def preprocessing(image, record):
     return image_downsize
 
 def contrast_stretch(image, min_I, max_I):
-    """Placeholder."""
-    # All values < min_I will be 0 and all values > max_I will be 1
+    """Apply the contrast stretch transformation to the image.
+
+    All values < min_I will be 0 and all values > max_I will be 1.
+    
+    Parameters
+    ----------
+    image : ndarray
+        Image data
+    min_I : int
+        Intensity floor
+    max_I : int
+        Intensity ceiling
+    
+    Returns
+    -------
+    ndarray
+        Contrast-stretch image
+    """
+    # copy image
     image_copy = image.copy()
 
     try: 
+        # Apply transform
         A = np.array([[min_I, 1], [max_I, 1]])
         B = [0, 1]
 
@@ -266,6 +415,7 @@ def contrast_stretch(image, min_I, max_I):
         image_copy[np.where(image < min_I)] = 0
         image_copy[np.where(image > max_I)] = 1
     except np.linalg.LinAlgError as err:
+        # Ignore singular matrix issues and raise other issues
         if 'Singular matrix' in str(err):
             logging.warning('SINGULAR MATRIX: NOT DOING CONTRAST STRETCH')
         else:
