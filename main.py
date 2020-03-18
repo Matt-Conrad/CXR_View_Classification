@@ -2,6 +2,7 @@
 import logging
 import os
 import sys
+import traceback
 import time
 from PyQt5.QtCore import QObject, QThreadPool, QRunnable, pyqtSlot, pyqtSignal
 from PyQt5.QtWidgets import QApplication
@@ -15,7 +16,8 @@ from classification import classification
 from main_gui import MainApplication
 
 # Specify log file
-logging.basicConfig(filename='CXR_Classification.log', level=logging.INFO)
+logging.basicConfig(filename='CXR_Classification.log', level=logging.INFO,
+                    format='%(asctime)s %(levelname)-8s: %(message)s', datefmt='%Y-%m-%d|%H:%M:%S')
 
 def run_app():
     """Run the application that guides the user through the process."""
@@ -26,7 +28,7 @@ def run_app():
 class Controller():
     """Controller class that controls the logic of the application."""
     def __init__(self):
-        logging.info('Initializing Controller')
+        logging.info('***INITIALIZING CONTROLLER***')
 
         # String variables
         self.config_file_name = 'config.ini'
@@ -50,11 +52,13 @@ class Controller():
         self.init_gui_state()
         self.connect_buttons()
         self.threadpool = QThreadPool()
-        logging.info('Controller initialized')
+        logging.info('***CONTROLLER INITIALIZED***')
 
     ### DOWNLOAD BUTTON
     def download_dataset(self):
         """Delegate the downloading and GUI updating to 2 new threads."""
+        logging.info('***BEGIN DOWNLOADING PHASE***')
+        self.log_gui_state()
         # Set the progress region
         self.main_app.msg_box.setText('Downloading images')
         self.main_app.pro_bar.setMinimum(0)
@@ -100,11 +104,14 @@ class Controller():
 
         # Update the text and move to the next stage
         self.main_app.msg_box.setText('Image download complete')
+        logging.info('***END DOWNLOADING PHASE***')
         self.main_app.stage2_ui()
             
     ### UNPACK BUTTON
     def unpack_dataset(self):
         """Delegate the unpacking and GUI updating to 2 new threads."""
+        logging.info('***BEGIN UNPACKING PHASE***')
+        self.log_gui_state()
         # Set the progress region
         self.main_app.msg_box.setText('Unpacking images')
         self.main_app.pro_bar.setMinimum(0)
@@ -146,16 +153,20 @@ class Controller():
         while sum([len(files) for r, d, files in os.walk(self.dataset_controller.folder_full_path)]) < self.dataset_controller.expected_num_files:
             num_files = sum([len(files) for r, d, files in os.walk(self.dataset_controller.folder_full_path)])
             progress_callback.emit(num_files)
+            time.sleep(1)
         num_files = sum([len(files) for r, d, files in os.walk(self.dataset_controller.folder_full_path)])
         progress_callback.emit(num_files)
 
         # Update the text and move to the next stage
         self.main_app.msg_box.setText('Images unpacked')
+        logging.info('***END UNPACKING PHASE***')
         self.main_app.stage3_ui()
         
     ### STORE BUTTON
     def store_metadata(self):
         """Delegate the storing of metadata and GUI updating to 2 new threads."""
+        logging.info('***BEGIN STORING PHASE***')
+        self.log_gui_state()
         # Set the progress region
         self.main_app.msg_box.setText('Storing metadata')
         self.main_app.pro_bar.setMinimum(0)
@@ -202,15 +213,19 @@ class Controller():
         progress_callback.emit(0)
         while bdo.count_records(self.config_file_name, self.db_name, self.meta_table_name) < self.dataset_controller.expected_num_files:
             progress_callback.emit(bdo.count_records(self.config_file_name, self.db_name, self.meta_table_name))
+            time.sleep(1)
         progress_callback.emit(bdo.count_records(self.config_file_name, self.db_name, self.meta_table_name))
         
         # Update the text and move to the next stage
         self.main_app.msg_box.setText('Metadata stored')
+        logging.info('***END STORING PHASE***')
         self.main_app.stage4_ui()
 
     ### CALCULATE BUTTON
     def calculate_features(self):
         """Delegate the feature calculating and GUI updating to 2 new threads."""
+        logging.info('***BEGIN FEATURE CALCULATION PHASE***')
+        self.log_gui_state()
         # Set the progress region
         self.main_app.msg_box.setText('Calculating features')
         self.main_app.pro_bar.setMinimum(0)
@@ -256,15 +271,19 @@ class Controller():
         progress_callback.emit(0)
         while bdo.count_records(self.config_file_name, self.db_name, self.feat_table_name) < self.dataset_controller.expected_num_files:
             progress_callback.emit(bdo.count_records(self.config_file_name, self.db_name, self.feat_table_name))
+            time.sleep(1)
         progress_callback.emit(bdo.count_records(self.config_file_name, self.db_name, self.feat_table_name))
 
         # Update the text and move to the next stage
         self.main_app.msg_box.setText('Features calculated')
+        logging.info('***END FEATURE CALCULATION PHASE***')
         self.main_app.stage5_ui()
 
     ### LABEL BUTTON
     def label_images(self):
         """Use an app to manually label images."""
+        logging.info('***BEGIN LABELING PHASE***')
+        self.log_gui_state()
         # Set the progress region
         self.main_app.msg_box.setText('Please manually label images')
         
@@ -295,13 +314,17 @@ class Controller():
 
         # Update the text and move to the next stage
         self.main_app.msg_box.setText('Images successfully labeled')
+        logging.info('***END LABELING PHASE***')
         self.main_app.stage6_ui()
 
     ### CLASSIFICATION BUTTON
     def classification(self):
         """Performs the training of classifier and gets the accuracy of the classifier."""
+        logging.info('***BEGIN CLASSIFICATION PHASE***')
+        self.log_gui_state()
         self.classifier, accuracy = classification(self.config_file_name)
         self.main_app.msg_box.setText('Accuracy: ' + str(accuracy))
+        logging.info('***END CLASSIFICATION PHASE***')
 
     ### GUI HELPER FUNCTIONS
     def connect_buttons(self):
@@ -328,6 +351,10 @@ class Controller():
         elif os.path.exists(self.dataset_controller.filename) and os.path.isdir(self.dataset_controller.folder_name) and bdo.table_exists(self.config_file_name, self.db_name, self.feat_table_name) and bdo.table_exists(self.config_file_name, self.db_name, self.feat_table_name) and bdo.table_exists(self.config_file_name, self.db_name, self.feat_table_name):
             self.main_app.stage6_ui()
 
+    def log_gui_state(self):
+        logging.info('Text: ' + self.main_app.msg_box.text())
+        logging.info('Progress bar value: ' + str(self.main_app.pro_bar.value()))
+
 class WorkerSignals(QObject):
     """Container class for signals used by the Worker class."""
     progress = pyqtSignal(int)
@@ -351,7 +378,13 @@ class Worker(QRunnable):
     @pyqtSlot()
     def run(self):
         """Initialise the runner function with passed args, kwargs."""
-        self.fn(*self.args, **self.kwargs)
+        # self.fn(*self.args, **self.kwargs)
+        try:
+            self.fn(*self.args, **self.kwargs)
+        except:
+            traceback.print_exc()
+            exctype, value = sys.exc_info()[:2]
+            print(exctype, value)
 
 if __name__ == "__main__":
     run_app()

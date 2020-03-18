@@ -2,6 +2,7 @@
 import logging
 import sys
 from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QProgressBar, QLabel
+from PyQt5.QtCore import pyqtSlot
 
 class MainApplication(QWidget):
     """Contains GUI code for the application."""
