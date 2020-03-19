@@ -63,17 +63,19 @@ class Controller():
         self.main_app.msg_box.setText('Downloading images')
         self.main_app.pro_bar.setMinimum(0)
         self.main_app.pro_bar.setMaximum(self.dataset_controller.expected_size)
+        print(self.main_app.thread())
         
         # Create 2 workers: 1 to download and 1 to update the progress bar
         worker = Worker(self.download)
         updater = Worker(self.update)
         # Connect the updater signal to the progress bar
-        updater.signals.progress.connect(self.main_app.pro_bar.setValue)
+        updater.signals.progress.connect(self.main_app.update_pro_bar)
+        updater.signals.finished.connect(self.main_app.update_text)
         # Start the threads
         self.threadpool.start(worker)
         self.threadpool.start(updater)
 
-    def download(self, progress_callback):
+    def download(self, progress_callback, finished_callback):
         """Download the image set.
         
         Parameters
@@ -83,7 +85,7 @@ class Controller():
         """
         self.dataset_controller.get_dataset()
 
-    def update(self, progress_callback):
+    def update(self, progress_callback, finished_callback):
         """Updates the GUI's progress bar.
 
         Parameters
@@ -97,13 +99,18 @@ class Controller():
 
         # Update the progress bar with the current file size
         progress_callback.emit(0)
+        logging.info('start update progress')
+        self.log_gui_state()
         while os.path.getsize(self.dataset_controller.filename) < self.dataset_controller.expected_size:
             progress_callback.emit(os.path.getsize(self.dataset_controller.filename))
+            self.log_gui_state()
             time.sleep(1)
         progress_callback.emit(os.path.getsize(self.dataset_controller.filename))
+        self.log_gui_state()
+        logging.info('end update progress')
 
         # Update the text and move to the next stage
-        self.main_app.msg_box.setText('Image download complete')
+        finished_callback.emit('Image download complete')
         logging.info('***END DOWNLOADING PHASE***')
         self.main_app.stage2_ui()
             
@@ -121,12 +128,13 @@ class Controller():
         worker = Worker(self.unpack)
         updater = Worker(self.update_unpack)
         # Connect the updater signal to the progress bar
-        updater.signals.progress.connect(self.main_app.pro_bar.setValue)
+        updater.signals.progress.connect(self.main_app.update_pro_bar)
+        updater.signals.finished.connect(self.main_app.update_text)
         # Start the threads
         self.threadpool.start(worker)
         self.threadpool.start(updater)
 
-    def unpack(self, progress_callback):
+    def unpack(self, progress_callback, finished_callback):
         """Unpack the image set.
         
         Parameters
@@ -136,7 +144,7 @@ class Controller():
         """
         self.dataset_controller.unpack()
 
-    def update_unpack(self, progress_callback):
+    def update_unpack(self, progress_callback, finished_callback):
         """Updates the GUI's progress bar.
 
         Parameters
@@ -150,15 +158,20 @@ class Controller():
 
         # Update the progress bar with the current file count in the folder path
         progress_callback.emit(0)
+        logging.info('start unpack update progress')
+        self.log_gui_state()
         while sum([len(files) for r, d, files in os.walk(self.dataset_controller.folder_full_path)]) < self.dataset_controller.expected_num_files:
             num_files = sum([len(files) for r, d, files in os.walk(self.dataset_controller.folder_full_path)])
             progress_callback.emit(num_files)
+            self.log_gui_state()
             time.sleep(1)
         num_files = sum([len(files) for r, d, files in os.walk(self.dataset_controller.folder_full_path)])
         progress_callback.emit(num_files)
+        self.log_gui_state()
+        logging.info('end unpack update progress')
 
         # Update the text and move to the next stage
-        self.main_app.msg_box.setText('Images unpacked')
+        finished_callback.emit('Images unpacked')
         logging.info('***END UNPACKING PHASE***')
         self.main_app.stage3_ui()
         
@@ -176,12 +189,13 @@ class Controller():
         worker = Worker(self.to_db, self.columns_info, self.config_file_name, 'elements')
         updater = Worker(self.update_store)
         # Connect the updater signal to the progress bar
-        updater.signals.progress.connect(self.main_app.pro_bar.setValue)
+        updater.signals.progress.connect(self.main_app.update_pro_bar)
+        updater.signals.finished.connect(self.main_app.update_text)
         # Start the threads
         self.threadpool.start(worker)
         self.threadpool.start(updater)
 
-    def to_db(self, columns_info, config_file_name, section_name, progress_callback):
+    def to_db(self, columns_info, config_file_name, section_name, progress_callback, finished_callback):
         """Store the metadata from the folder to Postgres.
         
         Parameters
@@ -197,7 +211,7 @@ class Controller():
         """
         dicom_to_db(columns_info, config_file_name, section_name)
 
-    def update_store(self, progress_callback):
+    def update_store(self, progress_callback, finished_callback):
         """Updates the GUI's progress bar.
 
         Parameters
@@ -217,7 +231,7 @@ class Controller():
         progress_callback.emit(bdo.count_records(self.config_file_name, self.db_name, self.meta_table_name))
         
         # Update the text and move to the next stage
-        self.main_app.msg_box.setText('Metadata stored')
+        finished_callback.emit('Done storing metadata')
         logging.info('***END STORING PHASE***')
         self.main_app.stage4_ui()
 
@@ -238,12 +252,13 @@ class Controller():
         worker = Worker(self.calc_feat, self.config_file_name)
         updater = Worker(self.update_calc)
         # Connect the updater signal to the progress bar
-        updater.signals.progress.connect(self.main_app.pro_bar.setValue)
+        updater.signals.progress.connect(self.main_app.update_pro_bar)
+        updater.signals.finished.connect(self.main_app.update_text)
         # Start the threads
         self.threadpool.start(worker)
         self.threadpool.start(updater)
 
-    def calc_feat(self, config_file_name, progress_callback):
+    def calc_feat(self, config_file_name, progress_callback, finished_callback):
         """Calculate the features.
         
         Parameters
@@ -255,7 +270,7 @@ class Controller():
         """
         calculate_features(config_file_name)
 
-    def update_calc(self, progress_callback):
+    def update_calc(self, progress_callback, finished_callback):
         """Updates the GUI's progress bar.
 
         Parameters
@@ -275,7 +290,7 @@ class Controller():
         progress_callback.emit(bdo.count_records(self.config_file_name, self.db_name, self.feat_table_name))
 
         # Update the text and move to the next stage
-        self.main_app.msg_box.setText('Features calculated')
+        finished_callback.emit('Done calculating features')
         logging.info('***END FEATURE CALCULATION PHASE***')
         self.main_app.stage5_ui()
 
@@ -293,14 +308,15 @@ class Controller():
         # Create 1 thread to update the progress bar as the app runs
         updater = Worker(self.check_done)
         # Connect the updater signal to the progress bar
-        updater.signals.progress.connect(self.main_app.pro_bar.setValue)
+        updater.signals.progress.connect(self.main_app.update_pro_bar)
+        updater.signals.finished.connect(self.main_app.update_text)
         # Start the thread
         self.threadpool.start(updater)
 
         # Open new window with the labeling app
         self.label_app = LabelImageApplication(self.config_file_name)
         
-    def check_done(self, progress_callback):
+    def check_done(self, progress_callback, finished_callback):
         """Updates the GUI's progress bar.
 
         Parameters
@@ -309,11 +325,14 @@ class Controller():
             Passed automatically by Worker class, so does nothing in this function.
         """
         # Continually check for the number of records in the DB table
+        progress_callback.emit(0)
         while bdo.count_records(self.config_file_name, self.db_name, self.label_table_name) < self.dataset_controller.expected_num_files:
+            progress_callback.emit(bdo.count_records(self.config_file_name, self.db_name, self.label_table_name))
             time.sleep(1)
+        progress_callback.emit(bdo.count_records(self.config_file_name, self.db_name, self.label_table_name))
 
         # Update the text and move to the next stage
-        self.main_app.msg_box.setText('Images successfully labeled')
+        finished_callback.emit('Done labeling')
         logging.info('***END LABELING PHASE***')
         self.main_app.stage6_ui()
 
@@ -323,7 +342,7 @@ class Controller():
         logging.info('***BEGIN CLASSIFICATION PHASE***')
         self.log_gui_state()
         self.classifier, accuracy = classification(self.config_file_name)
-        self.main_app.msg_box.setText('Accuracy: ' + str(accuracy))
+        self.main_app.update_text('Accuracy: ' + str(accuracy))
         logging.info('***END CLASSIFICATION PHASE***')
 
     ### GUI HELPER FUNCTIONS
@@ -358,6 +377,7 @@ class Controller():
 class WorkerSignals(QObject):
     """Container class for signals used by the Worker class."""
     progress = pyqtSignal(int)
+    finished = pyqtSignal(str)
 
 class Worker(QRunnable):
     """Flexible class that helps run threads.
@@ -373,7 +393,8 @@ class Worker(QRunnable):
         self.signals = WorkerSignals()
 
         # Add the callback to our kwargs
-        self.kwargs['progress_callback'] = self.signals.progress # Passes the progress signal to the function  
+        self.kwargs['progress_callback'] = self.signals.progress # Passes the progress signal to the function
+        self.kwargs['finished_callback'] = self.signals.finished # Passes the finished signal to the function  
 
     @pyqtSlot()
     def run(self):

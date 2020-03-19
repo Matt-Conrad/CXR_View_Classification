@@ -59,6 +59,12 @@ class MainApplication(QWidget):
 
         self.show()
 
+    def update_pro_bar(self, value):
+        self.pro_bar.setValue(value)
+
+    def update_text(self, text):
+        self.msg_box.setText(text)
+
     def stage1_ui(self):
         # User in download phase
         self.download_btn.setDisabled(False)

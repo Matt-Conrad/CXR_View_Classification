@@ -1,8 +1,9 @@
-name: cxr_view_env
+name: test_env3
 channels:
   - defaults
   - conda-forge
 dependencies:
+  - nomkl
   - python=3.7
   - psycopg2=2.8.4
   - pylint=2.4.4
@@ -16,3 +17,7 @@ dependencies:
   - pydicom=1.4.1
   - nibabel=3.0.1
   - opencv=3.4.2
+  - pip=20.0.2
+
+  # Make sure nomkl is there, then create environment, then add pyinstaller with:
+  # pip install https://github.com/pyinstaller/pyinstaller/tarball/develop
