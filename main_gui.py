@@ -14,9 +14,9 @@ class MainApplication(QWidget):
         self.fill_window()
         logging.info('Done constructing Main app')
 
-    def __del__(self):
-        """On exit of the Main app close the connection."""
-        sys.exit(0)
+    # def __del__(self):
+    #     """On exit of the Main app close the connection."""
+    #     self.close()
 
     def fill_window(self):
         """Fills the window with buttons."""

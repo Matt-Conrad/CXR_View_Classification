@@ -14,6 +14,7 @@ import DicomToDatabase.basic_db_ops as bdo
 import DicomToDatabase.config as config
 from classification import classification
 from main_gui import MainApplication
+from PyQt5.QtCore import QLibraryInfo #
 
 # Specify log file
 logging.basicConfig(filename='CXR_Classification.log', level=logging.INFO,
@@ -23,7 +24,7 @@ def run_app():
     """Run the application that guides the user through the process."""
     app = QApplication(sys.argv)
     cont = Controller()
-    sys.exit(app.exec_())
+    app.exec_()
 
 class Controller():
     """Controller class that controls the logic of the application."""
@@ -58,12 +59,10 @@ class Controller():
     def download_dataset(self):
         """Delegate the downloading and GUI updating to 2 new threads."""
         logging.info('***BEGIN DOWNLOADING PHASE***')
-        self.log_gui_state()
         # Set the progress region
         self.main_app.msg_box.setText('Downloading images')
         self.main_app.pro_bar.setMinimum(0)
         self.main_app.pro_bar.setMaximum(self.dataset_controller.expected_size)
-        print(self.main_app.thread())
         
         # Create 2 workers: 1 to download and 1 to update the progress bar
         worker = Worker(self.download)
@@ -84,6 +83,7 @@ class Controller():
             Passed automatically by Worker class, so does nothing in this function
         """
         self.dataset_controller.get_dataset()
+        config.update_config_file(self.config_file_name, 'dicom_folder', 'folder_path', self.dataset_controller.folder_full_path)
 
     def update(self, progress_callback, finished_callback):
         """Updates the GUI's progress bar.
@@ -99,15 +99,10 @@ class Controller():
 
         # Update the progress bar with the current file size
         progress_callback.emit(0)
-        logging.info('start update progress')
-        self.log_gui_state()
         while os.path.getsize(self.dataset_controller.filename) < self.dataset_controller.expected_size:
             progress_callback.emit(os.path.getsize(self.dataset_controller.filename))
-            self.log_gui_state()
             time.sleep(1)
         progress_callback.emit(os.path.getsize(self.dataset_controller.filename))
-        self.log_gui_state()
-        logging.info('end update progress')
 
         # Update the text and move to the next stage
         finished_callback.emit('Image download complete')
@@ -118,7 +113,6 @@ class Controller():
     def unpack_dataset(self):
         """Delegate the unpacking and GUI updating to 2 new threads."""
         logging.info('***BEGIN UNPACKING PHASE***')
-        self.log_gui_state()
         # Set the progress region
         self.main_app.msg_box.setText('Unpacking images')
         self.main_app.pro_bar.setMinimum(0)
@@ -158,28 +152,23 @@ class Controller():
 
         # Update the progress bar with the current file count in the folder path
         progress_callback.emit(0)
-        logging.info('start unpack update progress')
-        self.log_gui_state()
-        while sum([len(files) for r, d, files in os.walk(self.dataset_controller.folder_full_path)]) < self.dataset_controller.expected_num_files:
-            num_files = sum([len(files) for r, d, files in os.walk(self.dataset_controller.folder_full_path)])
-            progress_callback.emit(num_files)
-            self.log_gui_state()
+        while self.count_files(self.dataset_controller.folder_full_path) < self.dataset_controller.expected_num_files:
+            progress_callback.emit(self.count_files(self.dataset_controller.folder_full_path))
             time.sleep(1)
-        num_files = sum([len(files) for r, d, files in os.walk(self.dataset_controller.folder_full_path)])
-        progress_callback.emit(num_files)
-        self.log_gui_state()
-        logging.info('end unpack update progress')
+        progress_callback.emit(self.count_files(self.dataset_controller.folder_full_path))
 
         # Update the text and move to the next stage
         finished_callback.emit('Images unpacked')
         logging.info('***END UNPACKING PHASE***')
         self.main_app.stage3_ui()
         
+    def count_files(self, full_folder_path):
+        return sum([len(files) for r, d, files in os.walk(full_folder_path)])
+
     ### STORE BUTTON
     def store_metadata(self):
         """Delegate the storing of metadata and GUI updating to 2 new threads."""
         logging.info('***BEGIN STORING PHASE***')
-        self.log_gui_state()
         # Set the progress region
         self.main_app.msg_box.setText('Storing metadata')
         self.main_app.pro_bar.setMinimum(0)
@@ -239,7 +228,6 @@ class Controller():
     def calculate_features(self):
         """Delegate the feature calculating and GUI updating to 2 new threads."""
         logging.info('***BEGIN FEATURE CALCULATION PHASE***')
-        self.log_gui_state()
         # Set the progress region
         self.main_app.msg_box.setText('Calculating features')
         self.main_app.pro_bar.setMinimum(0)
@@ -298,7 +286,6 @@ class Controller():
     def label_images(self):
         """Use an app to manually label images."""
         logging.info('***BEGIN LABELING PHASE***')
-        self.log_gui_state()
         # Set the progress region
         self.main_app.msg_box.setText('Please manually label images')
         
@@ -340,7 +327,6 @@ class Controller():
     def classification(self):
         """Performs the training of classifier and gets the accuracy of the classifier."""
         logging.info('***BEGIN CLASSIFICATION PHASE***')
-        self.log_gui_state()
         self.classifier, accuracy = classification(self.config_file_name)
         self.main_app.update_text('Accuracy: ' + str(accuracy))
         logging.info('***END CLASSIFICATION PHASE***')
@@ -369,10 +355,6 @@ class Controller():
             self.main_app.stage5_ui()
         elif os.path.exists(self.dataset_controller.filename) and os.path.isdir(self.dataset_controller.folder_name) and bdo.table_exists(self.config_file_name, self.db_name, self.feat_table_name) and bdo.table_exists(self.config_file_name, self.db_name, self.feat_table_name) and bdo.table_exists(self.config_file_name, self.db_name, self.feat_table_name):
             self.main_app.stage6_ui()
-
-    def log_gui_state(self):
-        logging.info('Text: ' + self.main_app.msg_box.text())
-        logging.info('Progress bar value: ' + str(self.main_app.pro_bar.value()))
 
 class WorkerSignals(QObject):
     """Container class for signals used by the Worker class."""

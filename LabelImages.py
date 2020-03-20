@@ -10,12 +10,6 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton
 from PyQt5.QtGui import QPixmap, QImage
 from DicomToDatabase.config import config
 
-def run_app(config_file_name):
-    """Run application that helps the user label the images."""
-    app = QApplication(sys.argv)
-    ex = LabelImageApplication(config_file_name)
-    sys.exit(app.exec_())
-
 class LabelImageApplication(QWidget):
     """Contains code for the application used to assist in labeling the data."""
     def __init__(self, config_file_name):
@@ -45,8 +39,8 @@ class LabelImageApplication(QWidget):
         # # Set up GUI
         self.fill_window()
         logging.info('Done constructing Labeling app')
-
-    def __del__(self):
+        
+    def close_label_app(self):
         """On exit of the app close the connection."""
         logging.info('Attempting to close connection')
         self.close_connection()
@@ -115,7 +109,7 @@ class LabelImageApplication(QWidget):
         self.record = self.cur.fetchone()
         if self.record is None:
             logging.info('End of query, deleting labeling app')
-            self.__del__()
+            self.close_label_app()
         else:
             # Update the window title with the image count
             self.count += 1
