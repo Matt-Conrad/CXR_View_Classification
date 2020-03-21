@@ -16,10 +16,6 @@ import DicomToDatabase.config as config
 from classification import classification
 from main_gui import MainApplication
 
-# Specify log file
-logging.basicConfig(filename='CXR_Classification.log', level=logging.INFO,
-                    format='%(asctime)s %(levelname)-8s: %(message)s', datefmt='%Y-%m-%d|%H:%M:%S')
-
 def run_app():
     """Run the application that guides the user through the process."""
     app = QApplication(sys.argv)
@@ -99,13 +95,16 @@ class Controller():
 
         # Update the progress bar with the current file size
         progress_callback.emit(0)
+        self.log_gui_state('debug')
         while os.path.getsize(self.dataset_controller.filename) < self.dataset_controller.expected_size:
             progress_callback.emit(os.path.getsize(self.dataset_controller.filename))
+            self.log_gui_state('debug')
             time.sleep(1)
         progress_callback.emit(os.path.getsize(self.dataset_controller.filename))
 
         # Update the text and move to the next stage
         finished_callback.emit('Image download complete')
+        self.log_gui_state('debug')
         logging.info('***END DOWNLOADING PHASE***')
         self.main_app.stage2_ui()
             
@@ -147,18 +146,24 @@ class Controller():
             Used to emit a signal to the progress bar. Passed automatically by Worker class.
         """
         # Wait for the folder to be available before updating progress bar
+        logging.debug(self.dataset_controller.folder_full_path)
         while not os.path.isdir(self.dataset_controller.folder_full_path):
+            logging.debug('waiting')
+            time.sleep(1)
             pass
 
         # Update the progress bar with the current file count in the folder path
         progress_callback.emit(0)
+        self.log_gui_state('debug')
         while self.count_files(self.dataset_controller.folder_full_path) < self.dataset_controller.expected_num_files:
             progress_callback.emit(self.count_files(self.dataset_controller.folder_full_path))
+            self.log_gui_state('debug')
             time.sleep(1)
         progress_callback.emit(self.count_files(self.dataset_controller.folder_full_path))
 
         # Update the text and move to the next stage
         finished_callback.emit('Images unpacked')
+        self.log_gui_state('debug')
         logging.info('***END UNPACKING PHASE***')
         self.main_app.stage3_ui()
         
@@ -214,13 +219,16 @@ class Controller():
             
         # Update the progress bar with the current record count in the DB table
         progress_callback.emit(0)
+        self.log_gui_state('debug')
         while bdo.count_records(self.config_file_name, self.db_name, self.meta_table_name) < self.dataset_controller.expected_num_files:
             progress_callback.emit(bdo.count_records(self.config_file_name, self.db_name, self.meta_table_name))
+            self.log_gui_state('debug')
             time.sleep(1)
         progress_callback.emit(bdo.count_records(self.config_file_name, self.db_name, self.meta_table_name))
         
         # Update the text and move to the next stage
         finished_callback.emit('Done storing metadata')
+        self.log_gui_state('debug')
         logging.info('***END STORING PHASE***')
         self.main_app.stage4_ui()
 
@@ -360,6 +368,12 @@ class Controller():
         elif os.path.exists(self.dataset_controller.filename) and os.path.isdir(self.dataset_controller.folder_name) and bdo.table_exists(self.config_file_name, self.db_name, self.feat_table_name) and bdo.table_exists(self.config_file_name, self.db_name, self.feat_table_name) and bdo.table_exists(self.config_file_name, self.db_name, self.feat_table_name):
             self.main_app.stage6_ui()
 
+    def log_gui_state(self, debug_level):
+        """Log the state of the feedback in the GUI."""
+        if debug_level == 'debug':
+            logging.debug('Text: ' + self.main_app.msg_box.text())
+            logging.debug('Progress bar value: ' + str(self.main_app.pro_bar.value()))
+
 class WorkerSignals(QObject):
     """Container class for signals used by the Worker class."""
     progress = pyqtSignal(int)
@@ -394,4 +408,20 @@ class Worker(QRunnable):
             print(exctype, value)
 
 if __name__ == "__main__":
+    # Get log level from config file
+    log_level = config.config(filename='config.ini', section='logging')['level']
+    if log_level == 'debug':
+        log_level_obj = logging.DEBUG
+    elif log_level == 'info':
+        log_level_obj = logging.INFO
+    
+    # Remove any log handlers to make way for our logger
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
+    
+    # Set the logging
+    logging.basicConfig(filename='CXR_Classification.log', level=log_level_obj,
+                        format='%(asctime)s %(levelname)-8s: %(message)s', datefmt='%Y-%m-%d|%H:%M:%S')
+
+    # Run the application
     run_app()
