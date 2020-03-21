@@ -6,6 +6,7 @@ import traceback
 import time
 from PyQt5.QtCore import QObject, QThreadPool, QRunnable, pyqtSlot, pyqtSignal
 from PyQt5.QtWidgets import QApplication
+from PyQt5.QtGui import QIcon
 from download_dataset import DatasetController
 from DicomToDatabase.dicom_to_db import dicom_to_db
 from calculate_features import calculate_features
@@ -14,7 +15,6 @@ import DicomToDatabase.basic_db_ops as bdo
 import DicomToDatabase.config as config
 from classification import classification
 from main_gui import MainApplication
-from PyQt5.QtCore import QLibraryInfo #
 
 # Specify log file
 logging.basicConfig(filename='CXR_Classification.log', level=logging.INFO,
@@ -343,6 +343,10 @@ class Controller():
 
     def init_gui_state(self):
         """Initialize the GUI in the right stage."""
+        # Set icon
+        scriptDir = os.path.dirname(os.path.realpath(__file__))
+        self.main_app.setWindowIcon(QIcon(scriptDir + os.path.sep + 'icon.jpg'))
+
         if not os.path.exists(self.dataset_controller.filename) and not os.path.isdir(self.dataset_controller.folder_name) and not bdo.table_exists(self.config_file_name, self.db_name, self.meta_table_name): # If the TGZ hasn't been downloaded
             self.main_app.stage1_ui()
         elif os.path.exists(self.dataset_controller.filename) and not os.path.isdir(self.dataset_controller.folder_name) and not bdo.table_exists(self.config_file_name, self.db_name, self.meta_table_name):
