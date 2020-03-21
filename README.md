@@ -22,7 +22,7 @@ While this app can handle processing of all 7470 images, I also provide a subset
 
 ## Performance
 
-As seen in the paper, I am able to get an accuracy of 98.4% with the complete NLM image set. 
+Using the horizontal and vertical profile method from the paper, I am able to get an accuracy of 98.4% with the complete NLM image set, which is the same reported in the paper. Additionally, I am able to get the 90% accuracy when using the body-size ratio method, however I do not use it at the core of this application as it is much lower accuracy. 
 
 ## Testing
 
@@ -90,6 +90,7 @@ There are several usage paths that one can use. I will be providing the source c
 
 Ideas for future improvements:
  - Implement underlying algorithm as a web service so that users can pass any chest X-ray to the service
+ - Fix bugs in one of the PHOG algorithm define in the paper to improve accuracy
  - Use C++ for the algorithm to boost speed
  - Provide option to import image labels instead of labeling manually (I implemented the manual labeling because this dataset did not come with labels, so I manually labeled the dataset using this sub-app)
  - Decouple my local paths from the main.spec file
