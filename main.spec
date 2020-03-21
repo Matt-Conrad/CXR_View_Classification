@@ -4,10 +4,10 @@ block_cipher = None
 
 
 a = Analysis(['main.py'],
-             pathex=['/home/matthew/Documents/CXR_Classification', '/home/matthew/Documents/CXR_Classification/DicomToDatabase'],
+             pathex=['./DicomToDatabase'],
              binaries=[],
-             datas=[('/home/matthew/Documents/CXR_Classification/config.ini', '.'),
-                    ('/home/matthew/Documents/CXR_Classification/columns_info.json', '.')],
+             datas=[('./config.ini', '.'),
+                    ('./columns_info.json', '.')],
              hiddenimports=['sklearn.utils._cython_blas'],
              hookspath=[],
              runtime_hooks=[],
