@@ -20,6 +20,3 @@ dependencies:
   - pip:
     - PyQt5
     - https://github.com/pyinstaller/pyinstaller/tarball/develop
-
-  # Make sure nomkl is there, then create environment, then add pyinstaller with:
-  # pip install https://github.com/pyinstaller/pyinstaller/tarball/develop

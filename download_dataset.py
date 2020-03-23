@@ -20,9 +20,13 @@ class DatasetController:
     def __init__(self, url):
         # String variables file locations
         self.url = url
+        self.parent_folder = os.path.dirname(os.path.abspath(__file__)).replace('\\','/')
         self.filename = url.split("/")[-1]
+        self.filename_fullpath = self.parent_folder + '/' + self.filename
         self.folder_name = self.filename.split('.')[0]
-        self.folder_full_path = os.path.dirname(os.path.abspath(__file__)).replace('\\','/') + '/' + self.folder_name
+        self.folder_full_path = self.parent_folder + '/' + self.folder_name
+        self.columns_info_name = 'columns_info.json'
+        self.columns_info_full_path = self.parent_folder + '/' + self.columns_info_name
 
         # Automatically oad the expected size into object
         self.expected_size = EXPECTED_SIZES[self.filename]
@@ -30,21 +34,21 @@ class DatasetController:
 
     def get_dataset(self):
         """Attempt to get the dataset TGZ as many times as it takes. This one gets called by main.py"""
-        logging.info('Checking if %s already exists', self.filename)
-        if os.path.isfile(self.filename):
-            logging.info('%s already exists', self.filename)
-            logging.info('Checking if %s was downloaded properly', self.filename)
+        logging.info('Checking if %s already exists', self.filename_fullpath)
+        if os.path.isfile(self.filename_fullpath):
+            logging.info('%s already exists', self.filename_fullpath)
+            logging.info('Checking if %s was downloaded properly', self.filename_fullpath)
             
-            if os.path.getsize(self.filename) == self.expected_size:
-                logging.info('%s was downloaded properly', self.filename)
+            if os.path.getsize(self.filename_fullpath) == self.expected_size:
+                logging.info('%s was downloaded properly', self.filename_fullpath)
             else:
-                logging.warning('%s was NOT downloaded properly', self.filename)
-                logging.info('Removing %s', self.filename)
-                os.remove(self.filename)
-                logging.info('Successfully removed %s', self.filename)
+                logging.warning('%s was NOT downloaded properly', self.filename_fullpath)
+                logging.info('Removing %s', self.filename_fullpath)
+                os.remove(self.filename_fullpath)
+                logging.info('Successfully removed %s', self.filename_fullpath)
                 self.download_dataset()
         else:
-            logging.info('%s does not exist', self.filename)
+            logging.info('%s does not exist', self.filename_fullpath)
             self.download_dataset()
 
     def download_dataset(self):
@@ -56,7 +60,7 @@ class DatasetController:
         logging.info('Downloading dataset from %s', self.url)
         with requests.get(self.url, stream=True) as r:
             r.raise_for_status() # Raise error if something goes wrong with connection
-            with open(self.filename, 'wb') as f:
+            with open(self.filename_fullpath, 'wb') as f:
                 for chunk in r.iter_content(chunk_size=8192):
                     if chunk: # filter out keep-alive new chunks
                         f.write(chunk)
@@ -65,7 +69,7 @@ class DatasetController:
 
     def unpack(self):
         """Unpack the dataset from the TGZ and put it in a folder."""
-        logging.info('Unpacking dataset from %s', self.filename)
-        tf = tarfile.open(self.filename)
-        tf.extractall(path='./' + self.folder_name)
+        logging.info('Unpacking dataset from %s', self.filename_fullpath)
+        tf = tarfile.open(self.filename_fullpath)
+        tf.extractall(path=self.folder_full_path)
         logging.info('Done unpacking')

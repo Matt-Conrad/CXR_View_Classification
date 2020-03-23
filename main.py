@@ -29,7 +29,7 @@ class Controller():
 
         # String variables
         self.config_file_name = 'config.ini'
-        self.columns_info = 'columns_info.json'
+        
         # self.url = 'https://openi.nlm.nih.gov/imgs/collections/NLMCXR_dcm.tgz'
         self.url = 'https://github.com/Matt-Conrad/CXR_View_Classification/raw/master/NLMCXR_subset_dataset.tgz'
 
@@ -90,17 +90,17 @@ class Controller():
             Used to emit a signal to the progress bar. Passed automatically by Worker class.
         """
         # Wait for the file to start downloading before updating progress bar
-        while not os.path.exists(self.dataset_controller.filename):
+        while not os.path.exists(self.dataset_controller.filename_fullpath):
             pass
 
         # Update the progress bar with the current file size
         progress_callback.emit(0)
         self.log_gui_state('debug')
-        while os.path.getsize(self.dataset_controller.filename) < self.dataset_controller.expected_size:
-            progress_callback.emit(os.path.getsize(self.dataset_controller.filename))
+        while os.path.getsize(self.dataset_controller.filename_fullpath) < self.dataset_controller.expected_size:
+            progress_callback.emit(os.path.getsize(self.dataset_controller.filename_fullpath))
             self.log_gui_state('debug')
             time.sleep(1)
-        progress_callback.emit(os.path.getsize(self.dataset_controller.filename))
+        progress_callback.emit(os.path.getsize(self.dataset_controller.filename_fullpath))
 
         # Update the text and move to the next stage
         finished_callback.emit('Image download complete')
@@ -146,7 +146,6 @@ class Controller():
             Used to emit a signal to the progress bar. Passed automatically by Worker class.
         """
         # Wait for the folder to be available before updating progress bar
-        logging.debug(self.dataset_controller.folder_full_path)
         while not os.path.isdir(self.dataset_controller.folder_full_path):
             logging.debug('waiting')
             time.sleep(1)
@@ -180,7 +179,7 @@ class Controller():
         self.main_app.pro_bar.setMaximum(self.dataset_controller.expected_num_files)
 
         # Create 2 workers: 1 to store and 1 to update the progress bar
-        worker = Worker(self.to_db, self.columns_info, self.config_file_name, 'elements')
+        worker = Worker(self.to_db, self.dataset_controller.columns_info_full_path, self.config_file_name, 'elements')
         updater = Worker(self.update_store)
         # Connect the updater signal to the progress bar
         updater.signals.progress.connect(self.main_app.update_pro_bar)
@@ -242,7 +241,7 @@ class Controller():
         self.main_app.pro_bar.setMaximum(self.dataset_controller.expected_num_files)
 
         # Add table to DB
-        bdo.add_table_to_db(self.feat_table_name, self.columns_info, self.config_file_name, 'features_list')
+        bdo.add_table_to_db(self.feat_table_name, self.dataset_controller.columns_info_full_path, self.config_file_name, 'features_list')
 
         # Create 2 workers: 1 to calculate features and 1 to update the progress bar
         worker = Worker(self.calc_feat, self.config_file_name)
@@ -298,7 +297,7 @@ class Controller():
         self.main_app.msg_box.setText('Please manually label images')
         
         # Add table to DB
-        bdo.add_table_to_db(self.label_table_name, self.columns_info, self.config_file_name, 'labels')
+        bdo.add_table_to_db(self.label_table_name, self.dataset_controller.columns_info_full_path, self.config_file_name, 'labels')
 
         # Create 1 thread to update the progress bar as the app runs
         updater = Worker(self.check_done)
@@ -352,8 +351,7 @@ class Controller():
     def init_gui_state(self):
         """Initialize the GUI in the right stage."""
         # Set icon
-        scriptDir = os.path.dirname(os.path.realpath(__file__))
-        self.main_app.setWindowIcon(QIcon(scriptDir + os.path.sep + 'icon.jpg'))
+        self.main_app.setWindowIcon(QIcon(self.dataset_controller.parent_folder + '/' + 'icon.jpg'))
 
         if not os.path.exists(self.dataset_controller.filename) and not os.path.isdir(self.dataset_controller.folder_name) and not bdo.table_exists(self.config_file_name, self.db_name, self.meta_table_name): # If the TGZ hasn't been downloaded
             self.main_app.stage1_ui()
