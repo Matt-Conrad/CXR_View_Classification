@@ -16,6 +16,11 @@ import DicomToDatabase.config as config
 from classification import classification
 from main_gui import MainApplication
 
+SOURCE_URL = {
+        'subset': 'https://github.com/Matt-Conrad/CXR_View_Classification/raw/master/NLMCXR_subset_dataset.tgz',
+        'full_set': 'https://openi.nlm.nih.gov/imgs/collections/NLMCXR_dcm.tgz'
+    }
+
 def run_app():
     """Run the application that guides the user through the process."""
     app = QApplication(sys.argv)
@@ -28,10 +33,9 @@ class Controller():
         logging.info('***INITIALIZING CONTROLLER***')
 
         # String variables
+        self.dataset = 'full_set'
         self.config_file_name = 'config.ini'
-        
-        # self.url = 'https://openi.nlm.nih.gov/imgs/collections/NLMCXR_dcm.tgz'
-        self.url = 'https://github.com/Matt-Conrad/CXR_View_Classification/raw/master/NLMCXR_subset_dataset.tgz'
+        self.url = SOURCE_URL[self.dataset]
 
         # Object variables
         self.main_app = MainApplication()
@@ -58,7 +62,8 @@ class Controller():
         # Set the progress region
         self.main_app.msg_box.setText('Downloading images')
         self.main_app.pro_bar.setMinimum(0)
-        self.main_app.pro_bar.setMaximum(self.dataset_controller.expected_size)
+        self.main_app.pro_bar.setMaximum(self.get_tgz_max())
+        logging.debug('Max: ' + self.get_tgz_max())
         
         # Create 2 workers: 1 to download and 1 to update the progress bar
         worker = Worker(self.download)
@@ -96,18 +101,38 @@ class Controller():
         # Update the progress bar with the current file size
         progress_callback.emit(0)
         self.log_gui_state('debug')
-        while os.path.getsize(self.dataset_controller.filename_fullpath) < self.dataset_controller.expected_size:
-            progress_callback.emit(os.path.getsize(self.dataset_controller.filename_fullpath))
+        while self.get_tgz_size() < self.get_tgz_max():
+            progress_callback.emit(self.get_tgz_size())
             self.log_gui_state('debug')
             time.sleep(1)
-        progress_callback.emit(os.path.getsize(self.dataset_controller.filename_fullpath))
+        progress_callback.emit(self.get_tgz_size())
 
         # Update the text and move to the next stage
         finished_callback.emit('Image download complete')
         self.log_gui_state('debug')
         logging.info('***END DOWNLOADING PHASE***')
         self.main_app.stage2_ui()
-            
+
+    def get_tgz_size(self):
+        """Calculates the size of the TGZ file for the purpose of setting the progress bar value."""
+        if self.dataset == 'full_set':
+            # Dividing by 100 because the expected size of this TGZ is larger than QProgressBar accepts
+            return int(os.path.getsize(self.dataset_controller.filename_fullpath) / 100)
+        elif self.dataset == 'subset':
+            return os.path.getsize(self.dataset_controller.filename_fullpath)
+        else:
+            raise ValueError('Value must be one of the keys in SOURCE_URL')
+
+    def get_tgz_max(self):
+        """Calculates the size of the TGZ file max for the purpose of setting the progress bar max."""
+        if self.dataset == 'full_set':
+            # Dividing by 100 because the expected size of this TGZ is larger than QProgressBar accepts
+            return int(self.dataset_controller.expected_size / 100)
+        elif self.dataset == 'subset':
+            return self.dataset_controller.expected_size
+        else:
+            raise ValueError('Value must be one of the keys in SOURCE_URL')
+
     ### UNPACK BUTTON
     def unpack_dataset(self):
         """Delegate the unpacking and GUI updating to 2 new threads."""
@@ -154,20 +179,21 @@ class Controller():
         # Update the progress bar with the current file count in the folder path
         progress_callback.emit(0)
         self.log_gui_state('debug')
-        while self.count_files(self.dataset_controller.folder_full_path) < self.dataset_controller.expected_num_files:
-            progress_callback.emit(self.count_files(self.dataset_controller.folder_full_path))
+        while self.count_DCMs(self.dataset_controller.folder_full_path) < self.dataset_controller.expected_num_files:
+            progress_callback.emit(self.count_DCMs(self.dataset_controller.folder_full_path))
             self.log_gui_state('debug')
             time.sleep(1)
-        progress_callback.emit(self.count_files(self.dataset_controller.folder_full_path))
+        progress_callback.emit(self.count_DCMs(self.dataset_controller.folder_full_path))
+        logging.debug('Final count: ' + str(self.count_DCMs(self.dataset_controller.folder_full_path)))
 
         # Update the text and move to the next stage
         finished_callback.emit('Images unpacked')
         self.log_gui_state('debug')
         logging.info('***END UNPACKING PHASE***')
         self.main_app.stage3_ui()
-        
-    def count_files(self, full_folder_path):
-        return sum([len(files) for r, d, files in os.walk(full_folder_path)])
+
+    def count_DCMs(self, full_folder_path):
+        return sum([len(files) for r, d, files in os.walk(full_folder_path) if any(item.endswith('.dcm') for item in files)])
 
     ### STORE BUTTON
     def store_metadata(self):

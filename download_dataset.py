@@ -12,7 +12,7 @@ EXPECTED_SIZES = {
 
 EXPECTED_NUM_FILES = {
         'NLMCXR_subset_dataset.tgz': 10,
-        'NLMCXR_dcm.tgz': 1939 #3852 cut in half for testing purposes
+        'NLMCXR_dcm.tgz': 7470
     }
 
 class DatasetController:
