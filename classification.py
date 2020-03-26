@@ -1,10 +1,12 @@
 """Contains function for training and predicting with the classifier."""
 import logging
+import pickle
 import numpy as np
 import psycopg2
 import psycopg2.extras
 from sklearn.model_selection import KFold, cross_val_score
 from sklearn import svm
+from joblib import dump
 from DicomToDatabase.config import config
 
 def classification(config_file_name):
@@ -50,7 +52,7 @@ def classification(config_file_name):
 
         # Put all the labels into a list
         label_table_name = config(filename=config_file_name, section='table_info')['label_table_name']
-        sql_query = 'SELECT image_view FROM ' + label_table_name + ' ORDER BY file_name ASC;'
+        sql_query = 'SELECT image_view FROM ' + label_table_name + ' ORDER BY file_path ASC;'
         cur.execute(sql_query)
         records = cur.fetchall()
         y = [record[0] for record in records]
@@ -73,4 +75,5 @@ def classification(config_file_name):
 
     accuracy = np.mean(scores)
     logging.info('Done classifying: %s', str(accuracy))
+    dump(clf, 'full_set_classifier.joblib') 
     return clf, accuracy

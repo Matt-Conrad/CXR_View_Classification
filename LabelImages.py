@@ -1,5 +1,6 @@
 """Contains the code for the app that helps the user label the data."""
 import logging
+import os
 import sys
 import psycopg2
 import psycopg2.extras
@@ -171,7 +172,7 @@ class LabelImageApplication(QWidget):
         """
         # Create the SQL query to be used
         label_table_name = config(filename=self.config_file_name, section='table_info')['label_table_name']
-        sql_query = 'INSERT INTO ' + label_table_name + ' (file_path, label) VALUES (\'' + self.record['file_path'] + '\', \'' + decision + '\');'
+        sql_query = 'INSERT INTO ' + label_table_name + ' (file_name, file_path, image_view) VALUES (\'' + self.record['file_path'].split(os.sep)[-1] + '\', \'' + self.record['file_path'] + '\', \'' + decision + '\');'
         try:
             logging.debug('Storing label')
             # create table one by one
