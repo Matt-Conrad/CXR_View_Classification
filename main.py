@@ -33,8 +33,8 @@ class Controller():
         logging.info('***INITIALIZING CONTROLLER***')
 
         # String variables
-        self.dataset = 'full_set'
         self.config_file_name = 'config.ini'
+        self.dataset = config.config(filename=self.config_file_name, section='dataset_info')['dataset']
         self.url = SOURCE_URL[self.dataset]
 
         # Object variables
@@ -63,7 +63,6 @@ class Controller():
         self.main_app.msg_box.setText('Downloading images')
         self.main_app.pro_bar.setMinimum(0)
         self.main_app.pro_bar.setMaximum(self.get_tgz_max())
-        logging.debug('Max: ' + self.get_tgz_max())
         
         # Create 2 workers: 1 to download and 1 to update the progress bar
         worker = Worker(self.download)
@@ -320,21 +319,33 @@ class Controller():
         """Use an app to manually label images."""
         logging.info('***BEGIN LABELING PHASE***')
         # Set the progress region
-        self.main_app.msg_box.setText('Please manually label images')
-        
-        # Add table to DB
-        bdo.add_table_to_db(self.label_table_name, self.dataset_controller.columns_info_full_path, self.config_file_name, 'labels')
+        self.main_app.pro_bar.setMinimum(0)
+        self.main_app.pro_bar.setMaximum(self.dataset_controller.expected_num_files)
+        if self.dataset == 'subset':
+            # Set the progress region
+            self.main_app.msg_box.setText('Please manually label images')
+            
+            # Add table to DB
+            bdo.add_table_to_db(self.label_table_name, self.dataset_controller.columns_info_full_path, self.config_file_name, 'labels')
 
-        # Create 1 thread to update the progress bar as the app runs
-        updater = Worker(self.check_done)
-        # Connect the updater signal to the progress bar
-        updater.signals.progress.connect(self.main_app.update_pro_bar)
-        updater.signals.finished.connect(self.main_app.update_text)
-        # Start the thread
-        self.threadpool.start(updater)
+            # Create 1 thread to update the progress bar as the app runs
+            updater = Worker(self.check_done)
+            # Connect the updater signal to the progress bar
+            updater.signals.progress.connect(self.main_app.update_pro_bar)
+            updater.signals.finished.connect(self.main_app.update_text)
+            # Start the thread
+            self.threadpool.start(updater)
 
-        # Open new window with the labeling app
-        self.label_app = LabelImageApplication(self.config_file_name)
+            # Open new window with the labeling app
+            self.label_app = LabelImageApplication(self.config_file_name)
+        elif self.dataset == 'full_set':
+            bdo.import_image_label_data(self.label_table_name, self.dataset_controller.parent_folder + '/' + 'image_labels.csv', self.dataset_controller.columns_info_full_path, self.config_file_name, 'labels')
+            logging.info('***END LABELING PHASE***')
+            self.main_app.update_text('Done importing labels')
+            self.main_app.update_pro_bar(self.dataset_controller.expected_num_files)
+            self.main_app.stage6_ui()
+        else:
+            raise ValueError('Value must be one of the keys in SOURCE_URL')
         
     def check_done(self, progress_callback, finished_callback):
         """Updates the GUI's progress bar.

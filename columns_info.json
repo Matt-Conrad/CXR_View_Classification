@@ -55,7 +55,7 @@
         }
     },
     "labels": {
-        "label": {
+        "image_view": {
             "db_datatype": "CHAR(1)",
             "calculation_only": false
         }

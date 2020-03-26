@@ -1,5 +1,6 @@
 """Contains function that implements 'Orientation Correction for Chest Images'."""
 import logging
+import os
 # import time
 import numpy as np
 import pydicom as pdm
@@ -95,8 +96,8 @@ def store(config_file_name, file_path, ratio, hor_profile, vert_profile, pyr_hog
         conn = psycopg2.connect(**params)
         cur = conn.cursor()
         # Create the SQL query to be used
-        sql_query = 'INSERT INTO ' + out_table_name + ' (file_path, body_size_ratio, hor_profile, vert_profile, phog) VALUES (%s, %s, %s, %s, %s);'
-        values = (file_path, ratio, hor_profile.tolist(), vert_profile.tolist(), pyr_hog.tolist())
+        sql_query = 'INSERT INTO ' + out_table_name + ' (file_name, file_path, body_size_ratio, hor_profile, vert_profile, phog) VALUES (%s, %s, %s, %s, %s, %s);'
+        values = (file_path.split(os.sep)[-1], file_path, ratio, hor_profile.tolist(), vert_profile.tolist(), pyr_hog.tolist())
         # create table one by one
         cur.execute(sql_query, values)
 

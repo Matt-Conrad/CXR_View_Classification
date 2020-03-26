@@ -50,7 +50,7 @@ def classification(config_file_name):
 
         # Put all the labels into a list
         label_table_name = config(filename=config_file_name, section='table_info')['label_table_name']
-        sql_query = 'SELECT label FROM ' + label_table_name + ' ORDER BY file_path ASC;'
+        sql_query = 'SELECT image_view FROM ' + label_table_name + ' ORDER BY file_name ASC;'
         cur.execute(sql_query)
         records = cur.fetchall()
         y = [record[0] for record in records]
