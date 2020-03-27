@@ -69,12 +69,15 @@ There are several usage paths that one can use. I will be providing the source c
     \password postgres
     ```
     Confirm the password, and now you have a working version of PostgreSQL on your computer.
- 5. The last step before running the application is to create and set the config.ini file
-    1. Duplicate the *config_template.ini* file and name the duplicate to *config.ini*
-    2. (OPTIONAL) Change the default configuration if you wish. The *postgresql* section contains the server host and port, desired name of the DB to be created, as well as user and password. The template is currently set up to create a DB named "db" on the localhost, so you can leave it as is. Leave the *dicom_folder* section alone as it gets filled in automatically as the app goes through the steps. You can also rename the tables that will be created.
+ 5. The last step before running the application is to optionally change the settings of the config.ini file
+    1. (OPTIONAL) Change the default configuration if you wish. \
+      - The *postgresql* section contains the server host and port, desired name of the DB to be created, as well as user and password. The template is currently set up to create a DB named "db" on the localhost, so you can leave it as is or rename it if you wish. 
+      - Leave the *dicom_folder* section alone as it gets filled in automatically as the app goes through the steps. You can also rename the tables that will be created.
+      - You can leave the *table_info* section alone, or if you want to change the names of the tables you can here
+      - Feel free to leave the *logging* section alone. For more detail, go down to the *Logging* section of this README
+      - Currently the code is set up to operate with the subset. If you would like to switch to the full image set, you must change the *dataset_info* section to either be "full_set" or "subset"
  6. If you are trying to use the dataset subset then you must delete the *NLMCXR_subset_dataset.tgz* from the cloned git repository since the TGZ comes with the code. In order to see the entire workflow, you must delete it from your local repository so that the GUI will start from the beginning of the process. 
- 7. Currently the code is set up to operate with the subset. If you would like to switch to the full image set, you must go into the *main.py* file and uncomment line 33 and comment line 34.
- 8. Run the app using the following command: ```python main.py```
+ 7. Run the app using the following command: ```python main.py```
 
  ### Using the folder-based executable
  This executable was created with PyInstaller by providing my *folder.spec* file in the following command: ```pyinstaller folder.spec```. You can find the executable if you unpack the *dist_folder.zip* from the Github repository. Here are the steps for running it:
