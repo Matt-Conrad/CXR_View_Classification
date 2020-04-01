@@ -74,6 +74,7 @@ def classification(config_file_name):
     scores = cross_val_score(clf, X, y, cv=kf, scoring='accuracy')
 
     accuracy = np.mean(scores)
+    # clf.fit(X, y)
     logging.info('Done classifying: %s', str(accuracy))
-    dump(clf, 'full_set_classifier.joblib') 
+    # dump(clf, 'full_set_classifier.joblib') 
     return clf, accuracy
