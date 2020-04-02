@@ -1,5 +1,5 @@
+"""Contains the code that controls the web interfaces."""
 import os
-import base64
 import logging
 from flask import Flask, render_template, abort, jsonify, request
 from joblib import load
@@ -17,19 +17,20 @@ def how_to():
 @app.route("/api/classify", methods=["POST"])
 def classify():
     # Deny requests that we don't care about
-    if not request.json or not 'dicom_data' in request.json:
-        abort(400)
-
-    # Decode the ASCII into pure binary
-    string_ascii = request.json["dicom_data"]
-    string_b64 = string_ascii.encode("ascii")
-    string_bin = base64.b64decode(string_b64)
+    if not request.data:
+        abort(400, "No data provided")
+    
+    if "Content-Type" not in request.headers:
+        abort(400, "No content-type header")
+    
+    if request.headers["Content-Type"] != "application/octet-stream":
+        abort(400, "Content-Type is not application/octet-stream")
 
     # Save the binary as a DCM file, read it into a pydicom object, delete DCM file
     temp_file = "./temp.dcm"
 
     with open(temp_file, "wb") as out_file:
-        out_file.write(string_bin)
+        out_file.write(request.data)
 
     dcm = pdm.dcmread(temp_file)
     os.remove(temp_file)
@@ -129,5 +130,5 @@ def preprocessing(dcm_image):
     return image_downsize
 
 if __name__ == "__main__":
-    app.run() # Show to only localhost
-    # app.run(host='0.0.0.0') # Show to other computers on network
+    # app.run() # Show to only localhost
+    app.run(host='0.0.0.0') # Show to other computers on network

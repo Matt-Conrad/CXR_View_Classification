@@ -27,12 +27,11 @@ plt.show()
 # Convert DCM file as follows: binary => b64 => ASCII
 with open(full_path, "rb") as image_file:
     encoded_string_bin = image_file.read()
-    encoded_string_b64 = base64.b64encode(encoded_string_bin)
-encoded_string_ascii = encoded_string_b64.decode("ascii")
 
 # Send ASCII version of file in a JSON over HTTP
-url = "http://127.0.0.1:5000/api/classify"
-send_headers = {"Content-Type": "application/json"}
-response = requests.post(url, json={"dicom_data": encoded_string_ascii}, headers=send_headers)
+url = "http://127.0.0.1:80/api/classify"
+send_headers = {"Content-Type": "application/octet-stream"}
+response = requests.post(url, data=encoded_string_bin, headers=send_headers)
 
-print("Classification: " + response.json()["result"])
+if response.status_code == 200:
+    print("Classification: " + response.json()["result"])

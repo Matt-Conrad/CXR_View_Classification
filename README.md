@@ -1,10 +1,11 @@
 # Implementation of Chest X-ray Image View Classification
-This project is an implementation of the paper "Chest X-ray Image View Classification" by Xue et al found [here](https://www.researchgate.net/publication/283778178_Chest_X-ray_Image_View_Classification). Currently, the implementation is in the form of an application that allows a user to interact with a GUI to go through the all of the steps including: downloading, storing metadata, extracting features, data labaling, classifier training, and classification.  
+This project is an implementation of the paper "Chest X-ray Image View Classification" by Xue et al found [here](https://www.researchgate.net/publication/283778178_Chest_X-ray_Image_View_Classification). Currently, the implementation is in the form of an application that allows a user to interact with a GUI to go through the all of the steps including: downloading, storing metadata, extracting features, data labaling, classifier training, and validation. Additionally, the trained model is provided as a RESTful web API.
 
 ## Motivation
-The inspiration for this project arises from my experience in the medical imaging industry. A classifier such as this would be useful in industry. One use case being a lot of medical imaging software relies on DICOM tags such as laterality (0020,0060), view position (0018,5101), and patient orientation (0020,0020) to perform some action. However, this tag is not always there such as in the image set from [NLM History of Medicine](https://openi.nlm.nih.gov/faq#collection), which is the image set used in the cited paper. Thus, this automatic classifier can be used to label all of these images so that the medical software relying on these DICOM tags can perform their duty.
+The inspiration for this project arises from my experience in the medical imaging industry. A classifier such as this would be useful in industry. One use case being a lot of medical imaging software relies on DICOM tags such as laterality (0020,0060), view position (0018,5101), and patient orientation (0020,0020) to perform some action. However, this tag is not always there or has inaccurate values such as in the image set from [NLM History of Medicine](https://openi.nlm.nih.gov/faq#collection), which is the image set used in the cited paper. Thus, this automatic classifier can be used to label all of these images so that the medical software relying on these DICOM tags can perform their duty.
  
 Another purpose of implementing this paper was to get experience with and learn about a wide range of technologies. Using this paper's algorithm as the core of the application, I utilized the following technologies to build the application:
+ - Flask, Gunicorn, and Nginx to deploy the model as a RESTful web API to a local virtual machine
  - PostgreSQL to organize the metadata of all of the downloaded images
  - QT to provide a simple multi-threaded user interface
  - Various imaging technologies (see *Notable Python libraries used* section) for implementing the algorithm itself
@@ -19,14 +20,14 @@ As stated, I used the same data set that was in the paper ([NLM Image Set](https
 While this app can handle processing of all 7470 images, I also provide a subset (10 images) of the dataset in the *NLMCXR_subset_dataset.tgz*. Altogether, the entire NLM image set is 117.4GB unpacked and 80.7GB packed, so the subset is preferrable. Currently the code is set up to operate with the subset. If you would like to switch to the full image set, you must go into the *main.py* file and uncomment line 33 and comment line 34.
 
 ## Performance
-Using the horizontal and vertical profile method from the paper, I am able to get an accuracy of 98.4% with the complete NLM image set, which is the same reported in the paper. Additionally, I am able to get the 90% accuracy when using the body-size ratio method, however I do not use it at the core of this application as it is much lower accuracy. 
+Using the horizontal and vertical profile method from the paper, I am able to get an accuracy of 98.4% with the complete NLM image set, which is the same reported in the paper. Additionally, I am able to get the 90% accuracy when using the body-size ratio method, however I do not use it at the core of this application as it is a much lower accuracy. 
 
 ## Testing
 Workflow testing of the app and executables was done on the following environments:
    - Windows 10 laptop with Intel i7-4700MQ CPU and NVIDIA GeForce GT 755M GPU (Only source code testing done)
    - Fresh Ubuntu 18.04 virtual machine using VMware Workstation Player 15 on top of an Ubuntu 18.04 Desktop with AMD Ryzen 2600 CPU and NVIDIA RTX 2070 Super GPU
 
-## Notable Python libraries used
+## Notable packages used
  - psycopg2 for working with PostgreSQL
  - numpy for most calculations
  - scipy, scikit-image for feature calculation
@@ -34,8 +35,10 @@ Workflow testing of the app and executables was done on the following environmen
  - opencv for image preprocessing
  - pyqt5 for GUI development and multi-threading
  - pyinstaller for packaging application
+ - flask for designing the web API and web app
+ - gunicorn and nginx for deploying flask app
 
-## Usage
+## Desktop App Usage
 There are several usage paths that one can use. I will be providing the source code, a way to compile a folder-based executable, and a single executable. NOTE: According to PyInstaller, since I compiled these executables on Ubuntu 18.04 only Linux users can execute the executables. I will need to compile the source code on other OSs to provide those executables. 
  
  ### Using source code
@@ -93,6 +96,66 @@ There are several usage paths that one can use. I will be providing the source c
  3. Change the *config.ini* file in the *dist_one_file* folder as explained step 5 from the source code section
  4. Execute the *main* executable and go through the steps.
 
+## Web API and Web App Usage
+There are several ways to deploy the web interfaces: standalone built-in Flask server, standalone Gunicorn server running the Flask app, and an Nginx/Gunicorn server pair where the Nginx server works as a reverse proxy for the Gunicorn server running Flask (recommended). Below I discuss the preparation required for each path, then I provide the following instructions
+
+ ### Preparation for all ways
+ Here are the steps for deploying the model from the source code:
+ 1. Clone the git repository onto your computer (note this Git repository has 2 Git submodules so we need to take that into account): 
+    ```
+    git clone --recurse-submodules -j8 https://github.com/Matt-Conrad/CXR_View_Classification.git
+    ```
+ 2. If you don't already have it, install anaconda using [these instructions](https://docs.anaconda.com/anaconda/install/)
+ 3. Run the following commands to build and enter the conda environment. Note: The environment.yml has *nomkl* library in it, which I needed for my AMD-based computer. If you're on Windows, you may need to remove that library to get this environment installed: 
+    ```
+    conda env create -f environment.yml
+    conda activate cxr_view_env
+    ```
+
+ ### Standalone Built-in Flask Server
+ 4. Open a terminal in the cloned repository and run the following command to add/update the following OS (in this case Linux) environment variables. Note: If you are on Windows, you need to replace the "export" keyword with "set":
+    ```
+    export FLASK_APP=api_controller
+    ```
+ 5. To run the server so that only the host computer has access to it, use the following command: ```flask run```. To run the server so that other computers on the local network have access, use the following command: ```flask run --host=0.0.0.0```
+ 6. You now have a running standalone built-in Flask server. Use the send_script.py script to send a DCM file over HTTP to port **5000** on the localhost (127.0.0.1) if you didn't provide the *host* parameter in step 5, the IP address of the host if you did provide *host*. Note: This is a development server and is not recommended to be used as a production server.
+
+ ### Standalone Gunicorn Server Running The Flask App:
+ 4. Open a terminal in the cloned repository and run the following command: ```gunicorn api_controller:app```.
+ 5. You now have a running standalone Gunicorn server running the Flask app. Use the send_script.py script to send a DCM file over HTTP to port **8000** on the localhost (127.0.0.1). Note: Since Gunicorn is easily susceptible to DOS attacks, it is recommended to run Gunicorn behind a reverse proxy server which is why I only instruct to send to the localhost here. 
+
+ ### Nginx/Gunicorn server pair (Recommended)
+ 4. Open a terminal in the cloned repository and run the following command to run Flask app on the Gunicorn server in the background as a daemon: ```gunicorn -D api_controller:app```.
+ 5. Now we need to set up the Nginx server If you don't already have Nginx, install it with the following commands:
+    ```
+    sudo apt-get update
+    sudo apt-get install nginx
+    ```
+ 6. Remove the file ```/etc/nginx/sites-available/default``` and replace it with a file named the exact same, but with the following content:
+    ```
+    server {
+       listen 80;
+       server_name cxr_classifier;
+       access_log  /var/log/nginx/cxr_classifier.log;
+
+       location / {
+          proxy_pass http://127.0.0.1:8000;
+          proxy_set_header Host $host;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+       }
+    }
+    ```
+ 7. In order to send a DICOM file (which is about 10MB) over HTTP, we need to remove Nginx's request size cap. Add the following entry to the ```http``` section of the ```/etc/nginx/nginx.conf``` file:
+    ```
+    client_max_body_size 0;
+    ```
+ 8. Start and then restart Nginx server:
+    ```
+    sudo service nginx start
+    sudo service nginx restart
+    ```
+ 9. You now have a running Nginx/Gunicorn server pair running the Flask app. In this setup, the Nginx server is operating on port **80** and accepts requests from the localhost or other computers on the network. The Nginx server will pass requests to the Gunicorn server on port **8000** of the same computer, but this Gunicorn server is not directly accessible to computers outside the localhost. Use the send_script.py script to send a DCM file over HTTP to port **80** of the target computer.  
+
 ## Troubleshooting
  ### Logs
  When the source code or executables are run, they produce a log called the *CXR_Classification.log*. This log contains messages that alert the user of where it is at in the code. The *config.ini* file contains the setting, *level*, under the *logging* section for the level of logging the user would like to see in the log. Currently, this can be set to "info" or "debug". The default for this setting is "info".
@@ -105,12 +168,15 @@ There are several usage paths that one can use. I will be providing the source c
 
 ## Future work
 Ideas for future improvements:
- - Implement underlying algorithm as a web service so that users can pass any chest X-ray to the service
- - Fix bugs in one of the PHOG algorithm define in the paper to improve accuracy
- - Use C++ for the algorithm to boost speed
- - Provide option to import image labels instead of labeling manually (I implemented the manual labeling because this dataset did not come with labels, so I manually labeled the dataset using this sub-app)
+ - Provide an installer and configuration for the Gunicorn and Nginx server pair
+ - Implement a HTML user interface for the web API
+ - Use C++ for the algorithm
  - Add executables for other OSs
  - Make it so that nomkl only installs if you have AMD processor
  - Convert the Git submodules to Python packages
  - Use pytest for unit testing
+ - Find a way to remove pre-installed Postgres dependency
  - Make image set source URL more visible to user
+ - Fix bugs in one of the PHOG algorithm define in the paper to improve accuracy
+ - Remove anaconda dependency
+ - Implement DICOM compliant HTTP transfer of DICOM files
