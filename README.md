@@ -1,42 +1,35 @@
 # Implementation of Chest X-ray Image View Classification
-This project is an implementation of the paper "Chest X-ray Image View Classification" by Xue et al found [here](https://www.researchgate.net/publication/283778178_Chest_X-ray_Image_View_Classification). Currently, the implementation is in the form of an application that allows a user to interact with a GUI to go through the all of the steps including: downloading, storing metadata, extracting features, data labaling, classifier training, and validation. Additionally, the trained model is provided as a RESTful web API.
+This project is an implementation of the paper "Chest X-ray Image View Classification" by Xue et al found [here](https://www.researchgate.net/publication/283778178_Chest_X-ray_Image_View_Classification). Currently, the implementation is in the form of an application that allows a user to interact with a GUI to go through the all of the steps including: downloading, storing metadata, extracting features, data labaling, cross-validation, and classifier training. Additionally, the trained model is also deployed as a RESTful web API.
 
 ## Motivation
-The inspiration for this project arises from my experience in the medical imaging industry. A classifier such as this would be useful in industry. One use case being a lot of medical imaging software relies on DICOM tags such as laterality (0020,0060), view position (0018,5101), and patient orientation (0020,0020) to perform some action. However, this tag is not always there or has inaccurate values such as in the image set from [NLM History of Medicine](https://openi.nlm.nih.gov/faq#collection), which is the image set used in the cited paper. Thus, this automatic classifier can be used to label all of these images so that the medical software relying on these DICOM tags can perform their duty.
+The inspiration for this project arises from my experience in the medical imaging industry. A classifier such as this would be useful in industry. One use case being a lot of medical imaging software relies on DICOM tags such as laterality (0020,0060), view position (0018,5101), and patient orientation (0020,0020) to perform some action. However, this tag is not always there or has values of all images in the study or series as seen in the image set from [NLM History of Medicine](https://openi.nlm.nih.gov/faq#collection), which is the image set used in the cited paper. Thus, this automatic classifier can be used to label all of these images so that the medical software relying on these DICOM tags can perform their duty.
  
-Another purpose of implementing this paper was to get experience with and learn about a wide range of technologies. Using this paper's algorithm as the core of the application, I utilized the following technologies to build the application:
- - Flask, Gunicorn, and Nginx to deploy the model as a RESTful web API to a local virtual machine
- - PostgreSQL to organize the metadata of all of the downloaded images
- - QT to provide a simple multi-threaded user interface
- - Various imaging technologies (see *Notable Python libraries used* section) for implementing the algorithm itself
+Another purpose of implementing this paper was to get experience with and learn about a wide range of technologies. Using this paper's algorithm as the core of the project, I utilized the following technologies to build the application and web API:
+ - Flask for designing the web API and web app
+ - Gunicorn, and Nginx to deploy the Flask app as a RESTful web API to a local virtual machine
+ - PostgreSQL (Python package: psycopg2) to organize the metadata, features, and labels of all of the downloaded images
+ - QT (Python package: pyqt5) to provide a simple multi-threaded user interface for guiding the user from image set download to classifier training
+ - NumPy for most calculations
+ - SciPy, scikit-image for feature calculation
+ - Pydicom for working with DICOM files
+ - OpenCV for image preprocessing
  - PyInstaller for packaging the application into an executable
- - VMware for testing
+ - VMware for testing on local virtual machines
  - Proper logging using Python's built-in logging library
  - Git: Large File Storage, Submodules
 
 ## Data
 As stated, I used the same data set that was in the paper ([NLM Image Set](https://openi.nlm.nih.gov/faq#collection)). This consists of 7470 chest X-ray images (CR) in the form of DICOM images. To organize the image set, I stored the metadata from the DICOM images into a PostgreSQL database using my [DicomToDatabase repository](https://github.com/Matt-Conrad/DicomToDatabase) I made. 
 
-While this app can handle processing of all 7470 images, I also provide a subset (10 images) of the dataset in the *NLMCXR_subset_dataset.tgz*. Altogether, the entire NLM image set is 117.4GB unpacked and 80.7GB packed, so the subset is preferrable. Currently the code is set up to operate with the subset. If you would like to switch to the full image set, you must go into the *main.py* file and uncomment line 33 and comment line 34.
+While the training app can handle processing of all 7470 images, I also provide a subset (10 images) of the dataset in the *NLMCXR_subset_dataset.tgz* to make it quicker to go through the steps of the app. The model trained with all 7470 images using the app is also included as *full_set_classifier.joblib*. Altogether, the entire NLM image set is 117.4GB unpacked and 80.7GB packed, so the subset is preferrable. Currently the code is set up to operate with the subset. If you would like to switch to the full image set, you must go into the *config.ini* file and set ```dataset=full_set``` in the *dataset_info* section.
 
 ## Performance
-Using the horizontal and vertical profile method from the paper, I am able to get an accuracy of 98.4% with the complete NLM image set, which is the same reported in the paper. Additionally, I am able to get the 90% accuracy when using the body-size ratio method, however I do not use it at the core of this application as it is a much lower accuracy. 
+Using the horizontal and vertical profile method from the paper, I am able to get an accuracy of 98.4% while using 2/3 of the NLM image set as the training set, which is the same reported in the paper. Additionally, I am able to get the 90% accuracy when using the body-size ratio method, however I do not use it at the core of this application as it is a much lower accuracy. For the profile method, I also get a 98.4% with the test set.
 
 ## Testing
 Workflow testing of the app and executables was done on the following environments:
    - Windows 10 laptop with Intel i7-4700MQ CPU and NVIDIA GeForce GT 755M GPU (Only source code testing done)
    - Fresh Ubuntu 18.04 virtual machine using VMware Workstation Player 15 on top of an Ubuntu 18.04 Desktop with AMD Ryzen 2600 CPU and NVIDIA RTX 2070 Super GPU
-
-## Notable packages used
- - psycopg2 for working with PostgreSQL
- - numpy for most calculations
- - scipy, scikit-image for feature calculation
- - pydicom for working with DICOM files
- - opencv for image preprocessing
- - pyqt5 for GUI development and multi-threading
- - pyinstaller for packaging application
- - flask for designing the web API and web app
- - gunicorn and nginx for deploying flask app
 
 ## Desktop App Usage
 There are several usage paths that one can use. I will be providing the source code, a way to compile a folder-based executable, and a single executable. NOTE: According to PyInstaller, since I compiled these executables on Ubuntu 18.04 only Linux users can execute the executables. I will need to compile the source code on other OSs to provide those executables. 
@@ -158,7 +151,8 @@ There are several ways to deploy the web interfaces: standalone built-in Flask s
 
 ## Troubleshooting
  ### Logs
- When the source code or executables are run, they produce a log called the *CXR_Classification.log*. This log contains messages that alert the user of where it is at in the code. The *config.ini* file contains the setting, *level*, under the *logging* section for the level of logging the user would like to see in the log. Currently, this can be set to "info" or "debug". The default for this setting is "info".
+ - When the source code or executables are run, they produce a log called the *CXR_Classification.log*. This log contains messages that alert the user of where it is at in the code. The *config.ini* file contains the setting, *level*, under the *logging* section for the level of logging the user would like to see in the log. Currently, this can be set to "info" or "debug". The default for this setting is "info".
+ - Additionally, the log for the Nginx engine is set for */var/log/nginx/cxr_classifier.log* in the */etc/nginx/sites-available/default* config file as specified in step 6 of *Nginx/Gunicorn server pair (Recommended)* above.
 
  ### Known issues
  - The only error that I get is occasionally the below error. This error shows up in the terminal at the end of the stages sometimes. I am currently troubleshooting the cause.
@@ -180,3 +174,5 @@ Ideas for future improvements:
  - Fix bugs in one of the PHOG algorithm define in the paper to improve accuracy
  - Remove anaconda dependency
  - Implement DICOM compliant HTTP transfer of DICOM files
+ - Refactor code and files to make it more organized
+ - Deploy model to AWS cloud infrastructure

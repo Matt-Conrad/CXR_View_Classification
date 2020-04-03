@@ -1,37 +1,39 @@
 """This script is used to send a random DCM file to the Flask Dev server on the local machine."""
 import os
-from random import randint
-import base64
+import logging
+import csv
 import pydicom as pdm
 import matplotlib.pyplot as plt
 import requests
 
 # Randomize folder to be chosen from
-folder = randint(1, 3999)
-folder_path = "./NLMCXR_dcm/" + str(folder) + "/"
+with open('test_images.csv', newline='') as f:
+    reader = csv.reader(f)
+    test_images = list(reader)
 
-# Randomize the file in the folder to use
-image_names = os.listdir(folder_path)
-file_ind = randint(0, len(image_names)-1)
-file_name = image_names[file_ind]
+for test_image in test_images:
+    file_name = test_image[0]
+    folder = file_name.split("_")[0]
+    full_path = "./NLMCXR_dcm/" + folder + "/" + file_name
 
-full_path = folder_path + file_name
-print("Chosen file: " + full_path)
+    if not os.path.exists(full_path):
+        logging.debug("%s does not exist", file_name)
+        continue
+   
+    # Display the image
+    dcm = pdm.dcmread(full_path)
+    image = dcm.pixel_array
 
-# Display the image
-dcm = pdm.dcmread(full_path)
-image = dcm.pixel_array
-plt.imshow(image, cmap="bone")
-plt.show()
+    # Convert DCM file as follows: binary => b64 => ASCII
+    with open(full_path, "rb") as image_file:
+        encoded_string_bin = image_file.read()
 
-# Convert DCM file as follows: binary => b64 => ASCII
-with open(full_path, "rb") as image_file:
-    encoded_string_bin = image_file.read()
+    # Send ASCII version of file in a JSON over HTTP
+    url = "http://127.0.0.1:80/api/classify"
+    send_headers = {"Content-Type": "application/octet-stream"}
+    response = requests.post(url, data=encoded_string_bin, headers=send_headers)
 
-# Send ASCII version of file in a JSON over HTTP
-url = "http://127.0.0.1:80/api/classify"
-send_headers = {"Content-Type": "application/octet-stream"}
-response = requests.post(url, data=encoded_string_bin, headers=send_headers)
-
-if response.status_code == 200:
-    print("Classification: " + response.json()["result"])
+    if response.status_code == 200:
+        plt.imshow(image, cmap="bone")
+        plt.title(file_name + " classified as: " + response.json()["result"])
+        plt.show()
