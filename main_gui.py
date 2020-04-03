@@ -42,7 +42,7 @@ class MainApplication(QWidget):
         self.label_btn = QPushButton('Label Images', self)
         lower_buttons.addWidget(self.label_btn)
 
-        self.classify_btn = QPushButton('Classify Images', self)
+        self.classify_btn = QPushButton('Train Classifier', self)
         lower_buttons.addWidget(self.classify_btn)
         
         # Stack the feedback dashboard over the button array

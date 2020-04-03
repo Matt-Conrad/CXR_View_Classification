@@ -1,10 +1,11 @@
 """Contains function for training and predicting with the classifier."""
 import logging
-import pickle
+import os
+import csv
 import numpy as np
 import psycopg2
 import psycopg2.extras
-from sklearn.model_selection import KFold, cross_val_score
+from sklearn.model_selection import KFold, cross_val_score, train_test_split
 from sklearn import svm
 from joblib import dump
 from DicomToDatabase.config import config
@@ -32,6 +33,12 @@ def classification(config_file_name):
         # connect to the PostgreSQL server
         conn = psycopg2.connect(**params)
         cur = conn.cursor()
+
+        # Put all horizontal profiles into feature matrix
+        sql_query = 'SELECT file_name FROM ' + table_name + ' ORDER BY file_path ASC;'
+        cur.execute(sql_query)
+        records = cur.fetchall()
+        file_names = [record[0] for record in records]
 
         # Put all horizontal profiles into feature matrix
         sql_query = 'SELECT hor_profile FROM ' + table_name + ' ORDER BY file_path ASC;'
@@ -67,14 +74,33 @@ def classification(config_file_name):
         if conn is not None:
             conn.close()
     
+    # Split the dataset into 2/3 training 1/3 testing
+    X_train, X_test, y_train, y_test, file_names_train, file_names_test = train_test_split(X, y, file_names, test_size=1/3, shuffle=True)
+
     # Cross validate with the linear SVM, and calculate accuracy
-    kf = KFold(n_splits=10, shuffle=True)
-
     clf = svm.SVC(kernel='linear')
-    scores = cross_val_score(clf, X, y, cv=kf, scoring='accuracy')
+    kf = KFold(n_splits=10, shuffle=True)
+    scores = cross_val_score(clf, X_train, y_train, cv=kf, scoring='accuracy')
 
+    # Calculate the accuracy of the classifier estimated by the K-Fold cross validation
     accuracy = np.mean(scores)
-    # clf.fit(X, y)
-    logging.info('Done classifying: %s', str(accuracy))
-    # dump(clf, 'full_set_classifier.joblib') 
+    logging.info('K-Fold Cross Validation Accuracy: %s', str(accuracy))
+
+    # Fit the classifier to the full training set, which is 2/3 of the full set as suggested in the paper 
+    clf.fit(X_train, y_train)
+    test_accuracy = clf.score(X_test, y_test)
+    logging.info('Test Set Accuracy: %s', str(test_accuracy))
+    
+    # Save the classifier by overwriting the previous classifier if it exists
+    classifier_file_name = 'full_set_classifier.joblib'
+    logging.info('Classifier saved as %s', classifier_file_name)
+    dump(clf, classifier_file_name)
+    # Save the list of images that are in the test set. You can send these over HTTP to the service.
+    image_list_name = "test_images.csv"
+    logging.info('A list of images in the test set is saved in %s', image_list_name)
+    with open("test_images.csv", "w") as f:
+        writer = csv.writer(f)
+        for row in file_names_test:
+            writer.writerow([row])
+
     return clf, accuracy
