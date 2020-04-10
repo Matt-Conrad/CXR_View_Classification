@@ -4,12 +4,17 @@ import logging
 import csv
 import pydicom as pdm
 import matplotlib.pyplot as plt
+import numpy as np
+import random
 import requests
+import time
+from datetime import datetime
 
 # Randomize folder to be chosen from
 with open('test_images.csv', newline='') as f:
     reader = csv.reader(f)
     test_images = list(reader)
+    random.shuffle(test_images)
 
 for test_image in test_images:
     file_name = test_image[0]
@@ -29,11 +34,18 @@ for test_image in test_images:
         encoded_string_bin = image_file.read()
 
     # Send ASCII version of file in a JSON over HTTP
-    url = "http://127.0.0.1:80/api/classify"
+    print(str(datetime.now()) + " Sending " + file_name)
+    # url = "http://**ELASTIC_BEANSTALK_INSTANCE_URL**/api/classify" # Send to AWS service
+    url = "http://127.0.0.1:5000/api/classify" # Send to local service
     send_headers = {"Content-Type": "application/octet-stream"}
     response = requests.post(url, data=encoded_string_bin, headers=send_headers)
-
+    print(str(datetime.now()) + " Received " + file_name)
     if response.status_code == 200:
         plt.imshow(image, cmap="bone")
         plt.title(file_name + " classified as: " + response.json()["result"])
         plt.show()
+    else:
+        print(str(datetime.now()) + " Response code: " + str(response.status_code))
+        print(str(datetime.now()) + " Response headers: " + str(response.headers))
+        print(str(datetime.now()) + " Response body: " + str(response.content))
+    time.sleep(5)
