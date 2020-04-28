@@ -79,7 +79,11 @@ def classification(config_file_name):
 
     # Cross validate with the linear SVM, and calculate accuracy
     clf = svm.SVC(kernel='linear')
-    kf = KFold(n_splits=10, shuffle=True)
+    n_splits = 10
+    if len(X_train) < n_splits:
+        kf = KFold(n_splits=len(X_train), shuffle=True)
+    else:
+        kf = KFold(n_splits=n_splits, shuffle=True)
     scores = cross_val_score(clf, X_train, y_train, cv=kf, scoring='accuracy')
 
     # Calculate the accuracy of the classifier estimated by the K-Fold cross validation

@@ -56,9 +56,11 @@ class MainApplication(QWidget):
         self.show()
 
     def update_pro_bar(self, value):
+        """Updates the progress bar."""
         self.pro_bar.setValue(value)
 
     def update_text(self, text):
+        """Updates the text."""
         self.msg_box.setText(text)
 
     def stage1_ui(self):
