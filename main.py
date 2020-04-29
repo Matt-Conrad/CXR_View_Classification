@@ -2,19 +2,19 @@
 import logging
 import os
 import sys
-import time
 from PyQt5.QtCore import QThreadPool
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QIcon
 from download_dataset import DatasetController
-from DicomToDatabase.dicom_to_db import dicom_to_db
-from calculate_features import calculate_features
-from LabelImages import LabelImageApplication
 import DicomToDatabase.basic_db_ops as bdo
 import DicomToDatabase.config as config
-from classification import classification
 from main_gui import MainApplication
-from workers import Worker, Updater
+from download_button import download_functionality
+from unpack_button import unpack_functionality
+from store_button import store_functionality
+from calculate_button import calculate_functionality
+from label_button import label_functionality
+from classification_button import classification_functionality
 
 SOURCE_URL = {
         'subset': 'https://github.com/Matt-Conrad/CXR_View_Classification/raw/master/NLMCXR_subset_dataset.tgz',
@@ -51,325 +51,10 @@ class Controller():
 
         # Set up the GUI
         self.init_gui_state()
-        self.connect_buttons()
         self.threadpool = QThreadPool()
         logging.info('***CONTROLLER INITIALIZED***')
 
-    ### DOWNLOAD BUTTON
-    def download_dataset(self):
-        """Delegate the downloading and GUI updating to 2 new threads."""
-        logging.info('***BEGIN DOWNLOADING PHASE***')
-        # Set the progress region
-        self.main_app.msg_box.setText('Downloading images')
-        self.main_app.pro_bar.setMinimum(0)
-        self.main_app.pro_bar.setMaximum(self.get_tgz_max())
-        
-        # Create 2 workers: 1 to download and 1 to update the progress bar
-        worker = Worker(self.download)
-        updater = Updater(self.update)
-        # Connect the updater signal to the progress bar
-        updater.signals.progress.connect(self.main_app.update_pro_bar)
-        updater.signals.finished.connect(self.main_app.update_text)
-        # Start the threads
-        self.threadpool.start(worker)
-        self.threadpool.start(updater)
-
-    def download(self):
-        """Download the image set."""
-        self.dataset_controller.get_dataset()
-        config.update_config_file(self.config_file_name, 'dicom_folder', 'folder_path', self.dataset_controller.folder_full_path)
-
-    def update(self, progress_callback, finished_callback):
-        """Updates the GUI's progress bar.
-
-        Parameters
-        ----------
-        progress_callback : pyqtSignal(int)
-            Used to emit a signal to the GUI to update the progress bar. Passed automatically by Updater class.
-        finished_callback : pyqtSignal(int)
-            Used to emit a signal to the GUI to update the text. Passed automatically by Updater class.
-        """
-        # Wait for the file to start downloading before updating progress bar
-        while not os.path.exists(self.dataset_controller.filename_fullpath):
-            pass
-
-        # Update the progress bar with the current file size
-        progress_callback.emit(0)
-        self.log_gui_state('debug')
-        while self.get_tgz_size() < self.get_tgz_max():
-            progress_callback.emit(self.get_tgz_size())
-            self.log_gui_state('debug')
-            time.sleep(1)
-        progress_callback.emit(self.get_tgz_size())
-
-        # Update the text and move to the next stage
-        finished_callback.emit('Image download complete')
-        self.log_gui_state('debug')
-        logging.info('***END DOWNLOADING PHASE***')
-        self.main_app.stage2_ui()
-
-    def get_tgz_size(self):
-        """Calculates the size of the TGZ file for the purpose of setting the progress bar value."""
-        if self.dataset == 'full_set':
-            # Dividing by 100 because the expected size of this TGZ is larger than QProgressBar accepts
-            return int(os.path.getsize(self.dataset_controller.filename_fullpath) / 100)
-        elif self.dataset == 'subset':
-            return os.path.getsize(self.dataset_controller.filename_fullpath)
-        else:
-            raise ValueError('Value must be one of the keys in SOURCE_URL')
-
-    def get_tgz_max(self):
-        """Calculates the size of the TGZ file max for the purpose of setting the progress bar max."""
-        if self.dataset == 'full_set':
-            # Dividing by 100 because the expected size of this TGZ is larger than QProgressBar accepts
-            return int(self.dataset_controller.expected_size / 100)
-        elif self.dataset == 'subset':
-            return self.dataset_controller.expected_size
-        else:
-            raise ValueError('Value must be one of the keys in SOURCE_URL')
-
-    ### UNPACK BUTTON
-    def unpack_dataset(self):
-        """Delegate the unpacking and GUI updating to 2 new threads."""
-        logging.info('***BEGIN UNPACKING PHASE***')
-        # Set the progress region
-        self.main_app.msg_box.setText('Unpacking images')
-        self.main_app.pro_bar.setMinimum(0)
-        self.main_app.pro_bar.setMaximum(self.dataset_controller.expected_num_files)
-
-        # Create 2 workers: 1 to unpack and 1 to update the progress bar
-        worker = Worker(self.unpack)
-        updater = Updater(self.update_unpack)
-        # Connect the updater signal to the progress bar
-        updater.signals.progress.connect(self.main_app.update_pro_bar)
-        updater.signals.finished.connect(self.main_app.update_text)
-        # Start the threads
-        self.threadpool.start(worker)
-        self.threadpool.start(updater)
-
-    def unpack(self):
-        """Unpack the image set."""
-        self.dataset_controller.unpack()
-
-    def update_unpack(self, progress_callback, finished_callback):
-        """Updates the GUI's progress bar.
-
-        Parameters
-        ----------
-        progress_callback : pyqtSignal(int)
-            Used to emit a signal to the GUI to update the progress bar. Passed automatically by Updater class.
-        finished_callback : pyqtSignal(int)
-            Used to emit a signal to the GUI to update the text. Passed automatically by Updater class.
-        """
-        # Wait for the folder to be available before updating progress bar
-        while not os.path.isdir(self.dataset_controller.folder_full_path):
-            logging.debug('waiting')
-            time.sleep(1)
-            pass
-
-        # Update the progress bar with the current file count in the folder path
-        progress_callback.emit(0)
-        self.log_gui_state('debug')
-        while self.count_DCMs(self.dataset_controller.folder_full_path) < self.dataset_controller.expected_num_files:
-            progress_callback.emit(self.count_DCMs(self.dataset_controller.folder_full_path))
-            self.log_gui_state('debug')
-            time.sleep(1)
-        progress_callback.emit(self.count_DCMs(self.dataset_controller.folder_full_path))
-        logging.debug('Final count: ' + str(self.count_DCMs(self.dataset_controller.folder_full_path)))
-
-        # Update the text and move to the next stage
-        finished_callback.emit('Images unpacked')
-        self.log_gui_state('debug')
-        logging.info('***END UNPACKING PHASE***')
-        self.main_app.stage3_ui()
-
-    def count_DCMs(self, full_folder_path):
-        return sum([len(files) for r, d, files in os.walk(full_folder_path) if any(item.endswith('.dcm') for item in files)])
-
-    ### STORE BUTTON
-    def store_metadata(self):
-        """Delegate the storing of metadata and GUI updating to 2 new threads."""
-        logging.info('***BEGIN STORING PHASE***')
-        # Set the progress region
-        self.main_app.msg_box.setText('Storing metadata')
-        self.main_app.pro_bar.setMinimum(0)
-        self.main_app.pro_bar.setMaximum(self.dataset_controller.expected_num_files)
-
-        # Create 2 workers: 1 to store and 1 to update the progress bar
-        worker = Worker(self.to_db, self.dataset_controller.columns_info_full_path, self.config_file_name, 'elements')
-        updater = Updater(self.update_store)
-        # Connect the updater signal to the progress bar
-        updater.signals.progress.connect(self.main_app.update_pro_bar)
-        updater.signals.finished.connect(self.main_app.update_text)
-        # Start the threads
-        self.threadpool.start(worker)
-        self.threadpool.start(updater)
-
-    def to_db(self, columns_info, config_file_name, section_name):
-        """Store the metadata from the folder to Postgres.
-        
-        Parameters
-        ----------
-        columns_info : string
-            The name of the JSON containing the column info of the DB table
-        config_file_name : string
-            The name of the INI config file containing DB info and folder locations
-        section_name : string
-            The name corresponding to the section of the columns_info to use
-        """
-        dicom_to_db(columns_info, config_file_name, section_name)
-
-    def update_store(self, progress_callback, finished_callback):
-        """Updates the GUI's progress bar.
-
-        Parameters
-        ----------
-        progress_callback : pyqtSignal(int)
-            Used to emit a signal to the GUI to update the progress bar. Passed automatically by Updater class.
-        finished_callback : pyqtSignal(int)
-            Used to emit a signal to the GUI to update the text. Passed automatically by Updater class.
-        """
-        # Wait for the table to be available before updating progress bar
-        while not bdo.table_exists(self.config_file_name, self.db_name, self.meta_table_name):
-            pass
-            
-        # Update the progress bar with the current record count in the DB table
-        progress_callback.emit(0)
-        self.log_gui_state('debug')
-        while bdo.count_records(self.config_file_name, self.db_name, self.meta_table_name) < self.dataset_controller.expected_num_files:
-            progress_callback.emit(bdo.count_records(self.config_file_name, self.db_name, self.meta_table_name))
-            self.log_gui_state('debug')
-            time.sleep(1)
-        progress_callback.emit(bdo.count_records(self.config_file_name, self.db_name, self.meta_table_name))
-        
-        # Update the text and move to the next stage
-        finished_callback.emit('Done storing metadata')
-        self.log_gui_state('debug')
-        logging.info('***END STORING PHASE***')
-        self.main_app.stage4_ui()
-
-    ### CALCULATE BUTTON
-    def calculate_features(self):
-        """Delegate the feature calculating and GUI updating to 2 new threads."""
-        logging.info('***BEGIN FEATURE CALCULATION PHASE***')
-        # Set the progress region
-        self.main_app.msg_box.setText('Calculating features')
-        self.main_app.pro_bar.setMinimum(0)
-        self.main_app.pro_bar.setMaximum(self.dataset_controller.expected_num_files)
-
-        # Add table to DB
-        bdo.add_table_to_db(self.feat_table_name, self.dataset_controller.columns_info_full_path, self.config_file_name, 'features_list')
-
-        # Create 2 workers: 1 to calculate features and 1 to update the progress bar
-        worker = Worker(self.calc_feat, self.config_file_name)
-        updater = Updater(self.update_calc)
-        # Connect the updater signal to the progress bar
-        updater.signals.progress.connect(self.main_app.update_pro_bar)
-        updater.signals.finished.connect(self.main_app.update_text)
-        # Start the threads
-        self.threadpool.start(worker)
-        self.threadpool.start(updater)
-
-    def calc_feat(self, config_file_name):
-        """Calculate the features.
-        
-        Parameters
-        ----------
-        config_file_name : string
-            The name of the INI config file containing DB info and folder locations
-        """
-        calculate_features(config_file_name)
-
-    def update_calc(self, progress_callback, finished_callback):
-        """Updates the GUI's progress bar.
-
-        Parameters
-        ----------
-        progress_callback : pyqtSignal(int)
-            Used to emit a signal to the GUI to update the progress bar. Passed automatically by Updater class.
-        finished_callback : pyqtSignal(int)
-            Used to emit a signal to the GUI to update the text. Passed automatically by Updater class.
-        """
-        # Wait for the table to be available before updating progress bar
-        while not bdo.table_exists(self.config_file_name, self.db_name, self.feat_table_name):
-            pass
-        
-        # Update the progress bar with the current record count in the DB table
-        progress_callback.emit(0)
-        while bdo.count_records(self.config_file_name, self.db_name, self.feat_table_name) < self.dataset_controller.expected_num_files:
-            progress_callback.emit(bdo.count_records(self.config_file_name, self.db_name, self.feat_table_name))
-            time.sleep(1)
-        progress_callback.emit(bdo.count_records(self.config_file_name, self.db_name, self.feat_table_name))
-
-        # Update the text and move to the next stage
-        finished_callback.emit('Done calculating features')
-        logging.info('***END FEATURE CALCULATION PHASE***')
-        self.main_app.stage5_ui()
-
-    ### LABEL BUTTON
-    def label_images(self):
-        """Use an app to manually label images."""
-        logging.info('***BEGIN LABELING PHASE***')
-        # Set the progress region
-        self.main_app.pro_bar.setMinimum(0)
-        self.main_app.pro_bar.setMaximum(self.dataset_controller.expected_num_files)
-        if self.dataset == 'subset':
-            # Set the progress region
-            self.main_app.msg_box.setText('Please manually label images')
-            
-            # Add table to DB
-            bdo.add_table_to_db(self.label_table_name, self.dataset_controller.columns_info_full_path, self.config_file_name, 'labels')
-
-            # Create 1 thread to update the progress bar as the app runs
-            updater = Updater(self.check_done)
-            # Connect the updater signal to the progress bar
-            updater.signals.progress.connect(self.main_app.update_pro_bar)
-            updater.signals.finished.connect(self.main_app.update_text)
-            # Start the thread
-            self.threadpool.start(updater)
-
-            # Open new window with the labeling app
-            self.label_app = LabelImageApplication(self.config_file_name)
-        elif self.dataset == 'full_set':
-            bdo.import_image_label_data(self.label_table_name, self.dataset_controller.parent_folder + '/' + 'image_labels.csv', self.dataset_controller.columns_info_full_path, self.config_file_name, 'labels')
-            logging.info('***END LABELING PHASE***')
-            self.main_app.update_text('Done importing labels')
-            self.main_app.update_pro_bar(self.dataset_controller.expected_num_files)
-            self.main_app.stage6_ui()
-        else:
-            raise ValueError('Value must be one of the keys in SOURCE_URL')
-        
-    def check_done(self, progress_callback, finished_callback):
-        """Updates the GUI's progress bar."""
-        # Continually check for the number of records in the DB table
-        progress_callback.emit(0)
-        while bdo.count_records(self.config_file_name, self.db_name, self.label_table_name) < self.dataset_controller.expected_num_files:
-            progress_callback.emit(bdo.count_records(self.config_file_name, self.db_name, self.label_table_name))
-            time.sleep(1)
-        progress_callback.emit(bdo.count_records(self.config_file_name, self.db_name, self.label_table_name))
-
-        # Update the text and move to the next stage
-        finished_callback.emit('Done labeling')
-        logging.info('***END LABELING PHASE***')
-        self.main_app.stage6_ui()
-
-    ### CLASSIFICATION BUTTON
-    def classification(self):
-        """Performs the training of classifier and gets the accuracy of the classifier."""
-        logging.info('***BEGIN CLASSIFICATION PHASE***')
-        self.classifier, accuracy = classification(self.config_file_name)
-        self.main_app.update_text('Accuracy: ' + str(accuracy))
-        logging.info('***END CLASSIFICATION PHASE***')
-
     ### GUI HELPER FUNCTIONS
-    def connect_buttons(self):
-        """Connect the buttons in the GUI to the functions here."""
-        self.main_app.download_btn.clicked.connect(self.download_dataset)
-        self.main_app.unpack_btn.clicked.connect(self.unpack_dataset)
-        self.main_app.store_btn.clicked.connect(self.store_metadata)
-        self.main_app.features_btn.clicked.connect(self.calculate_features)
-        self.main_app.label_btn.clicked.connect(self.label_images)
-        self.main_app.classify_btn.clicked.connect(self.classification)
 
     def init_gui_state(self):
         """Initialize the GUI in the right stage."""
@@ -388,6 +73,24 @@ class Controller():
             self.main_app.stage5_ui()
         elif os.path.exists(self.dataset_controller.filename) and os.path.isdir(self.dataset_controller.folder_name) and bdo.table_exists(self.config_file_name, self.db_name, self.feat_table_name) and bdo.table_exists(self.config_file_name, self.db_name, self.feat_table_name) and bdo.table_exists(self.config_file_name, self.db_name, self.feat_table_name):
             self.main_app.stage6_ui()
+
+        self.download_functionality = download_functionality(self)
+        self.unpack_functionality = unpack_functionality(self)
+        self.store_functionality = store_functionality(self)
+        self.calculate_functionality = calculate_functionality(self)
+        self.label_functionality = label_functionality(self)
+        self.classification_functionality = classification_functionality(self)
+
+        self.connect_buttons()
+
+    def connect_buttons(self):
+        """Connect the buttons in the GUI to the functions here."""
+        self.main_app.download_btn.clicked.connect(self.download_functionality.download_dataset)
+        self.main_app.unpack_btn.clicked.connect(self.unpack_functionality.unpack_dataset)
+        self.main_app.store_btn.clicked.connect(self.store_functionality.store_metadata)
+        self.main_app.features_btn.clicked.connect(self.calculate_functionality.calculate_features)
+        self.main_app.label_btn.clicked.connect(self.label_functionality.label_images)
+        self.main_app.classify_btn.clicked.connect(self.classification_functionality.classification)
 
     def log_gui_state(self, debug_level):
         """Log the state of the feedback in the GUI."""
