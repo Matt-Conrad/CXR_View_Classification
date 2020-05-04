@@ -1,0 +1,6 @@
+[submodule "Python/DesktopApp/DicomToDatabase"]
+	path = Python/DesktopApp/DicomToDatabase
+	url = https://github.com/Matt-Conrad/DicomToDatabase.git
+[submodule "Python/DesktopApp/SharedImageProcessing"]
+	path = Python/DesktopApp/SharedImageProcessing
+	url = https://github.com/Matt-Conrad/SharedImageProcessing.git
