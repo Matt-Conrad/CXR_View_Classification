@@ -9,7 +9,6 @@ class Worker(QRunnable):
     From https://www.learnpyqt.com/courses/concurrent-execution/multithreading-pyqt-applications-qthreadpool/
     """
     def __init__(self, fn, *args, **kwargs):
-        # super(Worker, self).__init__()
         QRunnable.__init__(self)
         # Store constructor arguments (re-used for processing)
         self.fn = fn

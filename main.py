@@ -9,12 +9,6 @@ from download_dataset import DatasetController
 import DicomToDatabase.basic_db_ops as bdo
 import DicomToDatabase.config as config
 from main_gui import MainApplication
-from download_button import download_functionality
-from unpack_button import unpack_functionality
-from store_button import store_functionality
-from calculate_button import calculate_functionality
-from label_button import label_functionality
-from classification_button import classification_functionality
 
 SOURCE_URL = {
         'subset': 'https://github.com/Matt-Conrad/CXR_View_Classification/raw/master/NLMCXR_subset_dataset.tgz',
@@ -38,7 +32,7 @@ class Controller():
         self.url = SOURCE_URL[self.dataset]
 
         # Object variables
-        self.main_app = MainApplication()
+        self.main_app = MainApplication(self)
         self.label_app = None
         self.classifier = None
         self.dataset_controller = DatasetController(self.url)
@@ -73,24 +67,6 @@ class Controller():
             self.main_app.stage5_ui()
         elif os.path.exists(self.dataset_controller.filename) and os.path.isdir(self.dataset_controller.folder_name) and bdo.table_exists(self.config_file_name, self.db_name, self.feat_table_name) and bdo.table_exists(self.config_file_name, self.db_name, self.feat_table_name) and bdo.table_exists(self.config_file_name, self.db_name, self.feat_table_name):
             self.main_app.stage6_ui()
-
-        self.download_functionality = download_functionality(self)
-        self.unpack_functionality = unpack_functionality(self)
-        self.store_functionality = store_functionality(self)
-        self.calculate_functionality = calculate_functionality(self)
-        self.label_functionality = label_functionality(self)
-        self.classification_functionality = classification_functionality(self)
-
-        self.connect_buttons()
-
-    def connect_buttons(self):
-        """Connect the buttons in the GUI to the functions here."""
-        self.main_app.download_btn.clicked.connect(self.download_functionality.download_dataset)
-        self.main_app.unpack_btn.clicked.connect(self.unpack_functionality.unpack_dataset)
-        self.main_app.store_btn.clicked.connect(self.store_functionality.store_metadata)
-        self.main_app.features_btn.clicked.connect(self.calculate_functionality.calculate_features)
-        self.main_app.label_btn.clicked.connect(self.label_functionality.label_images)
-        self.main_app.classify_btn.clicked.connect(self.classification_functionality.classification)
 
     def log_gui_state(self, debug_level):
         """Log the state of the feedback in the GUI."""

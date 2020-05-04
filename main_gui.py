@@ -1,14 +1,14 @@
 """Contains GUI code for the application."""
 import logging
-import sys
-from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QProgressBar, QLabel
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QProgressBar, QLabel
+from buttons import DownloadButton, UnpackButton, StoreButton, CalculateButton, LabelButton, ClassificationButton
 
 class MainApplication(QWidget):
     """Contains GUI code for the application."""
-    def __init__(self):
+    def __init__(self, controller):
         logging.info('Constructing Main app')
-        super().__init__()
+        QWidget.__init__(self)
+        self.controller = controller
         
         # Set up GUI
         self.fill_window()
@@ -27,22 +27,22 @@ class MainApplication(QWidget):
         upper_buttons = QHBoxLayout()
         lower_buttons = QHBoxLayout()
 
-        self.download_btn = QPushButton('Download', self)
+        self.download_btn = DownloadButton("Download", self, self.controller)
         upper_buttons.addWidget(self.download_btn)
 
-        self.unpack_btn = QPushButton('Unpack', self)
+        self.unpack_btn = UnpackButton('Unpack', self, self.controller)
         upper_buttons.addWidget(self.unpack_btn)
 
-        self.store_btn = QPushButton('Store Metadata', self)
+        self.store_btn = StoreButton('Store Metadata', self, self.controller)
         upper_buttons.addWidget(self.store_btn)
 
-        self.features_btn = QPushButton('Calculate Features', self)
+        self.features_btn = CalculateButton('Calculate Features', self, self.controller)
         lower_buttons.addWidget(self.features_btn)
 
-        self.label_btn = QPushButton('Label Images', self)
+        self.label_btn = LabelButton('Label Images', self, self.controller)
         lower_buttons.addWidget(self.label_btn)
 
-        self.classify_btn = QPushButton('Train Classifier', self)
+        self.classify_btn = ClassificationButton('Train Classifier', self, self.controller)
         lower_buttons.addWidget(self.classify_btn)
         
         # Stack the feedback dashboard over the button array
