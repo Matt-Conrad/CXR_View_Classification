@@ -1,6 +1,0 @@
-[submodule "DicomToDatabase"]
-	path = DicomToDatabase
-	url = https://github.com/Matt-Conrad/DicomToDatabase
-[submodule "SharedImageProcessing"]
-	path = SharedImageProcessing
-	url = https://github.com/Matt-Conrad/SharedImageProcessing.git
