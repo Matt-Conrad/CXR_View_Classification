@@ -49,7 +49,6 @@ class Controller():
         logging.info('***CONTROLLER INITIALIZED***')
 
     ### GUI HELPER FUNCTIONS
-
     def init_gui_state(self):
         """Initialize the GUI in the right stage."""
         # Set icon
