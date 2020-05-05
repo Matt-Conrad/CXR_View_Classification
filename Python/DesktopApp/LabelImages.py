@@ -7,7 +7,7 @@ import psycopg2.extras
 import pydicom as pdm
 import cv2
 import numpy as np
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton
+from PyQt5.QtWidgets import QWidget, QLabel, QPushButton
 from PyQt5.QtGui import QPixmap, QImage
 from DicomToDatabase.config import config
 

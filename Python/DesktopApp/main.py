@@ -11,7 +11,7 @@ import DicomToDatabase.config as config
 from main_gui import MainApplication
 
 SOURCE_URL = {
-        'subset': 'https://github.com/Matt-Conrad/CXR_View_Classification/raw/master/NLMCXR_subset_dataset.tgz',
+        'subset': 'https://github.com/Matt-Conrad/CXR_View_Classification/raw/develop/datasets/NLMCXR_subset_dataset.tgz',
         'full_set': 'https://openi.nlm.nih.gov/imgs/collections/NLMCXR_dcm.tgz'
     }
 

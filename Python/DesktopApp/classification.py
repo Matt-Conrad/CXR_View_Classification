@@ -1,6 +1,5 @@
 """Contains function for training and predicting with the classifier."""
 import logging
-import os
 import csv
 import numpy as np
 import psycopg2
