@@ -2,13 +2,12 @@
 import os
 import logging
 import csv
-import pydicom as pdm
-import matplotlib.pyplot as plt
-import numpy as np
 import random
-import requests
 import time
 from datetime import datetime
+import pydicom as pdm
+import matplotlib.pyplot as plt
+import requests
 
 # Randomize folder to be chosen from
 with open('test_images.csv', newline='') as f:
@@ -19,7 +18,7 @@ with open('test_images.csv', newline='') as f:
 for test_image in test_images:
     file_name = test_image[0]
     folder = file_name.split("_")[0]
-    full_path = "./NLMCXR_dcm/" + folder + "/" + file_name
+    full_path = "../datasets/NLMCXR_dcm/" + folder + "/" + file_name
 
     if not os.path.exists(full_path):
         logging.debug("%s does not exist", file_name)

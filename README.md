@@ -25,7 +25,7 @@ As stated, I used the same data set that was in the paper ([NLM Image Set](https
 While the training app can handle processing of all 7470 images, I also provide a subset (10 images) of the dataset in the *NLMCXR_subset_dataset.tgz* to make it quicker to go through the steps of the app. The model trained with all 7470 images using the app is also included as *full_set_classifier.joblib*. Altogether, the entire NLM image set is 117.4GB unpacked and 80.7GB packed, so the subset is preferrable. Currently the code is set up to operate with the subset. If you would like to switch to the full image set, you must go into the *config.ini* file and set ```dataset=full_set``` in the *dataset_info* section.
 
 ## Performance
-Using the horizontal and vertical profile method from the paper, I am able to get an accuracy of 98.4% while using 2/3 of the NLM image set as the training set, which is the same reported in the paper. Additionally, I am able to get the 90% accuracy when using the body-size ratio method, however I do not use it at the core of this application as it is a much lower accuracy. For the profile method, I also get a 98.4% with the test set.
+Using the horizontal and vertical profile method from the paper, I am able to get an accuracy of 98.4% while using 2/3 of the NLM image set as the training set with 10-fold cross-validation, which is the same reported in the paper. Additionally, I am able to get the 90% accuracy when using the body-size ratio method, however I do not use it at the core of this application as it is a much lower accuracy. For the profile method, I also get a 98.4% with the test set.
 
 ## Testing
 Workflow testing of the app and executables was done on the following environments:
@@ -78,17 +78,17 @@ There are several usage paths that one can use. I will be providing the source c
  7. Run the app using the following command: ```python main.py```
 
  ### Using the folder-based executable
- This executable was created with PyInstaller by providing my *folder.spec* file in the following command: ```pyinstaller folder.spec```. You can find the executable if you unpack the *dist_folder.zip* from the Github repository. Here are the steps for running it:
+ This executable was created with PyInstaller by providing my *folder.spec* file in the following command: ```pyinstaller folder.spec```, you will need to run this command in the *CXR_View_Classification/Python/DesktopApp/pyinstaller* folder if you want to create it yourself. You can find the executable if you unpack the *dist_folder.zip* from the *CXR_View_Classification/Python/DesktopApp/Release* folder in the Github repository. Here are the steps for running it:
  1. Clone the *dist_folder.zip* folder from the Github repository and unzip it.
  2. If you don't already have it, install PostgreSQL by following the steps from step 4 of the above section (*Using source code*). 
  3. Change the *config.ini* file in the *dist_folder/main/* folder as explained step 5 from the above section
  4. Execute the *main* executable and go through the steps.
 
  ### Using the single-file executable
- This executable was created with PyInstaller by providing my *one_file.spec* file in the following command: ```pyinstaller one_file.spec```. You can find the executable if you unpack the *dist_one_file.zip* from the Github repository. Here are the steps for running it:
+ This executable was created with PyInstaller by providing my *one_file.spec* file in the following command: ```pyinstaller one_file.spec```, you will need to run this command in the *CXR_View_Classification/Python/DesktopApp/pyinstaller* folder if you want to create it yourself. You can find the executable if you unpack the *dist_one_file.zip* from the *CXR_View_Classification/Python/DesktopApp/Release* folder in the Github repository. Here are the steps for running it:
  1. Clone the *dist_one_file.zip* folder from the Github repository and unzip it.
  2. If you don't already have it, install PostgreSQL by following the steps from step 4 of the source code section (*Using source code*). 
- 3. Change the *config.ini* file in the *dist_one_file* folder as explained step 5 from the source code section
+ 3. Change the *config.ini* file in the *dist_one_file/* folder as explained step 5 from the source code section
  4. Execute the *main* executable and go through the steps.
 
 ## Web API Usage for local machine or local VM
