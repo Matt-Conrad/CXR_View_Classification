@@ -1,11 +1,16 @@
 """Contains the code that controls the web interfaces."""
 import os
+import sys
 import logging
 from flask import Flask, render_template, abort, jsonify, request
 from joblib import load
 import pydicom as pdm
 import numpy as np
 import cv2
+# This is so we can import calculate features
+folder = '/'.join(os.path.dirname(os.path.abspath(__file__)).replace('\\', '/').split('/')[:-1]) + '/DesktopApp'
+sys.path.append(folder)
+#
 from calculate_features import calc_image_prof, contrast_stretch
 
 app = Flask(__name__)
