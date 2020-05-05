@@ -159,7 +159,7 @@ There are several ways to deploy the web interfaces: standalone built-in Flask s
  2. Go to an AWS Elastic Beanstalk console > "Environments" Tab
  3. Click "Create a new environment", select "Web server environment". Enter an application name and environment name in their respective boxes.
  4. In the "Platform" section, select "Managed platform", set "Platform" = "Python", set "Platform branch" = "Python 3.6 running on 64-bit Amazon Linux", and set "Platform version" = "2.9.7"
- 5. In the "Application code" section, select "Upload your code" and upload the */CXR_View_Classification/aws_deploy/aws_deploy.zip* file. This zip contains all of the code from the *aws_deploy* folder.
+ 5. In the "Application code" section, select "Upload your code" and upload the */CXR_View_Classification/Python/Engine/aws_deploy/aws_deploy.zip* file. This zip contains all of the code from the *aws_deploy* folder.
  6. Select "Create environment" and wait for the environment to have Status: OK
  7. Copy the URL for the environment and open the *send_script.py* script. Uncomment line 38 and comment line 39. In line 38, paste the URL where the ```**ELASTIC_BEANSTALK_INSTANCE_URL**``` placeholder is. Make sure you have all or at least part of the *NLMCXR_dcm* folder (you can download it using the desktop app or directly from the website). Then run the script and it should send images over HTTP to the AWS EB instance
 
@@ -188,5 +188,4 @@ Ideas for future improvements:
  - Fix bugs in one of the PHOG algorithm define in the paper to improve accuracy
  - Remove anaconda dependency
  - Implement DICOM compliant HTTP transfer of DICOM files
- - Refactor code and files to make it more organized
  - Improve logging in AWS deployment

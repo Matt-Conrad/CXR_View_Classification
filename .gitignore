@@ -7,6 +7,7 @@ NLMCXR_subset_dataset
 .pylintrc
 *.log
 build*
+Release
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
