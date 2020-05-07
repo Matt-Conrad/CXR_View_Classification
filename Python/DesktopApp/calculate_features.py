@@ -11,7 +11,7 @@ import cv2
 # from scipy.ndimage.measurements import label
 from skimage.feature import hog
 from DicomToDatabase.config import config
-from SharedImageProcessing.connectedComponents import getBiggestComp
+from shared_image_processing.connectedComponents import getBiggestComp
 
 def calculate_features(config_file_name):
     """Cycles through the table and pulls one image at a time.
