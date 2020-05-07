@@ -18,6 +18,7 @@ Another purpose of implementing this paper was to get experience with and learn 
  - VMware for testing on local virtual machines
  - Proper logging using Python's built-in logging library
  - Git: Large File Storage, Submodules
+ - Python packaging and deployment to PyPI
 
 ## Data
 As stated, I used the same data set that was in the paper ([NLM Image Set](https://openi.nlm.nih.gov/faq#collection)). This consists of 7470 chest X-ray images (CR) in the form of DICOM images. To organize the image set, I stored the metadata from the DICOM images into a PostgreSQL database using my [DicomToDatabase repository](https://github.com/Matt-Conrad/DicomToDatabase) I made. 
@@ -38,9 +39,9 @@ There are several usage paths that one can use. I will be providing the source c
  
  ### Using source code
  Here are the steps for using the app from the source code:
- 1. Clone the git repository onto your computer (note this Git repository has 2 Git submodules so we need to take that into account): 
+ 1. Clone the git repository onto your computer: 
     ```
-    git clone --recurse-submodules -j8 https://github.com/Matt-Conrad/CXR_View_Classification.git
+    git clone https://github.com/Matt-Conrad/CXR_View_Classification.git
     ```
  2. If you don't already have it, install anaconda using [these instructions](https://docs.anaconda.com/anaconda/install/)
  3. Run the following commands to build and enter the conda environment. Note: The environment.yml has *nomkl* library in it, which I needed for my AMD-based computer. If you're on Windows, you may need to remove that library to get this environment installed: 
@@ -78,15 +79,15 @@ There are several usage paths that one can use. I will be providing the source c
  7. Run the app using the following command: ```python main.py```
 
  ### Using the folder-based executable
- This executable was created with PyInstaller by providing my *folder.spec* file in the following command: ```pyinstaller folder.spec```, you will need to run this command in the *CXR_View_Classification/Python/DesktopApp/pyinstaller* folder if you want to create it yourself. You can find the executable if you unpack the *dist_folder.zip* from the *CXR_View_Classification/Python/DesktopApp/Release* folder in the Github repository. Here are the steps for running it:
- 1. Clone the *dist_folder.zip* folder from the Github repository and unzip it.
+ This executable was created with PyInstaller by providing my *folder.spec* file in the following command: ```pyinstaller folder.spec```, you will need to run this command in the *CXR_View_Classification/Python/DesktopApp/pyinstaller* folder if you want to create it yourself. You can find the executable if you unpack the *dist_folder.zip* from the v1.0.0 release attachment in the Github repository. Here are the steps for running it:
+ 1. Download the *dist_folder.zip* folder from the Github release and unzip it.
  2. If you don't already have it, install PostgreSQL by following the steps from step 4 of the above section (*Using source code*). 
  3. Change the *config.ini* file in the *dist_folder/main/* folder as explained step 5 from the above section
  4. Execute the *main* executable and go through the steps.
 
  ### Using the single-file executable
- This executable was created with PyInstaller by providing my *one_file.spec* file in the following command: ```pyinstaller one_file.spec```, you will need to run this command in the *CXR_View_Classification/Python/DesktopApp/pyinstaller* folder if you want to create it yourself. You can find the executable if you unpack the *dist_one_file.zip* from the *CXR_View_Classification/Python/DesktopApp/Release* folder in the Github repository. Here are the steps for running it:
- 1. Clone the *dist_one_file.zip* folder from the Github repository and unzip it.
+ This executable was created with PyInstaller by providing my *one_file.spec* file in the following command: ```pyinstaller one_file.spec```, you will need to run this command in the *CXR_View_Classification/Python/DesktopApp/pyinstaller* folder if you want to create it yourself. You can find the executable if you unpack the *dist_folder.zip* from the v1.0.0 release attachment in the Github repository. Here are the steps for running it:
+ 1. Download the *dist_one_file.zip* folder from the Github repository and unzip it.
  2. If you don't already have it, install PostgreSQL by following the steps from step 4 of the source code section (*Using source code*). 
  3. Change the *config.ini* file in the *dist_one_file/* folder as explained step 5 from the source code section
  4. Execute the *main* executable and go through the steps.
@@ -96,9 +97,9 @@ There are several ways to deploy the web interfaces: standalone built-in Flask s
 
  ### Preparation for all ways
  Here are the steps for deploying the model from the source code:
- 1. Clone the git repository onto your computer (note this Git repository has 2 Git submodules so we need to take that into account): 
+ 1. Clone the git repository onto your computer: 
     ```
-    git clone --recurse-submodules -j8 https://github.com/Matt-Conrad/CXR_View_Classification.git
+    git clone https://github.com/Matt-Conrad/CXR_View_Classification.git
     ```
  2. If you don't already have it, install anaconda using [these instructions](https://docs.anaconda.com/anaconda/install/)
  3. Run the following commands to build and enter the conda environment. Note: The environment.yml has *nomkl* library in it, which I needed for my AMD-based computer. If you're on Windows, you may need to remove that library to get this environment installed: 
@@ -152,9 +153,9 @@ There are several ways to deploy the web interfaces: standalone built-in Flask s
  9. You now have a running Nginx/Gunicorn server pair running the Flask app. In this setup, the Nginx server is operating on port **80** and accepts requests from the localhost or other computers on the network. The Nginx server will pass requests to the Gunicorn server on port **8000** of the same computer, but this Gunicorn server is not directly accessible to computers outside the localhost. Use the send_script.py script to send a DCM file over HTTP to port **80** of the target computer.  
 
 ## Web API Usage for AWS Elastic Beanstalk
- 1. Clone the git repository onto your computer (note this Git repository has 2 Git submodules so we need to take that into account): 
+ 1. Clone the git repository onto your computer: 
     ```
-    git clone --recurse-submodules -j8 https://github.com/Matt-Conrad/CXR_View_Classification.git
+    git clone https://github.com/Matt-Conrad/CXR_View_Classification.git
     ```
  2. Go to an AWS Elastic Beanstalk console > "Environments" Tab
  3. Click "Create a new environment", select "Web server environment". Enter an application name and environment name in their respective boxes.
@@ -181,7 +182,6 @@ Ideas for future improvements:
  - Use C++ for the algorithm to speed up the processing
  - Add executables for other OSs
  - Make it so that nomkl only installs if you have AMD processor
- - Convert the Git submodules to Python packages
  - Use pytest for unit testing
  - Find a way to remove pre-installed Postgres dependency
  - Make image set source URL more visible to user

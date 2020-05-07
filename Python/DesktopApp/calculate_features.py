@@ -12,6 +12,8 @@ import cv2
 from skimage.feature import hog
 from metadata_to_db.config import config
 from shared_image_processing.connectedComponents import getBiggestComp
+from shared_image_processing.enhancement import contrast_stretch
+from shared_image_processing.features import calc_image_prof
 
 def calculate_features(config_file_name):
     """Cycles through the table and pulls one image at a time.
@@ -276,37 +278,6 @@ def last_nonzero(arr, axis, invalid_val=-1):
     val = arr.shape[axis] - np.flip(mask, axis=axis).argmax(axis=axis) - 1
     return np.where(mask.any(axis=axis), val, invalid_val)
 
-def calc_image_prof(image):
-    """Calculate the mean horizontal and vertical profiles.
-    
-    Parameters
-    ----------
-    image : ndarray
-        Image data
-    
-    Returns
-    -------
-    (float[], float[])
-        The mean horizontal and vertical profiles
-    """
-    logging.debug('Calculating the profiles of the image')
-    image_square = cv2.resize(image, (200, 200), interpolation=cv2.INTER_AREA)
-    
-    hor_profile = np.mean(image_square, axis=0)
-    vert_profile = np.mean(image_square, axis=1)
-
-    # plt.subplot(1, 2, 1)
-    # plt.imshow(image_square, cmap='bone')
-    # plt.subplot(1, 2, 2)
-    # plt.plot(np.arange(0, 200), hor_profile, label='Horizontal')
-    # plt.plot(np.arange(0, 200), vert_profile, label='Vertical')
-    # plt.legend()
-    # plt.show()
-
-    logging.debug('Done calculating the profiles of the image')
-
-    return hor_profile, vert_profile
-
 def preprocessing(image, record):
     """Runs the preprocessing steps on the image.
     
@@ -380,46 +351,3 @@ def preprocessing(image, record):
     logging.debug('Preprocessing completed.')
     
     return image_downsize
-
-def contrast_stretch(image, min_I, max_I):
-    """Apply the contrast stretch transformation to the image.
-
-    All values < min_I will be 0 and all values > max_I will be 1.
-    
-    Parameters
-    ----------
-    image : ndarray
-        Image data
-    min_I : int
-        Intensity floor
-    max_I : int
-        Intensity ceiling
-    
-    Returns
-    -------
-    ndarray
-        Contrast-stretch image
-    """
-    # copy image
-    image_copy = image.copy()
-
-    try: 
-        # Apply transform
-        A = np.array([[min_I, 1], [max_I, 1]])
-        B = [0, 1]
-
-        [slope, intercept] = np.linalg.solve(A, B)
-
-        image_copy[np.where((image_copy >= min_I) & (image_copy <= max_I))] = \
-            slope * image_copy[np.where((image_copy >= min_I) & (image_copy <= max_I))] + intercept
-
-        image_copy[np.where(image < min_I)] = 0
-        image_copy[np.where(image > max_I)] = 1
-    except np.linalg.LinAlgError as err:
-        # Ignore singular matrix issues and raise other issues
-        if 'Singular matrix' in str(err):
-            logging.warning('SINGULAR MATRIX: NOT DOING CONTRAST STRETCH')
-        else:
-            raise
-
-    return image_copy

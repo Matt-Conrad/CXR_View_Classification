@@ -22,5 +22,5 @@ dependencies:
   - pip:
     - PyQt5
     - https://github.com/pyinstaller/pyinstaller/tarball/develop
-    - shared-image-processing==0.0.1
+    - shared-image-processing==0.0.2
     - metadata-to-db==0.0.1
