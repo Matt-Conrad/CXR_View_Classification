@@ -6,8 +6,8 @@ from PyQt5.QtCore import QThreadPool
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QIcon
 from download_dataset import DatasetController
-import DicomToDatabase.basic_db_ops as bdo
-import DicomToDatabase.config as config
+import metadata_to_db.basic_db_ops as bdo
+import metadata_to_db.config as config
 from main_gui import MainApplication
 
 SOURCE_URL = {

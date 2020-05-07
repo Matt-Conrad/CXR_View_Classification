@@ -7,7 +7,7 @@ import psycopg2.extras
 from sklearn.model_selection import KFold, cross_val_score, train_test_split
 from sklearn import svm
 from joblib import dump
-from DicomToDatabase.config import config
+from metadata_to_db.config import config
 
 def classification(config_file_name):
     """Train a SVM using the feature vectors and labels, then calculate the accuracy using the test set.

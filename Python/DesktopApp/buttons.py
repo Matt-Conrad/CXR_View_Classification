@@ -6,9 +6,9 @@ from PyQt5.QtWidgets import QPushButton
 from classification import classification
 from calculate_features import calculate_features
 from workers import Worker, Updater
-import DicomToDatabase.basic_db_ops as bdo
-import DicomToDatabase.config as config
-from DicomToDatabase.dicom_to_db import dicom_to_db
+import metadata_to_db.basic_db_ops as bdo
+import metadata_to_db.config as config
+from metadata_to_db.dicom_to_db import dicom_to_db
 from LabelImages import LabelImageApplication
 
 class DownloadButton(QPushButton):

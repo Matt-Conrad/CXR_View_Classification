@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 from PyQt5.QtWidgets import QWidget, QLabel, QPushButton
 from PyQt5.QtGui import QPixmap, QImage
-from DicomToDatabase.config import config
+from metadata_to_db.config import config
 
 class LabelImageApplication(QWidget):
     """Contains code for the application used to assist in labeling the data."""

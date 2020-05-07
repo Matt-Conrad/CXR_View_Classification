@@ -10,7 +10,7 @@ import psycopg2.extras
 import cv2
 # from scipy.ndimage.measurements import label
 from skimage.feature import hog
-from DicomToDatabase.config import config
+from metadata_to_db.config import config
 from shared_image_processing.connectedComponents import getBiggestComp
 
 def calculate_features(config_file_name):
