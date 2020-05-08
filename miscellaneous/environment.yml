@@ -1,4 +1,4 @@
-name: test
+name: cxr_view_env
 channels:
   - defaults
   - conda-forge

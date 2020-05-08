@@ -1,7 +1,6 @@
 """Contains function that implements 'Orientation Correction for Chest Images'."""
 import logging
 import os
-import sys
 # import time
 import numpy as np
 import pydicom as pdm
@@ -49,7 +48,7 @@ def calculate_features(config_file_name):
             image = pdm.dcmread(file_path).pixel_array
             
             # Preprocess the image
-            image = preprocessing(image, record)
+            image = preprocessing(image, record['bits_stored'], record['photometric_interpretation'])
 
             # Calculate the various features
             (hor_profile, vert_profile) = calc_image_prof(image)

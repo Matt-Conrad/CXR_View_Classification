@@ -1,17 +1,20 @@
+"""Contains the preprocessing pipeline used by both the desktop and the engine."""
 import logging
 import numpy as np
 import cv2
 from shared_image_processing.enhancement import contrast_stretch
 
-def preprocessing(image, record):
+def preprocessing(image, bits_stored, photometric):
     """Runs the preprocessing steps on the image.
     
     Parameters
     ----------
     image : ndarray
         Image data
-    record : psycopg2 record object?
-        The metadata record for the image
+    bits_stored : int
+        The number of bits used per pixel (e.g. 12 out of 16 bits if the int is uint16)
+    photometric : string
+        The photometric interpretation setting found in the DICOM file
     
     Returns
     -------
@@ -23,10 +26,10 @@ def preprocessing(image, record):
     ValueError
         Raise error if image is not MONOCHROME1 or MONOCHROME2 as expected
     """
-    logging.debug('Beginning preprocessing on %s', record['file_path'])
+    logging.debug('Beginning preprocessing')
 
     # Normalize image
-    highest_possible_intensity = (np.power(2, record['bits_stored']) - 1)
+    highest_possible_intensity = (np.power(2, bits_stored) - 1)
     image_norm = image/highest_possible_intensity
 
     # These images aren't in Hounsfield units and are most likely already windowed (VOI LUT)
@@ -39,9 +42,9 @@ def preprocessing(image, record):
     # image_norm = contrast_stretch(image_norm, min_I, max_I)
 
     # Invert the image if it's MONOCHROME1
-    if record['photometric_interpretation'] == 'MONOCHROME1':
+    if photometric == 'MONOCHROME1':
         image_norm = 1 - image_norm
-    elif record['photometric_interpretation'] == 'MONOCHROME2':
+    elif photometric == 'MONOCHROME2':
         pass
     else:
         raise ValueError('Image is not MONOCHROME1 or MONOCHROME2 as expected.')
