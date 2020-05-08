@@ -1,4 +1,4 @@
-name: cxr_view_env
+name: test
 channels:
   - defaults
   - conda-forge
@@ -24,3 +24,4 @@ dependencies:
     - https://github.com/pyinstaller/pyinstaller/tarball/develop
     - shared-image-processing==0.0.2
     - metadata-to-db==0.0.1
+    - ../Python/SharedCode/

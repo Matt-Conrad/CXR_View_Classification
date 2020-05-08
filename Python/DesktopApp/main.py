@@ -15,6 +15,8 @@ SOURCE_URL = {
         'full_set': 'https://openi.nlm.nih.gov/imgs/collections/NLMCXR_dcm.tgz'
     }
 
+CONFIG_NAME = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.ini')
+
 def run_app():
     """Run the application that guides the user through the process."""
     app = QApplication(sys.argv)
@@ -27,7 +29,7 @@ class Controller():
         logging.info('***INITIALIZING CONTROLLER***')
 
         # String variables
-        self.config_file_name = 'config.ini'
+        self.config_file_name = CONFIG_NAME
         self.dataset = config.config(filename=self.config_file_name, section='dataset_info')['dataset']
         self.url = SOURCE_URL[self.dataset]
 
@@ -75,7 +77,7 @@ class Controller():
 
 if __name__ == "__main__":
     # Get log level from config file
-    log_level = config.config(filename='config.ini', section='logging')['level']
+    log_level = config.config(filename=CONFIG_NAME, section='logging')['level']
     if log_level == 'debug':
         log_level_obj = logging.DEBUG
     elif log_level == 'info':
