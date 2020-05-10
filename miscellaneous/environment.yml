@@ -20,7 +20,7 @@ dependencies:
   - flask=1.1.1
   - pip=20.0.2
   - pip:
-    - PyQt5
+    - PyQt5==5.14.2
     - https://github.com/pyinstaller/pyinstaller/tarball/develop
     - shared-image-processing==0.0.2
     - metadata-to-db==0.0.1
