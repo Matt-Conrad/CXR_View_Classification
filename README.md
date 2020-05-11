@@ -44,7 +44,7 @@ There are several usage paths that one can use. I will be providing the source c
     git clone https://github.com/Matt-Conrad/CXR_View_Classification.git
     ```
  2. If you don't already have it, install pip using [these instructions](https://pip.pypa.io/en/stable/installing/)
- 3. Install virtualenv and Python 3.6 if you don't already have it. You can install virtualenv using [these instructions](https://virtualenv.pypa.io/en/latest/installation.html). Create a virtualenv using ```virtualenv -p PATH_TO_PYTHON_3.6 CXR_env``` to create a folder containing virtual environment files. Activate the environment using ```source CXR_env/bin/activate```. Lastly, install the pip packages using ```pip install -r ./miscellanous/requirements.txt```
+ 3. Install virtualenv and Python 3.6 if you don't already have it. You can install virtualenv using [these instructions](https://virtualenv.pypa.io/en/latest/installation.html). Create a virtualenv using ```virtualenv -p PATH_TO_PYTHON_3.6 CXR_env``` to create a folder containing virtual environment files. Activate the environment using ```source CXR_env/bin/activate```. Lastly, install the pip packages using ```pip install -r requirements.txt``` from inside the *miscellaneous* folder.
  4. If you don't already have it, install PostgreSQL using [these instructions](https://wiki.postgresql.org/wiki/Detailed_installation_guides). If you're on Ubuntu, I used the following to get PostgreSQL set up:
     1. Create the following file: /etc/apt/sources.list.d/pgdg.list
     2. Add the following line to the file: ```http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main```. Alternatively, you could replace the *bionic-pgdg* (for Ubuntu 18.04) with *xenial-pgdg* (for Ubuntu 16.04).
@@ -98,7 +98,7 @@ There are several ways to deploy the web interfaces: standalone built-in Flask s
     git clone https://github.com/Matt-Conrad/CXR_View_Classification.git
     ```
  2. If you don't already have it, install pip using [these instructions](https://pip.pypa.io/en/stable/installing/)
- 3. Install virtualenv and Python 3.6 if you don't already have it. You can install virtualenv using [these instructions](https://virtualenv.pypa.io/en/latest/installation.html). Create a virtualenv using ```virtualenv -p PATH_TO_PYTHON_3.6 CXR_env``` to create a folder containing virtual environment files. Activate the environment using ```source CXR_env/bin/activate```. Lastly, install the pip packages using ```pip install -r ./miscellanous/requirements.txt```
+ 3. Install virtualenv and Python 3.6 if you don't already have it. You can install virtualenv using [these instructions](https://virtualenv.pypa.io/en/latest/installation.html). Create a virtualenv using ```virtualenv -p PATH_TO_PYTHON_3.6 CXR_env``` to create a folder containing virtual environment files. Activate the environment using ```source CXR_env/bin/activate```. Lastly, install the pip packages using ```pip install -r requirements.txt``` from inside the *miscellaneous* folder.
 
  ### Standalone Built-in Flask Server
  4. Open a terminal in the cloned repository and run the following command to add/update the following OS (in this case Linux) environment variables. Note: If you are on Windows, you need to replace the "export" keyword with "set":
