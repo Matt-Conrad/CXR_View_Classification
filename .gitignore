@@ -9,6 +9,7 @@ NLMCXR_subset_dataset
 build*
 Release
 *.egg-info
+*.pro.user
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml

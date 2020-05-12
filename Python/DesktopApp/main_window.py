@@ -1,13 +1,13 @@
 """Contains GUI code for the application."""
 import logging
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QProgressBar, QLabel
+from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QProgressBar, QLabel
 from buttons import DownloadButton, UnpackButton, StoreButton, CalculateButton, LabelButton, ClassificationButton
 
-class MainApplication(QWidget):
+class MainWindow(QMainWindow):
     """Contains GUI code for the application."""
     def __init__(self, controller):
         logging.info('Constructing Main app')
-        QWidget.__init__(self)
+        QMainWindow.__init__(self)
         self.controller = controller
         
         # Set up GUI
@@ -16,6 +16,9 @@ class MainApplication(QWidget):
 
     def fill_window(self):
         """Fills the window with buttons."""
+        # Create the central widget
+        centralWidget = QWidget()
+
         # "Feedback dashboard" displays progress to the user
         self.feedback_dashboard = QVBoxLayout()
         self.msg_box = QLabel('Welcome to the CXR Classification Application')
@@ -51,7 +54,8 @@ class MainApplication(QWidget):
         full_layout.addLayout(upper_buttons)
         full_layout.addLayout(lower_buttons)
 
-        self.setLayout(full_layout)
+        centralWidget.setLayout(full_layout)
+        self.setCentralWidget(centralWidget)
 
         self.show()
 

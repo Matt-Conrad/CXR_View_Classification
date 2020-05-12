@@ -8,7 +8,7 @@ from PyQt5.QtGui import QIcon
 from download_dataset import DatasetController
 import metadata_to_db.basic_db_ops as bdo
 import metadata_to_db.config as config
-from main_gui import MainApplication
+from main_window import MainWindow
 
 SOURCE_URL = {
         'subset': 'https://github.com/Matt-Conrad/CXR_View_Classification/raw/develop/datasets/NLMCXR_subset_dataset.tgz',
@@ -34,7 +34,7 @@ class Controller():
         self.url = SOURCE_URL[self.dataset]
 
         # Object variables
-        self.main_app = MainApplication(self)
+        self.main_app = MainWindow(self)
         self.label_app = None
         self.classifier = None
         self.dataset_controller = DatasetController(self.url)

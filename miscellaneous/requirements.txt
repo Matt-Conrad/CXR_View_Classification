@@ -7,6 +7,7 @@ numpy==1.18.1
 opencv-python==3.4.8.29
 psycopg2-binary==2.8.4
 pydicom==1.4.1
+pydocstyle==5.0.2
 pylint==2.4.4
 PyQt5==5.14.2
 requests==2.22.0
