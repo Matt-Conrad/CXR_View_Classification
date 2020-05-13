@@ -12,6 +12,8 @@ class MainWindow(QMainWindow):
         
         # Set up GUI
         self.fill_window()
+        self.show()
+        
         logging.info('Done constructing Main app')
 
     def fill_window(self):
@@ -56,8 +58,6 @@ class MainWindow(QMainWindow):
 
         centralWidget.setLayout(full_layout)
         self.setCentralWidget(centralWidget)
-
-        self.show()
 
     def update_pro_bar(self, value):
         """Updates the progress bar."""

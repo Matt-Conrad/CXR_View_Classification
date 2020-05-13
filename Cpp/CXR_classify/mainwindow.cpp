@@ -2,32 +2,46 @@
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
-    QWidget *central_widget = new QWidget;
+    fillWindow();
+    show();
+}
 
-    QPushButton *button1 = new QPushButton("One");
-    QPushButton *button2 = new QPushButton("Two");
-    QPushButton *button3 = new QPushButton("Three");
-    QPushButton *button4 = new QPushButton("Four");
-    QPushButton *button5 = new QPushButton("Five");
-    QPushButton *button6 = new QPushButton("Six");
+void MainWindow::fillWindow()
+{
+    centralWidget = new QWidget(this);
 
-    QHBoxLayout *upper_buttons = new QHBoxLayout;
+    QVBoxLayout * fullLayout = new QVBoxLayout(centralWidget);
 
-    upper_buttons->addWidget(button1);
-    upper_buttons->addWidget(button2);
-    upper_buttons->addWidget(button3);
+    QVBoxLayout * feedbackDashboard = new QVBoxLayout;
+    QLabel * msgBox = new QLabel("Welcome to the CXR Classification Application");
+    QProgressBar * proBar = new QProgressBar;
+    feedbackDashboard->addWidget(msgBox);
+    feedbackDashboard->addWidget(proBar);
 
-    QHBoxLayout *lower_buttons = new QHBoxLayout;
+    QHBoxLayout * upperButtons = new QHBoxLayout;
+    QHBoxLayout * lowerButtons = new QHBoxLayout;
 
-    lower_buttons->addWidget(button4);
-    lower_buttons->addWidget(button5);
-    lower_buttons->addWidget(button6);
+    QPushButton * button1 = new QPushButton("Download");
+    upperButtons->addWidget(button1);
 
-    QVBoxLayout *layout = new QVBoxLayout;
+    QPushButton * button2 = new QPushButton("Unpack");
+    upperButtons->addWidget(button2);
 
-    layout->addLayout(upper_buttons);
-    layout->addLayout(lower_buttons);
+    QPushButton * button3 = new QPushButton("Store Metadata");
+    upperButtons->addWidget(button3);
 
-    central_widget->setLayout(layout);
-    setCentralWidget(central_widget);
+    QPushButton * button4 = new QPushButton("Calculate Features");
+    lowerButtons->addWidget(button4);
+
+    QPushButton * button5 = new QPushButton("Label Images");
+    lowerButtons->addWidget(button5);
+
+    QPushButton * button6 = new QPushButton("Train Classifier");
+    lowerButtons->addWidget(button6);
+
+    fullLayout->addLayout(feedbackDashboard);
+    fullLayout->addLayout(upperButtons);
+    fullLayout->addLayout(lowerButtons);
+
+    setCentralWidget(centralWidget);
 }
