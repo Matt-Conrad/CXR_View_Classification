@@ -1,10 +1,16 @@
 #include <QApplication>
-#include "mainwindow.h"
+#include "appcontroller.h"
+#include "confighandlers.h"
 
 int main(int argc, char **argv) {
     QApplication app(argc, argv);
 
-    MainWindow mainWindow;
+    AppController appController = AppController();
 
     return app.exec();
 }
+
+
+
+
+

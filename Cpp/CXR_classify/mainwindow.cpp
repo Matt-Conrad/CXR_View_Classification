@@ -10,38 +10,108 @@ void MainWindow::fillWindow()
 {
     centralWidget = new QWidget(this);
 
-    QVBoxLayout * fullLayout = new QVBoxLayout(centralWidget);
-
-    QVBoxLayout * feedbackDashboard = new QVBoxLayout;
+    // Create all widgets
     QLabel * msgBox = new QLabel("Welcome to the CXR Classification Application");
     QProgressBar * proBar = new QProgressBar;
-    feedbackDashboard->addWidget(msgBox);
-    feedbackDashboard->addWidget(proBar);
+    QPushButton * downloadBtn = new QPushButton("Download");
+    QPushButton * unpackBtn = new QPushButton("Unpack");
+    QPushButton * storeBtn = new QPushButton("Store Metadata");
+    QPushButton * featuresBtn = new QPushButton("Calculate Features");
+    QPushButton * labelBtn = new QPushButton("Label Images");
+    QPushButton * classifyBtn = new QPushButton("Train Classifier");
 
-    QHBoxLayout * upperButtons = new QHBoxLayout;
-    QHBoxLayout * lowerButtons = new QHBoxLayout;
+    // Set object names to access them through the centralWidget
+    msgBox->setObjectName("msgBox");
+    proBar->setObjectName("proBar");
+    downloadBtn->setObjectName("downloadBtn");
+    unpackBtn->setObjectName("unpackBtn");
+    storeBtn->setObjectName("storeBtn");
+    featuresBtn->setObjectName("featuresBtn");
+    labelBtn->setObjectName("labelBtn");
+    classifyBtn->setObjectName("classifyBtn");
 
-    QPushButton * button1 = new QPushButton("Download");
-    upperButtons->addWidget(button1);
+    // Add widgets to layout
+    QGridLayout * layout = new QGridLayout;
+    layout->addWidget(msgBox, 0, 0, 1, 3);
+    layout->addWidget(proBar, 1, 0, 1, 3);
+    layout->addWidget(downloadBtn, 2, 0);
+    layout->addWidget(unpackBtn, 2, 1);
+    layout->addWidget(storeBtn, 2, 2);
+    layout->addWidget(featuresBtn, 3, 0);
+    layout->addWidget(labelBtn, 3, 1);
+    layout->addWidget(classifyBtn, 3, 2);
 
-    QPushButton * button2 = new QPushButton("Unpack");
-    upperButtons->addWidget(button2);
-
-    QPushButton * button3 = new QPushButton("Store Metadata");
-    upperButtons->addWidget(button3);
-
-    QPushButton * button4 = new QPushButton("Calculate Features");
-    lowerButtons->addWidget(button4);
-
-    QPushButton * button5 = new QPushButton("Label Images");
-    lowerButtons->addWidget(button5);
-
-    QPushButton * button6 = new QPushButton("Train Classifier");
-    lowerButtons->addWidget(button6);
-
-    fullLayout->addLayout(feedbackDashboard);
-    fullLayout->addLayout(upperButtons);
-    fullLayout->addLayout(lowerButtons);
-
+    // Set layout
+    centralWidget->setLayout(layout);
     setCentralWidget(centralWidget);
+}
+
+void MainWindow::updateText(QString text)
+{
+    centralWidget->findChild<QLabel *>("msgBox")->setText(text);
+}
+
+void MainWindow::updateProBar(uint64_t value)
+{
+    centralWidget->findChild<QProgressBar *>("proBar")->setValue(value);
+}
+
+void MainWindow::stage1_ui()
+{
+    centralWidget->findChild<QPushButton *>("downloadBtn")->setDisabled(false);
+    centralWidget->findChild<QPushButton *>("unpackBtn")->setDisabled(true);
+    centralWidget->findChild<QPushButton *>("storeBtn")->setDisabled(true);
+    centralWidget->findChild<QPushButton *>("featuresBtn")->setDisabled(true);
+    centralWidget->findChild<QPushButton *>("labelBtn")->setDisabled(true);
+    centralWidget->findChild<QPushButton *>("classifyBtn")->setDisabled(true);
+}
+
+void MainWindow::stage2_ui()
+{
+    centralWidget->findChild<QPushButton *>("downloadBtn")->setDisabled(true);
+    centralWidget->findChild<QPushButton *>("unpackBtn")->setDisabled(false);
+    centralWidget->findChild<QPushButton *>("storeBtn")->setDisabled(true);
+    centralWidget->findChild<QPushButton *>("featuresBtn")->setDisabled(true);
+    centralWidget->findChild<QPushButton *>("labelBtn")->setDisabled(true);
+    centralWidget->findChild<QPushButton *>("classifyBtn")->setDisabled(true);
+}
+
+void MainWindow::stage3_ui()
+{
+    centralWidget->findChild<QPushButton *>("downloadBtn")->setDisabled(true);
+    centralWidget->findChild<QPushButton *>("unpackBtn")->setDisabled(true);
+    centralWidget->findChild<QPushButton *>("storeBtn")->setDisabled(false);
+    centralWidget->findChild<QPushButton *>("featuresBtn")->setDisabled(true);
+    centralWidget->findChild<QPushButton *>("labelBtn")->setDisabled(true);
+    centralWidget->findChild<QPushButton *>("classifyBtn")->setDisabled(true);
+}
+
+void MainWindow::stage4_ui()
+{
+    centralWidget->findChild<QPushButton *>("downloadBtn")->setDisabled(true);
+    centralWidget->findChild<QPushButton *>("unpackBtn")->setDisabled(true);
+    centralWidget->findChild<QPushButton *>("storeBtn")->setDisabled(true);
+    centralWidget->findChild<QPushButton *>("featuresBtn")->setDisabled(false);
+    centralWidget->findChild<QPushButton *>("labelBtn")->setDisabled(true);
+    centralWidget->findChild<QPushButton *>("classifyBtn")->setDisabled(true);
+}
+
+void MainWindow::stage5_ui()
+{
+    centralWidget->findChild<QPushButton *>("downloadBtn")->setDisabled(true);
+    centralWidget->findChild<QPushButton *>("unpackBtn")->setDisabled(true);
+    centralWidget->findChild<QPushButton *>("storeBtn")->setDisabled(true);
+    centralWidget->findChild<QPushButton *>("featuresBtn")->setDisabled(true);
+    centralWidget->findChild<QPushButton *>("labelBtn")->setDisabled(false);
+    centralWidget->findChild<QPushButton *>("classifyBtn")->setDisabled(true);
+}
+
+void MainWindow::stage6_ui()
+{
+    centralWidget->findChild<QPushButton *>("downloadBtn")->setDisabled(true);
+    centralWidget->findChild<QPushButton *>("unpackBtn")->setDisabled(true);
+    centralWidget->findChild<QPushButton *>("storeBtn")->setDisabled(true);
+    centralWidget->findChild<QPushButton *>("featuresBtn")->setDisabled(true);
+    centralWidget->findChild<QPushButton *>("labelBtn")->setDisabled(true);
+    centralWidget->findChild<QPushButton *>("classifyBtn")->setDisabled(false);
 }
