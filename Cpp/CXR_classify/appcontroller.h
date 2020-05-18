@@ -17,6 +17,8 @@ const std::unordered_map<std::string, std::string> c_sourceUrl = {
 class AppController
 {
     friend class DownloadButton;
+    friend class UnpackButton;
+
 public:
     AppController();
 

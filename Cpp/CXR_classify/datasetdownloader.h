@@ -48,7 +48,7 @@ private:
 
 public slots:
     void getDataset();
-
+    void unpack();
 };
 
 #endif // DATASETDOWNLOADER_H

@@ -11,6 +11,7 @@
 #include <QProgressBar>
 
 #include "downloadbutton.h"
+#include "unpackbutton.h"
 
 class AppController;
 

@@ -6,8 +6,3 @@ DownloadButton::DownloadButton(const char * text, QMainWindow * window, AppContr
     DownloadButton::controller = controller;
     connect(this, SIGNAL (clicked()), controller->downloader, SLOT (getDataset()));
 }
-
-void DownloadButton::test()
-{
-    std::cout << "test" << std::endl;
-}

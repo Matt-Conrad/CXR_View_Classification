@@ -15,9 +15,6 @@ public:
 
 private:
     AppController * controller;
-
-private slots:
-    void test();
 };
 
 #endif // DOWNLOADBUTTON_H
