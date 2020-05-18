@@ -1,6 +1,7 @@
 #ifndef DATASETDOWNLOADER_H
 #define DATASETDOWNLOADER_H
 
+#include <QObject>
 #include <string>
 #include <unordered_map>
 #include <boost/dll/runtime_symbol_info.hpp>
@@ -21,13 +22,13 @@ const std::unordered_map<std::string, uint16_t> expected_num_files_in_dataset = 
         {"NLMCXR_dcm.tgz", 7470}
     };
 
-class DatasetDownloader
+class DatasetDownloader : public QObject
 {
+    Q_OBJECT
 friend class AppController;
 
 public:
     DatasetDownloader(std::string url);
-    void getDataset();
     void downloadDataset();
 
 private:
@@ -44,6 +45,10 @@ private:
     const uint16_t expected_num_files = expected_num_files_in_dataset.at("NLMCXR_subset_dataset.tgz");
 
     int download();
+
+public slots:
+    void getDataset();
+
 };
 
 #endif // DATASETDOWNLOADER_H

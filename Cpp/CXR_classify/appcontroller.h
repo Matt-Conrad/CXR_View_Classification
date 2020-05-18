@@ -16,6 +16,7 @@ const std::unordered_map<std::string, std::string> c_sourceUrl = {
 
 class AppController
 {
+    friend class DownloadButton;
 public:
     AppController();
 
@@ -26,10 +27,10 @@ private:
     std::string url = c_sourceUrl.at(dataset);
 
     // Object variables
-    MainWindow mainWindow = MainWindow();
     // label_app
     // classifier
-    DatasetDownloader downloader = DatasetDownloader(url);
+    DatasetDownloader * downloader = new DatasetDownloader(url);
+    MainWindow mainWindow = MainWindow(this);
 
     // From config file
     std::string dbName = configParser(configFilename, "postgresql").get<std::string>("database");

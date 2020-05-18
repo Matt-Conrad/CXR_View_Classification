@@ -12,11 +12,13 @@
 
 #include "downloadbutton.h"
 
+class AppController;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
+    MainWindow(AppController * controller);
 
     void stage1_ui();
     void stage2_ui();
@@ -26,14 +28,14 @@ public:
     void stage6_ui();
 
 private:
+    AppController * controller;
+
     QWidget * centralWidget = nullptr;
 
     void fillWindow();
 
     void updateText(QString text);
     void updateProBar(uint64_t value);
-
-signals:
 
 };
 

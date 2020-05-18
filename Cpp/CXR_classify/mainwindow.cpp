@@ -1,7 +1,9 @@
 #include "mainwindow.h"
+#include <appcontroller.h>
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
+MainWindow::MainWindow(AppController * controller) : QMainWindow()
 {
+    MainWindow::controller = controller;
     fillWindow();
     show();
 }
@@ -14,7 +16,7 @@ void MainWindow::fillWindow()
     QLabel * msgBox = new QLabel("Welcome to the CXR Classification Application");
     QProgressBar * proBar = new QProgressBar;
 //    QPushButton * downloadBtn = new QPushButton("Download");
-    QPushButton * downloadBtn = new DownloadButton("Download");
+    QPushButton * downloadBtn = new DownloadButton("Download", this, this->controller);
     QPushButton * unpackBtn = new QPushButton("Unpack");
     QPushButton * storeBtn = new QPushButton("Store Metadata");
     QPushButton * featuresBtn = new QPushButton("Calculate Features");

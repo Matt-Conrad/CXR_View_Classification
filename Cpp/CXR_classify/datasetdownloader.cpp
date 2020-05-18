@@ -1,7 +1,7 @@
 #include "datasetdownloader.h"
 
 
-DatasetDownloader::DatasetDownloader(std::string url)
+DatasetDownloader::DatasetDownloader(std::string url) : QObject()
 {
     DatasetDownloader::url = url;
     parentFolder = boost::dll::program_location().parent_path().string();

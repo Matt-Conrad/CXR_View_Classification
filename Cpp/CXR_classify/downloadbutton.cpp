@@ -1,8 +1,10 @@
 #include "downloadbutton.h"
+#include "appcontroller.h"
 
-DownloadButton::DownloadButton(const char * text) : QPushButton(text)
+DownloadButton::DownloadButton(const char * text, QMainWindow * window, AppController * controller) : QPushButton(text, window)
 {
-    connect(this, SIGNAL (clicked()), this, SLOT (test()));
+    DownloadButton::controller = controller;
+    connect(this, SIGNAL (clicked()), controller->downloader, SLOT (getDataset()));
 }
 
 void DownloadButton::test()
