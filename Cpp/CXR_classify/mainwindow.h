@@ -10,6 +10,8 @@
 #include <QLabel>
 #include <QProgressBar>
 
+#include "downloadbutton.h"
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT

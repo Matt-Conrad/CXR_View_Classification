@@ -13,7 +13,8 @@ void MainWindow::fillWindow()
     // Create all widgets
     QLabel * msgBox = new QLabel("Welcome to the CXR Classification Application");
     QProgressBar * proBar = new QProgressBar;
-    QPushButton * downloadBtn = new QPushButton("Download");
+//    QPushButton * downloadBtn = new QPushButton("Download");
+    QPushButton * downloadBtn = new DownloadButton("Download");
     QPushButton * unpackBtn = new QPushButton("Unpack");
     QPushButton * storeBtn = new QPushButton("Store Metadata");
     QPushButton * featuresBtn = new QPushButton("Calculate Features");

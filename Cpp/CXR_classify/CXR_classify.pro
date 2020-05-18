@@ -20,6 +20,7 @@ SOURCES += \
         appcontroller.cpp \
         confighandlers.cpp \
         datasetdownloader.cpp \
+        downloadbutton.cpp \
         main.cpp \
         mainwindow.cpp
 
@@ -32,6 +33,7 @@ HEADERS += \
     appcontroller.h \
     confighandlers.h \
     datasetdownloader.h \
+    downloadbutton.h \
     mainwindow.h
 
 LIBS += -ldl -lboost_system -lboost_filesystem -lstdc++fs  -lcurl
