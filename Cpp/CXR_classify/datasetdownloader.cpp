@@ -34,6 +34,7 @@ void DatasetDownloader::getDataset()
     } else {
         DatasetDownloader::downloadDataset();
     }
+    emit finished();
 }
 
 void DatasetDownloader::downloadDataset()

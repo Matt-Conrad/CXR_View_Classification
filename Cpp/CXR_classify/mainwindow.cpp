@@ -15,7 +15,8 @@ void MainWindow::fillWindow()
     // Create all widgets
     QLabel * msgBox = new QLabel("Welcome to the CXR Classification Application");
     QProgressBar * proBar = new QProgressBar;
-    QPushButton * downloadBtn = new DownloadButton("Download", this, this->controller);
+
+    QPushButton * downloadBtn = new QPushButton("Download");
     QPushButton * unpackBtn = new UnpackButton("Unpack", this, this->controller);
     QPushButton * storeBtn = new QPushButton("Store Metadata");
     QPushButton * featuresBtn = new QPushButton("Calculate Features");
@@ -58,7 +59,7 @@ void MainWindow::updateProBar(uint64_t value)
     centralWidget->findChild<QProgressBar *>("proBar")->setValue(value);
 }
 
-void MainWindow::stage1_ui()
+void MainWindow::stage1_ui(DatasetDownloader * downloader)
 {
     centralWidget->findChild<QPushButton *>("downloadBtn")->setDisabled(false);
     centralWidget->findChild<QPushButton *>("unpackBtn")->setDisabled(true);
@@ -67,6 +68,14 @@ void MainWindow::stage1_ui()
     centralWidget->findChild<QPushButton *>("labelBtn")->setDisabled(true);
     centralWidget->findChild<QPushButton *>("classifyBtn")->setDisabled(true);
 
+    QThread * thread = new QThread;
+    downloader->moveToThread(thread);
+    connect(centralWidget->findChild<QPushButton *>("downloadBtn"), SIGNAL (clicked()), downloader, SLOT (getDataset()));
+    connect(centralWidget->findChild<QPushButton *>("downloadBtn"), SIGNAL (clicked()), thread, SLOT (start()));
+    connect(thread, SIGNAL (started()), downloader, SLOT (getDataset()));
+    connect(downloader, SIGNAL (finished()), thread, SLOT (quit()));
+    connect(downloader, SIGNAL (finished()), downloader, SLOT (deleteLater()));
+    connect(thread, SIGNAL (finished()), thread, SLOT (deleteLater()));
 }
 
 void MainWindow::stage2_ui()
