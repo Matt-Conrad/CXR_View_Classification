@@ -5,6 +5,7 @@
 #include <string>
 #include <filesystem>
 #include <QThreadPool>
+#include <QThread>
 #include "mainwindow.h"
 #include "datasetdownloader.h"
 #include "confighandlers.h"
@@ -19,9 +20,6 @@ class AppController
     friend class DownloadButton;
     friend class UnpackButton;
 
-public:
-    AppController();
-
 private:
     // String variables
     std::string configFilename = "../CXR_classify/config.ini";
@@ -31,8 +29,6 @@ private:
     // Object variables
     // label_app
     // classifier
-    DatasetDownloader * downloader = new DatasetDownloader(url);
-    MainWindow mainWindow = MainWindow(this);
 
     // From config file
     std::string dbName = configParser(configFilename, "postgresql").get<std::string>("database");
@@ -42,6 +38,11 @@ private:
 
     void initGuiState();
     QThreadPool threadpool = QThreadPool();
+
+public:
+    AppController();
+    DatasetDownloader * downloader = new DatasetDownloader(url);
+    MainWindow mainWindow = MainWindow(this);
 };
 
 #endif // APPCONTROLLER_H

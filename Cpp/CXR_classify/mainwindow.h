@@ -35,6 +35,7 @@ private:
 
     void fillWindow();
 
+public slots:
     void updateText(QString text);
     void updateProBar(uint64_t value);
 

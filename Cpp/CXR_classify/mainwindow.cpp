@@ -66,6 +66,7 @@ void MainWindow::stage1_ui()
     centralWidget->findChild<QPushButton *>("featuresBtn")->setDisabled(true);
     centralWidget->findChild<QPushButton *>("labelBtn")->setDisabled(true);
     centralWidget->findChild<QPushButton *>("classifyBtn")->setDisabled(true);
+
 }
 
 void MainWindow::stage2_ui()
