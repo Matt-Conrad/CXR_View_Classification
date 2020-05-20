@@ -170,4 +170,5 @@ static int extract(const char *filename)
 void DatasetDownloader::unpack()
 {
     extract(filename_fullpath.c_str());
+    emit finished();
 }
