@@ -9,6 +9,7 @@
 #include "mainwindow.h"
 #include "datasetdownloader.h"
 #include "confighandlers.h"
+#include "unpacker.h"
 
 const std::unordered_map<std::string, std::string> c_sourceUrl = {
         {"subset", "https://raw.githubusercontent.com/Matt-Conrad/CXR_View_Classification/master/datasets/NLMCXR_subset_dataset.tgz"},
@@ -42,6 +43,7 @@ private:
 public:
     AppController();
     DatasetDownloader * downloader = new DatasetDownloader(url);
+    Unpacker * unpacker = new Unpacker(url);
     MainWindow mainWindow = MainWindow(this);
 };
 

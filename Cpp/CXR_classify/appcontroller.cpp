@@ -13,7 +13,7 @@ void AppController::initGuiState()
     if (!std::filesystem::exists(downloader->filename) && !std::filesystem::exists(downloader->folder_full_path)) {
         mainWindow.stage1_ui(downloader);
     } else if (std::filesystem::exists(downloader->filename) && !std::filesystem::exists(downloader->folder_full_path)) {
-        mainWindow.stage2_ui(downloader);
+        mainWindow.stage2_ui(unpacker);
     } else if (std::filesystem::exists(downloader->filename) && std::filesystem::exists(downloader->folder_full_path)) {
         mainWindow.stage3_ui();
     }

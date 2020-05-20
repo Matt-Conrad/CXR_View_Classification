@@ -48,7 +48,6 @@ private:
 
 public slots:
     void getDataset();
-    void unpack();
 
 signals:
     void finished();

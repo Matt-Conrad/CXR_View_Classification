@@ -21,7 +21,8 @@ SOURCES += \
         confighandlers.cpp \
         datasetdownloader.cpp \
         main.cpp \
-        mainwindow.cpp
+        mainwindow.cpp \
+        unpacker.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -32,7 +33,8 @@ HEADERS += \
     appcontroller.h \
     confighandlers.h \
     datasetdownloader.h \
-    mainwindow.h
+    mainwindow.h \
+    unpacker.h
 
 LIBS += -ldl -lboost_system -lboost_filesystem -lstdc++fs  -lcurl -lz -lbz2  -larchive
 

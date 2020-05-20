@@ -17,7 +17,6 @@ void MainWindow::fillWindow()
     QProgressBar * proBar = new QProgressBar;
 
     QPushButton * downloadBtn = new QPushButton("Download");
-//    QPushButton * unpackBtn = new UnpackButton("Unpack", this, this->controller);
     QPushButton * unpackBtn = new QPushButton("Unpack");
     QPushButton * storeBtn = new QPushButton("Store Metadata");
     QPushButton * featuresBtn = new QPushButton("Calculate Features");
@@ -69,17 +68,16 @@ void MainWindow::stage1_ui(DatasetDownloader * downloader)
     centralWidget->findChild<QPushButton *>("labelBtn")->setDisabled(true);
     centralWidget->findChild<QPushButton *>("classifyBtn")->setDisabled(true);
 
-    QThread * thread = new QThread;
-    downloader->moveToThread(thread);
-    connect(centralWidget->findChild<QPushButton *>("downloadBtn"), SIGNAL (clicked()), downloader, SLOT (getDataset()));
-    connect(centralWidget->findChild<QPushButton *>("downloadBtn"), SIGNAL (clicked()), thread, SLOT (start()));
-    connect(thread, SIGNAL (started()), downloader, SLOT (getDataset()));
-    connect(downloader, SIGNAL (finished()), thread, SLOT (quit()));
+    QThread * downloadThread = new QThread;
+    downloader->moveToThread(downloadThread);
+    connect(centralWidget->findChild<QPushButton *>("downloadBtn"), SIGNAL (clicked()), downloadThread, SLOT (start()));
+    connect(downloadThread, SIGNAL (started()), downloader, SLOT (getDataset()));
+    connect(downloader, SIGNAL (finished()), downloadThread, SLOT (quit()));
     connect(downloader, SIGNAL (finished()), downloader, SLOT (deleteLater()));
-    connect(thread, SIGNAL (finished()), thread, SLOT (deleteLater()));
+    connect(downloadThread, SIGNAL (finished()), downloadThread, SLOT (deleteLater()));
 }
 
-void MainWindow::stage2_ui(DatasetDownloader * downloader)
+void MainWindow::stage2_ui(Unpacker * unpacker)
 {
     centralWidget->findChild<QPushButton *>("downloadBtn")->setDisabled(true);
     centralWidget->findChild<QPushButton *>("unpackBtn")->setDisabled(false);
@@ -88,14 +86,13 @@ void MainWindow::stage2_ui(DatasetDownloader * downloader)
     centralWidget->findChild<QPushButton *>("labelBtn")->setDisabled(true);
     centralWidget->findChild<QPushButton *>("classifyBtn")->setDisabled(true);
 
-    QThread * thread = new QThread;
-    downloader->moveToThread(thread);
-    connect(centralWidget->findChild<QPushButton *>("unpackBtn"), SIGNAL (clicked()), downloader, SLOT (unpack()));
-    connect(centralWidget->findChild<QPushButton *>("unpackBtn"), SIGNAL (clicked()), thread, SLOT (start()));
-    connect(thread, SIGNAL (started()), downloader, SLOT (getDataset()));
-    connect(downloader, SIGNAL (finished()), thread, SLOT (quit()));
-    connect(downloader, SIGNAL (finished()), downloader, SLOT (deleteLater()));
-    connect(thread, SIGNAL (finished()), thread, SLOT (deleteLater()));
+    QThread * unpackThread = new QThread;
+    unpacker->moveToThread(unpackThread);
+    connect(centralWidget->findChild<QPushButton *>("unpackBtn"), SIGNAL (clicked()), unpackThread, SLOT (start()));
+    connect(unpackThread, SIGNAL (started()), unpacker, SLOT (unpack()));
+    connect(unpacker, SIGNAL (finished()), unpackThread, SLOT (quit()));
+    connect(unpacker, SIGNAL (finished()), unpacker, SLOT (deleteLater()));
+    connect(unpackThread, SIGNAL (finished()), unpackThread, SLOT (deleteLater()));
 }
 
 void MainWindow::stage3_ui()
