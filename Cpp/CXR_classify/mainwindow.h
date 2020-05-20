@@ -10,7 +10,7 @@
 #include <QLabel>
 #include <QProgressBar>
 
-#include "datasetdownloader.h"
+#include "downloader.h"
 #include "unpacker.h"
 
 class AppController;
@@ -21,7 +21,7 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(AppController * controller);
 
-    void stage1_ui(DatasetDownloader * downloader);
+    void stage1_ui(Downloader * downloader);
     void stage2_ui(Unpacker * unpacker);
     void stage3_ui();
     void stage4_ui();

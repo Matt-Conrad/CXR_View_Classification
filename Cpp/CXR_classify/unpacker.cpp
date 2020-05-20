@@ -1,15 +1,8 @@
 #include "unpacker.h"
 
-Unpacker::Unpacker(std::string url, QObject *parent) : QObject(parent)
+Unpacker::Unpacker(std::string filename_fullpath, QObject *parent) : QObject(parent)
 {
-    Unpacker::url = url;
-    parentFolder = boost::dll::program_location().parent_path().string();
-    filename = url.substr(url.find_last_of("/") + 1);
-    filename_fullpath = parentFolder + "/" + filename;
-    folder_name = filename.substr(0, filename.find_last_of("."));;
-    folder_full_path = parentFolder + "/" + folder_name;
-    columns_info_name = "columns_info.json";
-    columns_info_full_path = parentFolder + "/" + columns_info_name;
+    Unpacker::filename_fullpath = filename_fullpath;
 }
 
 

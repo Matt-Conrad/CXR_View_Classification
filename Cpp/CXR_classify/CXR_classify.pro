@@ -19,7 +19,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         appcontroller.cpp \
         confighandlers.cpp \
-        datasetdownloader.cpp \
+        downloader.cpp \
         main.cpp \
         mainwindow.cpp \
         unpacker.cpp
@@ -32,7 +32,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 HEADERS += \
     appcontroller.h \
     confighandlers.h \
-    datasetdownloader.h \
+    downloader.h \
     mainwindow.h \
     unpacker.h
 

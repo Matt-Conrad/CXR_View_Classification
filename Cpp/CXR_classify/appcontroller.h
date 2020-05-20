@@ -7,7 +7,7 @@
 #include <QThreadPool>
 #include <QThread>
 #include "mainwindow.h"
-#include "datasetdownloader.h"
+#include "downloader.h"
 #include "confighandlers.h"
 #include "unpacker.h"
 
@@ -26,6 +26,13 @@ private:
     std::string configFilename = "../CXR_classify/config.ini";
     std::string dataset = configParser(configFilename, "dataset_info").get<std::string>("dataset");
     std::string url = c_sourceUrl.at(dataset);
+    std::string parentFolder = boost::dll::program_location().parent_path().string();
+    std::string filename = url.substr(url.find_last_of("/") + 1);
+    std::string filename_fullpath = parentFolder + "/" + filename;
+    std::string folder_name = filename.substr(0, filename.find_last_of("."));
+    std::string folder_full_path = parentFolder + "/" + folder_name;
+    std::string columns_info_name = "columns_info.json";
+    std::string columns_info_full_path = parentFolder + "/" + columns_info_name;
 
     // Object variables
     // label_app
@@ -42,8 +49,8 @@ private:
 
 public:
     AppController();
-    DatasetDownloader * downloader = new DatasetDownloader(url);
-    Unpacker * unpacker = new Unpacker(url);
+    Downloader * downloader = new Downloader(url, filename_fullpath);
+    Unpacker * unpacker = new Unpacker(filename_fullpath);
     MainWindow mainWindow = MainWindow(this);
 };
 

@@ -59,7 +59,7 @@ void MainWindow::updateProBar(uint64_t value)
     centralWidget->findChild<QProgressBar *>("proBar")->setValue(value);
 }
 
-void MainWindow::stage1_ui(DatasetDownloader * downloader)
+void MainWindow::stage1_ui(Downloader * downloader)
 {
     centralWidget->findChild<QPushButton *>("downloadBtn")->setDisabled(false);
     centralWidget->findChild<QPushButton *>("unpackBtn")->setDisabled(true);

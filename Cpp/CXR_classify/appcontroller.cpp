@@ -10,11 +10,11 @@ void AppController::initGuiState()
 {
     mainWindow.setWindowIcon(QIcon("../../miscellaneous/icon.jpg"));
 
-    if (!std::filesystem::exists(downloader->filename) && !std::filesystem::exists(downloader->folder_full_path)) {
+    if (!std::filesystem::exists(filename) && !std::filesystem::exists(folder_full_path)) {
         mainWindow.stage1_ui(downloader);
-    } else if (std::filesystem::exists(downloader->filename) && !std::filesystem::exists(downloader->folder_full_path)) {
+    } else if (std::filesystem::exists(filename) && !std::filesystem::exists(folder_full_path)) {
         mainWindow.stage2_ui(unpacker);
-    } else if (std::filesystem::exists(downloader->filename) && std::filesystem::exists(downloader->folder_full_path)) {
+    } else if (std::filesystem::exists(filename) && std::filesystem::exists(folder_full_path)) {
         mainWindow.stage3_ui();
     }
 }

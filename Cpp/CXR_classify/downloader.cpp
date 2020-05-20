@@ -1,33 +1,27 @@
-#include "datasetdownloader.h"
+#include "downloader.h"
 
-DatasetDownloader::DatasetDownloader(std::string url) : QObject()
+Downloader::Downloader(std::string url, std::string filename_fullpath) : QObject()
 {
-    DatasetDownloader::url = url;
-    parentFolder = boost::dll::program_location().parent_path().string();
-    filename = url.substr(url.find_last_of("/") + 1);
-    filename_fullpath = parentFolder + "/" + filename;
-    folder_name = filename.substr(0, filename.find_last_of("."));;
-    folder_full_path = parentFolder + "/" + folder_name;
-    columns_info_name = "columns_info.json";
-    columns_info_full_path = parentFolder + "/" + columns_info_name;
+    Downloader::url = url;
+    Downloader::filename_fullpath = filename_fullpath;
 }
 
-void DatasetDownloader::getDataset()
+void Downloader::getDataset()
 {
     if (std::filesystem::exists(filename_fullpath) && !std::filesystem::is_directory(filename_fullpath)) {
         if (std::filesystem::file_size(filename_fullpath) == expected_size) {
             std::cout << "File  was downloaded properly" << std::endl;
         } else {
             std::filesystem::remove(filename_fullpath);
-            DatasetDownloader::downloadDataset();
+            Downloader::downloadDataset();
         }
     } else {
-        DatasetDownloader::downloadDataset();
+        Downloader::downloadDataset();
     }
     emit finished();
 }
 
-void DatasetDownloader::downloadDataset()
+void Downloader::downloadDataset()
 {
     download();
 }
@@ -38,7 +32,7 @@ static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)
   return written;
 }
 
-int DatasetDownloader::download()
+int Downloader::download()
 {
     CURL *curl_handle;
     static const char *pagefilename = filename_fullpath.c_str();
