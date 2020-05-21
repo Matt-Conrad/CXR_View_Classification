@@ -9,8 +9,10 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <QProgressBar>
+#include <filesystem>
 
 #include "downloader.h"
+#include "downloadupdater.h"
 #include "unpacker.h"
 
 class AppController;
@@ -21,7 +23,7 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(AppController * controller);
 
-    void stage1_ui(Downloader * downloader);
+    void stage1_ui();
     void stage2_ui(Unpacker * unpacker);
     void stage3_ui();
     void stage4_ui();
@@ -36,8 +38,8 @@ private:
     void fillWindow();
 
 public slots:
-    void updateText(QString text);
-    void updateProBar(uint64_t value);
+    void startDashboard(QString, quint64, quint64);
+    void updateProgressBar(quint64);
 
 };
 

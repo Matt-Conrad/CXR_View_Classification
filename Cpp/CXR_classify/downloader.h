@@ -3,20 +3,9 @@
 
 #include <QObject>
 #include <string>
-#include <unordered_map>
 #include <filesystem>
 #include <iostream>
 #include <curl/curl.h>
-
-const std::unordered_map<std::string, uint64_t> expected_sizes = {
-        {"NLMCXR_subset_dataset.tgz", 88320855},
-        {"NLMCXR_dcm.tgz", 80694582486}
-    };
-
-const std::unordered_map<std::string, uint16_t> expected_num_files_in_dataset = {
-        {"NLMCXR_subset_dataset.tgz", 10},
-        {"NLMCXR_dcm.tgz", 7470}
-    };
 
 class Downloader : public QObject
 {
@@ -24,15 +13,13 @@ class Downloader : public QObject
 friend class AppController;
 
 public:
-    Downloader(std::string url, std::string filename_fullpath);
+    Downloader(std::string url, std::string filename_fullpath, std::string filename);
     void downloadDataset();
 
 private:
     std::string url;
     std::string filename_fullpath;
-
-    const uint64_t expected_size = expected_sizes.at("NLMCXR_subset_dataset.tgz");
-    const uint16_t expected_num_files = expected_num_files_in_dataset.at("NLMCXR_subset_dataset.tgz");
+    std::string dataset;
 
     int download();
 
@@ -41,6 +28,8 @@ public slots:
 
 signals:
     void finished();
+    void requestStartDashboard(QString, quint64, quint64);
+    void sendProBarUpdate(quint64);
 };
 
 #endif // DATASETDOWNLOADER_H

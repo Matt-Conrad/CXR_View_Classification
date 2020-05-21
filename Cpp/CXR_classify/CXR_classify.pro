@@ -20,6 +20,7 @@ SOURCES += \
         appcontroller.cpp \
         confighandlers.cpp \
         downloader.cpp \
+        downloadupdater.cpp \
         main.cpp \
         mainwindow.cpp \
         unpacker.cpp
@@ -33,6 +34,7 @@ HEADERS += \
     appcontroller.h \
     confighandlers.h \
     downloader.h \
+    downloadupdater.h \
     mainwindow.h \
     unpacker.h
 

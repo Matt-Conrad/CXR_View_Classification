@@ -1,15 +1,17 @@
 #include "downloader.h"
 
-Downloader::Downloader(std::string url, std::string filename_fullpath) : QObject()
+Downloader::Downloader(std::string url, std::string filename_fullpath, std::string dataset) : QObject()
 {
     Downloader::url = url;
     Downloader::filename_fullpath = filename_fullpath;
+    Downloader::dataset = dataset;
 }
 
 void Downloader::getDataset()
 {
+    emit requestStartDashboard("Downloading images", 0, 88320855); // replace hard code with tgzmax
     if (std::filesystem::exists(filename_fullpath) && !std::filesystem::is_directory(filename_fullpath)) {
-        if (std::filesystem::file_size(filename_fullpath) == expected_size) {
+        if (std::filesystem::file_size(filename_fullpath) == 88320855) { // replace hard code with expected size
             std::cout << "File  was downloaded properly" << std::endl;
         } else {
             std::filesystem::remove(filename_fullpath);

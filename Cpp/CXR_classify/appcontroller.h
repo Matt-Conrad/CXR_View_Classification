@@ -10,6 +10,7 @@
 #include "downloader.h"
 #include "confighandlers.h"
 #include "unpacker.h"
+#include "downloadupdater.h"
 
 const std::unordered_map<std::string, std::string> c_sourceUrl = {
         {"subset", "https://raw.githubusercontent.com/Matt-Conrad/CXR_View_Classification/master/datasets/NLMCXR_subset_dataset.tgz"},
@@ -18,8 +19,7 @@ const std::unordered_map<std::string, std::string> c_sourceUrl = {
 
 class AppController
 {
-    friend class DownloadButton;
-    friend class UnpackButton;
+    friend class MainWindow;
 
 private:
     // String variables
@@ -49,7 +49,8 @@ private:
 
 public:
     AppController();
-    Downloader * downloader = new Downloader(url, filename_fullpath);
+    Downloader * downloader = new Downloader(url, filename_fullpath, dataset);
+    DownloadUpdater * downloadUpdater = new DownloadUpdater(filename_fullpath, dataset);
     Unpacker * unpacker = new Unpacker(filename_fullpath);
     MainWindow mainWindow = MainWindow(this);
 };
