@@ -5,20 +5,24 @@
 #include <string>
 #include <filesystem>
 #include <QThreadPool>
+#include <QObject>
 #include <QThread>
 #include "mainwindow.h"
 #include "downloader.h"
 #include "confighandlers.h"
 #include "unpacker.h"
 #include "downloadupdater.h"
+#include "unpackupdater.h"
 
 const std::unordered_map<std::string, std::string> c_sourceUrl = {
         {"subset", "https://raw.githubusercontent.com/Matt-Conrad/CXR_View_Classification/master/datasets/NLMCXR_subset_dataset.tgz"},
         {"full_set", "https://openi.nlm.nih.gov/imgs/collections/NLMCXR_dcm.tgz"}
     };
 
-class AppController
+class AppController : public QObject
 {
+    Q_OBJECT
+
     friend class MainWindow;
 
 private:
@@ -52,7 +56,12 @@ public:
     Downloader * downloader = new Downloader(url, filename_fullpath, dataset);
     DownloadUpdater * downloadUpdater = new DownloadUpdater(filename_fullpath, dataset);
     Unpacker * unpacker = new Unpacker(filename_fullpath);
+    UnpackUpdater * unpackUpdater = new UnpackUpdater(folder_full_path, dataset);
     MainWindow mainWindow = MainWindow(this);
+
+signals:
+    void initStage1();
+    void initStage2();
 };
 
 #endif // APPCONTROLLER_H

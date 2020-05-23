@@ -28,8 +28,6 @@ public slots:
 
 signals:
     void finished();
-    void requestStartDashboard(QString, quint64, quint64);
-    void sendProBarUpdate(quint64);
 };
 
 #endif // DATASETDOWNLOADER_H

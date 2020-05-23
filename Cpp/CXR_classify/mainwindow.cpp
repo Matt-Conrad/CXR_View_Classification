@@ -55,26 +55,24 @@ void MainWindow::startDashboard(QString text, quint64 proBarMin, quint64 proBarM
     centralWidget->findChild<QProgressBar *>("proBar")->setMaximum(proBarMax);
 }
 
+void MainWindow::updateText(QString text)
+{
+    centralWidget->findChild<QLabel *>("msgBox")->setText(text);
+}
 
-void MainWindow::updateProgressBar(quint64 value) {
+void MainWindow::updateProBarBounds(quint64 proBarMin, quint64 proBarMax)
+{
+    centralWidget->findChild<QProgressBar *>("proBar")->setMinimum(proBarMin);
+    centralWidget->findChild<QProgressBar *>("proBar")->setMaximum(proBarMax);
+}
+
+void MainWindow::updateProBarValue(quint64 value) {
     centralWidget->findChild<QProgressBar *>("proBar")->setValue(value);
-//    while (getTgzSize() < getTgzMax()) {
-//        centralWidget->findChild<QProgressBar *>("proBar")->setValue(getTgzSize());
-//        std::this_thread::sleep_for(std::chrono::seconds(1));
-//    }
-//    centralWidget->findChild<QProgressBar *>("proBar")->setValue(getTgzSize());
-//    centralWidget->findChild<QLabel *>("msgBox")->setText("Image download complete");
-
-//    centralWidget->findChild<QPushButton *>("downloadBtn")->setDisabled(true);
-//    centralWidget->findChild<QPushButton *>("unpackBtn")->setDisabled(false);
-//    centralWidget->findChild<QPushButton *>("storeBtn")->setDisabled(true);
-//    centralWidget->findChild<QPushButton *>("featuresBtn")->setDisabled(true);
-//    centralWidget->findChild<QPushButton *>("labelBtn")->setDisabled(true);
-//    centralWidget->findChild<QPushButton *>("classifyBtn")->setDisabled(true);
 }
 
 void MainWindow::stage1_ui()
 {
+    // Disable unused buttons
     centralWidget->findChild<QPushButton *>("downloadBtn")->setDisabled(false);
     centralWidget->findChild<QPushButton *>("unpackBtn")->setDisabled(true);
     centralWidget->findChild<QPushButton *>("storeBtn")->setDisabled(true);
@@ -82,6 +80,7 @@ void MainWindow::stage1_ui()
     centralWidget->findChild<QPushButton *>("labelBtn")->setDisabled(true);
     centralWidget->findChild<QPushButton *>("classifyBtn")->setDisabled(true);
 
+    // Create a worker thread to download and a worker thread to update the GUI at the click of the button
     QThread * downloadThread = new QThread;
     controller->downloader->moveToThread(downloadThread);
     connect(centralWidget->findChild<QPushButton *>("downloadBtn"), SIGNAL (clicked()), downloadThread, SLOT (start()));
@@ -89,23 +88,26 @@ void MainWindow::stage1_ui()
     QThread * downloadUpdaterThread = new QThread;
     controller->downloadUpdater->moveToThread(downloadUpdaterThread);
     connect(centralWidget->findChild<QPushButton *>("downloadBtn"), SIGNAL (clicked()), downloadUpdaterThread, SLOT (start()));
-
+\
+    // Connect the threads to the functions of the classes in the threads
     connect(downloadThread, SIGNAL (started()), controller->downloader, SLOT (getDataset()));
     connect(downloadUpdaterThread, SIGNAL (started()), controller->downloadUpdater, SLOT (updateProgressBar()));
 
-    connect(controller->downloader, SIGNAL (requestStartDashboard(QString, quint64, quint64)), this, SLOT (startDashboard(QString, quint64, quint64)));
-    connect(controller->downloadUpdater, SIGNAL (attemptUpdateProBar(quint64)), this, SLOT (updateProgressBar(quint64)));
+    // Connect the updater to the dashboard
+    connect(controller->downloadUpdater, SIGNAL (attemptUpdateProBarBounds(quint64, quint64)), this, SLOT (updateProBarBounds(quint64, quint64)));
+    connect(controller->downloadUpdater, SIGNAL (attemptUpdateProBarValue(quint64)), this, SLOT (updateProBarValue(quint64)));
+    connect(controller->downloadUpdater, SIGNAL (attemptUpdateText(QString)), this, SLOT (updateText(QString)));
 
+    // When functions in the threads finished, quit the thread, delete the objects in the threads, and delete the threads when able
     connect(controller->downloader, SIGNAL (finished()), downloadThread, SLOT (quit()));
     connect(controller->downloadUpdater, SIGNAL (finished()), downloadUpdaterThread, SLOT (quit()));
-
     connect(controller->downloader, SIGNAL (finished()), controller->downloader, SLOT (deleteLater()));
-    connect(downloadThread, SIGNAL (finished()), downloadThread, SLOT (deleteLater()));
     connect(controller->downloadUpdater, SIGNAL (finished()), controller->downloadUpdater, SLOT (deleteLater()));
+    connect(downloadThread, SIGNAL (finished()), downloadThread, SLOT (deleteLater()));
     connect(downloadUpdaterThread, SIGNAL (finished()), downloadUpdaterThread, SLOT (deleteLater()));
 }
 
-void MainWindow::stage2_ui(Unpacker * unpacker)
+void MainWindow::stage2_ui()
 {
     centralWidget->findChild<QPushButton *>("downloadBtn")->setDisabled(true);
     centralWidget->findChild<QPushButton *>("unpackBtn")->setDisabled(false);
@@ -114,13 +116,39 @@ void MainWindow::stage2_ui(Unpacker * unpacker)
     centralWidget->findChild<QPushButton *>("labelBtn")->setDisabled(true);
     centralWidget->findChild<QPushButton *>("classifyBtn")->setDisabled(true);
 
+//    QThread * unpackThread = new QThread;
+//    controller->unpacker->moveToThread(unpackThread);
+//    connect(centralWidget->findChild<QPushButton *>("unpackBtn"), SIGNAL (clicked()), unpackThread, SLOT (start()));
+//    connect(unpackThread, SIGNAL (started()), controller->unpacker, SLOT (unpack()));
+//    connect(controller->unpacker, SIGNAL (finished()), unpackThread, SLOT (quit()));
+//    connect(controller->unpacker, SIGNAL (finished()), controller->unpacker, SLOT (deleteLater()));
+//    connect(unpackThread, SIGNAL (finished()), unpackThread, SLOT (deleteLater()));
+
+    // Create a worker thread to download and a worker thread to update the GUI at the click of the button
     QThread * unpackThread = new QThread;
-    unpacker->moveToThread(unpackThread);
+    controller->unpacker->moveToThread(unpackThread);
     connect(centralWidget->findChild<QPushButton *>("unpackBtn"), SIGNAL (clicked()), unpackThread, SLOT (start()));
-    connect(unpackThread, SIGNAL (started()), unpacker, SLOT (unpack()));
-    connect(unpacker, SIGNAL (finished()), unpackThread, SLOT (quit()));
-    connect(unpacker, SIGNAL (finished()), unpacker, SLOT (deleteLater()));
+
+    QThread * unpackUpdaterThread = new QThread;
+    controller->unpackUpdater->moveToThread(unpackUpdaterThread);
+    connect(centralWidget->findChild<QPushButton *>("unpackBtn"), SIGNAL (clicked()), unpackUpdaterThread, SLOT (start()));
+\
+    // Connect the threads to the functions of the classes in the threads
+    connect(unpackThread, SIGNAL (started()), controller->unpacker, SLOT (unpack()));
+    connect(unpackUpdaterThread, SIGNAL (started()), controller->unpackUpdater, SLOT (updateProgressBar()));
+
+    // Connect the updater to the dashboard
+    connect(controller->unpackUpdater, SIGNAL (attemptUpdateProBarBounds(quint64, quint64)), this, SLOT (updateProBarBounds(quint64, quint64)));
+    connect(controller->unpackUpdater, SIGNAL (attemptUpdateProBarValue(quint64)), this, SLOT (updateProBarValue(quint64)));
+    connect(controller->unpackUpdater, SIGNAL (attemptUpdateText(QString)), this, SLOT (updateText(QString)));
+
+    // When functions in the threads finished, quit the thread, delete the objects in the threads, and delete the threads when able
+    connect(controller->unpacker, SIGNAL (finished()), unpackThread, SLOT (quit()));
+    connect(controller->unpackUpdater, SIGNAL (finished()), unpackUpdaterThread, SLOT (quit()));
+    connect(controller->unpacker, SIGNAL (finished()), controller->unpacker, SLOT (deleteLater()));
+    connect(controller->unpackUpdater, SIGNAL (finished()), controller->unpackUpdater, SLOT (deleteLater()));
     connect(unpackThread, SIGNAL (finished()), unpackThread, SLOT (deleteLater()));
+    connect(unpackUpdaterThread, SIGNAL (finished()), unpackUpdaterThread, SLOT (deleteLater()));
 }
 
 void MainWindow::stage3_ui()

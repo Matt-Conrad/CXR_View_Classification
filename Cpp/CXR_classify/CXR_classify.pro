@@ -23,7 +23,8 @@ SOURCES += \
         downloadupdater.cpp \
         main.cpp \
         mainwindow.cpp \
-        unpacker.cpp
+        unpacker.cpp \
+        unpackupdater.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -36,7 +37,8 @@ HEADERS += \
     downloader.h \
     downloadupdater.h \
     mainwindow.h \
-    unpacker.h
+    unpacker.h \
+    unpackupdater.h
 
 LIBS += -ldl -lboost_system -lboost_filesystem -lstdc++fs  -lcurl -lz -lbz2  -larchive
 
