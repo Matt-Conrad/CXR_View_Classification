@@ -101,6 +101,7 @@ void MainWindow::stage1_ui()
     // When functions in the threads finished, quit the thread, delete the objects in the threads, and delete the threads when able
     connect(controller->downloader, SIGNAL (finished()), downloadThread, SLOT (quit()));
     connect(controller->downloadUpdater, SIGNAL (finished()), downloadUpdaterThread, SLOT (quit()));
+    connect(controller->downloadUpdater, SIGNAL (finished()), this, SLOT(stage2_ui()));
     connect(controller->downloader, SIGNAL (finished()), controller->downloader, SLOT (deleteLater()));
     connect(controller->downloadUpdater, SIGNAL (finished()), controller->downloadUpdater, SLOT (deleteLater()));
     connect(downloadThread, SIGNAL (finished()), downloadThread, SLOT (deleteLater()));
@@ -115,14 +116,6 @@ void MainWindow::stage2_ui()
     centralWidget->findChild<QPushButton *>("featuresBtn")->setDisabled(true);
     centralWidget->findChild<QPushButton *>("labelBtn")->setDisabled(true);
     centralWidget->findChild<QPushButton *>("classifyBtn")->setDisabled(true);
-
-//    QThread * unpackThread = new QThread;
-//    controller->unpacker->moveToThread(unpackThread);
-//    connect(centralWidget->findChild<QPushButton *>("unpackBtn"), SIGNAL (clicked()), unpackThread, SLOT (start()));
-//    connect(unpackThread, SIGNAL (started()), controller->unpacker, SLOT (unpack()));
-//    connect(controller->unpacker, SIGNAL (finished()), unpackThread, SLOT (quit()));
-//    connect(controller->unpacker, SIGNAL (finished()), controller->unpacker, SLOT (deleteLater()));
-//    connect(unpackThread, SIGNAL (finished()), unpackThread, SLOT (deleteLater()));
 
     // Create a worker thread to download and a worker thread to update the GUI at the click of the button
     QThread * unpackThread = new QThread;
@@ -145,6 +138,7 @@ void MainWindow::stage2_ui()
     // When functions in the threads finished, quit the thread, delete the objects in the threads, and delete the threads when able
     connect(controller->unpacker, SIGNAL (finished()), unpackThread, SLOT (quit()));
     connect(controller->unpackUpdater, SIGNAL (finished()), unpackUpdaterThread, SLOT (quit()));
+    connect(controller->unpackUpdater, SIGNAL (finished()), this, SLOT(stage3_ui()));
     connect(controller->unpacker, SIGNAL (finished()), controller->unpacker, SLOT (deleteLater()));
     connect(controller->unpackUpdater, SIGNAL (finished()), controller->unpackUpdater, SLOT (deleteLater()));
     connect(unpackThread, SIGNAL (finished()), unpackThread, SLOT (deleteLater()));

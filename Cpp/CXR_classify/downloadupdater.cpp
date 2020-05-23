@@ -18,7 +18,6 @@ void DownloadUpdater::updateProgressBar()
     emit attemptUpdateProBarValue(0);
     while (getTgzSize() < getTgzMax()) {
         emit attemptUpdateProBarValue(getTgzSize());
-        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
     emit attemptUpdateProBarValue(getTgzSize());
     emit attemptUpdateText("Image download complete");

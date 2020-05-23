@@ -4,8 +4,6 @@
 #include <QObject>
 #include <filesystem>
 #include <unordered_map>
-#include <thread>
-#include <chrono>
 
 const std::unordered_map<std::string, uint16_t> expected_num_files_in_dataset = {
         {"NLMCXR_subset_dataset.tgz", 10},

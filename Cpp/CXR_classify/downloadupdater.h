@@ -4,8 +4,6 @@
 #include <QObject>
 #include <filesystem>
 #include <unordered_map>
-#include <thread>
-#include <chrono>
 
 const std::unordered_map<std::string, uint64_t> expected_sizes = {
         {"NLMCXR_subset_dataset.tgz", 88320855},
