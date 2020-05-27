@@ -2,7 +2,6 @@
 #define CONFIGHANDLERS_H
 
 #include <string>
-#include <unordered_map>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 

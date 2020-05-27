@@ -17,6 +17,7 @@ void AppController::initGuiState()
         connect(this, SIGNAL (initStage2()), &mainWindow, SLOT (stage2_ui()));
         emit initStage2();
     } else if (std::filesystem::exists(filename) && std::filesystem::exists(folder_full_path)) {
-        mainWindow.stage3_ui();
+        connect(this, SIGNAL (initStage3()), &mainWindow, SLOT (stage3_ui()));
+        emit initStage3();
     }
 }

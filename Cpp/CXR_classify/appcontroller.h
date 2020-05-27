@@ -13,6 +13,7 @@
 #include "unpacker.h"
 #include "downloadupdater.h"
 #include "unpackupdater.h"
+#include "storer.h"
 
 const std::unordered_map<std::string, std::string> c_sourceUrl = {
         {"subset", "https://raw.githubusercontent.com/Matt-Conrad/CXR_View_Classification/master/datasets/NLMCXR_subset_dataset.tgz"},
@@ -35,7 +36,7 @@ private:
     std::string filename_fullpath = parentFolder + "/" + filename;
     std::string folder_name = filename.substr(0, filename.find_last_of("."));
     std::string folder_full_path = parentFolder + "/" + folder_name;
-    std::string columns_info_name = "columns_info.json";
+    std::string columns_info_name = "../CXR_classify/columns_info.json";
     std::string columns_info_full_path = parentFolder + "/" + columns_info_name;
 
     // Object variables
@@ -57,11 +58,14 @@ public:
     DownloadUpdater * downloadUpdater = new DownloadUpdater(filename_fullpath, dataset);
     Unpacker * unpacker = new Unpacker(filename_fullpath);
     UnpackUpdater * unpackUpdater = new UnpackUpdater(folder_full_path, dataset);
+    Storer * storer = new Storer(columns_info_name, configFilename, "elements", folder_full_path);
+
     MainWindow mainWindow = MainWindow(this);
 
 signals:
     void initStage1();
     void initStage2();
+    void initStage3();
 };
 
 #endif // APPCONTROLLER_H

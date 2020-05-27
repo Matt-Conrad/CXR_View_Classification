@@ -23,6 +23,7 @@ SOURCES += \
         downloadupdater.cpp \
         main.cpp \
         mainwindow.cpp \
+        storer.cpp \
         unpacker.cpp \
         unpackupdater.cpp
 
@@ -37,10 +38,12 @@ HEADERS += \
     downloader.h \
     downloadupdater.h \
     mainwindow.h \
+    storer.h \
     unpacker.h \
     unpackupdater.h
 
-LIBS += -ldl -lboost_system -lboost_filesystem -lstdc++fs  -lcurl -lz -lbz2  -larchive
+LIBS += -ldl -lboost_system -lboost_filesystem -lstdc++fs  -lcurl -lz -lbz2  -larchive -lpqxx -lpq
 
 DISTFILES += \
+    columns_info.json \
     config.ini
