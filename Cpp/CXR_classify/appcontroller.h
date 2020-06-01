@@ -14,6 +14,7 @@
 #include "downloadupdater.h"
 #include "unpackupdater.h"
 #include "storer.h"
+#include "storeupdater.h"
 
 const std::unordered_map<std::string, std::string> c_sourceUrl = {
         {"subset", "https://raw.githubusercontent.com/Matt-Conrad/CXR_View_Classification/master/datasets/NLMCXR_subset_dataset.tgz"},
@@ -59,6 +60,7 @@ public:
     Unpacker * unpacker = new Unpacker(filename_fullpath);
     UnpackUpdater * unpackUpdater = new UnpackUpdater(folder_full_path, dataset);
     Storer * storer = new Storer(columns_info_name, configFilename, "elements", folder_full_path);
+    StoreUpdater * storeUpdater = new StoreUpdater(columns_info_name, configFilename, "elements", folder_full_path);
 
     MainWindow mainWindow = MainWindow(this);
 

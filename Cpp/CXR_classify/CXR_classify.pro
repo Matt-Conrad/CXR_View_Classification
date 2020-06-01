@@ -24,6 +24,7 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
         storer.cpp \
+        storeupdater.cpp \
         unpacker.cpp \
         unpackupdater.cpp
 
@@ -39,10 +40,11 @@ HEADERS += \
     downloadupdater.h \
     mainwindow.h \
     storer.h \
+    storeupdater.h \
     unpacker.h \
     unpackupdater.h
 
-LIBS += -ldl -lboost_system -lboost_filesystem -lstdc++fs  -lcurl -lz -lbz2  -larchive -lpqxx -lpq
+LIBS += -ldl -lboost_system -lboost_filesystem -lstdc++fs  -lcurl -lz -lbz2  -larchive -lpqxx -lpq -pthread -ldcmimgle -ldcmdata -loflog -lofstd -lz -liconv -lcharset
 
 DISTFILES += \
     columns_info.json \
