@@ -11,6 +11,8 @@ CONFIG -= app_bundle
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
 
+INCLUDEPATH += /usr/local/include/opencv4
+
 # You can also make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
@@ -21,6 +23,7 @@ SOURCES += \
         confighandlers.cpp \
         downloader.cpp \
         downloadupdater.cpp \
+        featurecalculator.cpp \
         main.cpp \
         mainwindow.cpp \
         storer.cpp \
@@ -38,13 +41,14 @@ HEADERS += \
     confighandlers.h \
     downloader.h \
     downloadupdater.h \
+    featurecalculator.h \
     mainwindow.h \
     storer.h \
     storeupdater.h \
     unpacker.h \
     unpackupdater.h
 
-LIBS += -ldl -lboost_system -lboost_filesystem -lstdc++fs  -lcurl -lz -lbz2  -larchive -lpqxx -lpq -pthread -ldcmimgle -ldcmdata -loflog -lofstd -lz -liconv -lcharset
+LIBS += -ldl -lboost_system -lboost_filesystem -lstdc++fs  -lcurl -lz -lbz2  -larchive -lpqxx -lpq -pthread -ldcmimgle -ldcmdata -loflog -lofstd -lz -liconv -lcharset -lopencv_core -lopencv_imgproc -lopencv_highgui
 
 DISTFILES += \
     columns_info.json \

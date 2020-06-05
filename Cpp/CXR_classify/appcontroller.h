@@ -15,6 +15,7 @@
 #include "unpackupdater.h"
 #include "storer.h"
 #include "storeupdater.h"
+#include "featurecalculator.h"
 
 const std::unordered_map<std::string, std::string> c_sourceUrl = {
         {"subset", "https://raw.githubusercontent.com/Matt-Conrad/CXR_View_Classification/master/datasets/NLMCXR_subset_dataset.tgz"},
@@ -40,6 +41,12 @@ private:
     std::string columns_info_name = "../CXR_classify/columns_info.json";
     std::string columns_info_full_path = parentFolder + "/" + columns_info_name;
 
+    std::string host = configParser(configFilename, "postgresql").get<std::string>("host");;
+    std::string port = configParser(configFilename, "postgresql").get<std::string>("port");
+    std::string database = configParser(configFilename, "postgresql").get<std::string>("database");
+    std::string user = configParser(configFilename, "postgresql").get<std::string>("user");
+    std::string password = configParser(configFilename, "postgresql").get<std::string>("password");
+
     // Object variables
     // label_app
     // classifier
@@ -53,6 +60,9 @@ private:
     void initGuiState();
     QThreadPool threadpool = QThreadPool();
 
+    // Helpers to be removed later
+    bool tableExists(std::string tableName);
+
 public:
     AppController();
     Downloader * downloader = new Downloader(url, filename_fullpath, dataset);
@@ -61,6 +71,7 @@ public:
     UnpackUpdater * unpackUpdater = new UnpackUpdater(folder_full_path, dataset);
     Storer * storer = new Storer(columns_info_name, configFilename, "elements", folder_full_path);
     StoreUpdater * storeUpdater = new StoreUpdater(columns_info_name, configFilename, "elements", folder_full_path);
+    FeatureCalculator * featCalc = new FeatureCalculator(columns_info_name, configFilename, "elements", folder_full_path);
 
     MainWindow mainWindow = MainWindow(this);
 
@@ -68,6 +79,7 @@ signals:
     void initStage1();
     void initStage2();
     void initStage3();
+    void initStage4();
 };
 
 #endif // APPCONTROLLER_H

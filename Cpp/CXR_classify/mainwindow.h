@@ -25,9 +25,6 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(AppController * controller);
 
-    void stage5_ui();
-    void stage6_ui();
-
 private:
     AppController * controller;
 
@@ -40,6 +37,8 @@ public slots:
     void stage2_ui();
     void stage3_ui();
     void stage4_ui();
+    void stage5_ui();
+    void stage6_ui();
 
     void startDashboard(QString, quint64, quint64);
     void updateProBarBounds(quint64, quint64);

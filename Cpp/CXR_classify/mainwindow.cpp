@@ -190,6 +190,19 @@ void MainWindow::stage4_ui()
     centralWidget->findChild<QPushButton *>("featuresBtn")->setDisabled(false);
     centralWidget->findChild<QPushButton *>("labelBtn")->setDisabled(true);
     centralWidget->findChild<QPushButton *>("classifyBtn")->setDisabled(true);
+
+    // Create a worker thread to download and a worker thread to update the GUI at the click of the button
+    QThread * featureThread = new QThread;
+    controller->featCalc->moveToThread(featureThread);
+    connect(centralWidget->findChild<QPushButton *>("featuresBtn"), SIGNAL (clicked()), featureThread, SLOT (start()));
+
+    // Connect the threads to the functions of the classes in the threads
+    connect(featureThread, SIGNAL (started()), controller->featCalc, SLOT (calculateFeatures()));
+
+    // When functions in the threads finished, quit the thread, delete the objects in the threads, and delete the threads when able
+    connect(controller->featCalc, SIGNAL (finished()), featureThread, SLOT (quit()));
+    connect(controller->featCalc, SIGNAL (finished()), controller->featCalc, SLOT (deleteLater()));
+    connect(featureThread, SIGNAL (finished()), featureThread, SLOT (deleteLater()));
 }
 
 void MainWindow::stage5_ui()

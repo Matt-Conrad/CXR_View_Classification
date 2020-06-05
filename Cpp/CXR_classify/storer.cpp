@@ -169,7 +169,7 @@ bool Storer::tableExists(std::string tableName)
     }
     catch (std::exception const &e)
     {
-      std::cerr << e.what() << std::endl;
+        return false;
     }
 }
 
