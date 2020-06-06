@@ -54,7 +54,13 @@ void FeatureCalculator::calculateFeatures()
             OFString photometricValue;
             file_format.getDataset()->findAndGetOFString(photometricKey, photometricValue);
 
-            preprocessing(originalImage, photometricValue.c_str());
+            cv::Mat preprocessedImage = preprocessing(originalImage, photometricValue.c_str());
+
+            cv::Mat horProfile = calcHorProf(preprocessedImage, 200, 200);
+            cv::Mat vertProfile = calcVertProf(preprocessedImage, 200, 200);
+
+            store(filePath, horProfile, vertProfile);
+
             delete dcmImage;
         }
 
@@ -68,7 +74,72 @@ void FeatureCalculator::calculateFeatures()
     emit finished();
 }
 
-void FeatureCalculator::preprocessing(cv::Mat image, std::string photometric)
+void FeatureCalculator::store(std::string filePath, cv::Mat horProfile, cv::Mat vertProfile)
+{
+    try
+    {
+        // Connect to the database
+        pqxx::connection c("host=" + host + " port=" + port + " dbname=" + database + " user=" + user + " password=" + password);
+
+        // Create SQL query
+        std::vector<float> horVec(horProfile.begin<float>(), horProfile.end<float>());
+        std::vector<float> vertVec(vertProfile.begin<float>(), vertProfile.end<float>());
+
+        std::vector<std::string> horVecString(horVec.size());
+        std::transform(horVec.begin(), horVec.end(), horVecString.begin(), [](const float& val)
+        {
+            return std::to_string(val);
+        });
+
+        std::vector<std::string> vertVecString(vertVec.size());
+        std::transform(vertVec.begin(), vertVec.end(), vertVecString.begin(), [](const float& val)
+        {
+            return std::to_string(val);
+        });
+
+        std::string sqlQuery = "INSERT INTO " + featTableName + " (file_name, file_path, hor_profile, vert_profile) VALUES ('" +
+                filePath.substr(filePath.find_last_of("/") + 1) + "', '" + filePath + "', '{" + boost::algorithm::join(horVecString, ", ") +
+                "}', '{" + boost::algorithm::join(vertVecString, ", ") + "}');";
+
+        std::cout << sqlQuery << std::endl;
+
+        // Start a transaction
+        pqxx::work w(c);
+
+        // Execute query
+        pqxx::result r = w.exec(sqlQuery);
+
+        w.commit();
+    }
+    catch (std::exception const &e)
+    {
+      std::cerr << e.what() << std::endl;
+    }
+}
+
+cv::Mat FeatureCalculator::calcHorProf(cv::Mat image, unsigned width, unsigned height)
+{
+    cv::Mat imageSquare(height, width, CV_32F);
+    cv::resize(image, imageSquare, cv::Size(width, height), 0, 0, cv::INTER_AREA);
+    \
+    cv::Mat horProfile(height, width, CV_32F);
+    cv::reduce(imageSquare, horProfile, 0, cv::REDUCE_AVG, CV_32F);
+
+    return horProfile;
+}
+
+cv::Mat FeatureCalculator::calcVertProf(cv::Mat image, unsigned width, unsigned height)
+{
+    cv::Mat imageSquare(height, width, CV_32F);
+    cv::resize(image, imageSquare, cv::Size(width, height), 0, 0, cv::INTER_AREA);
+
+    cv::Mat vertProfile(height, width, CV_32F);
+    cv::reduce(imageSquare, vertProfile, 0, cv::REDUCE_AVG, CV_32F);
+
+    return vertProfile;
+}
+
+cv::Mat FeatureCalculator::preprocessing(cv::Mat image, std::string photometric)
 {
     double highestPossibleIntensity = 65536;
     cv::Mat imageDouble(image.rows, image.cols, CV_64F);
@@ -166,9 +237,11 @@ void FeatureCalculator::preprocessing(cv::Mat image, std::string photometric)
 
     cv::resize(imageCropped, imageDownsize, cv::Size(width, height), 0.5, 0.5, cv::INTER_AREA);
 
-    cv::namedWindow("image", cv::WINDOW_NORMAL);
-    cv::imshow("image", imageDownsize);
-    cv::waitKey(0);
+//    cv::namedWindow("image", cv::WINDOW_NORMAL);
+//    cv::imshow("image", imageDownsize);
+//    cv::waitKey(0);
+
+    return imageDownsize;
 }
 
 void FeatureCalculator::addTableToDb()

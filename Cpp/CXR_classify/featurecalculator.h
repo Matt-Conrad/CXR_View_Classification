@@ -8,6 +8,7 @@
 #include <pqxx/pqxx>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/algorithm/string/join.hpp>
 #include <dcmtk/dcmimgle/dcmimage.h>
 #include <dcmtk/dcmdata/dcfilefo.h>
 #include <dcmtk/dcmdata/dcdeftag.h>
@@ -45,7 +46,10 @@ private:
     std::string featTableName;
 
     void addTableToDb();
-    void preprocessing(cv::Mat, std::string);
+    cv::Mat preprocessing(cv::Mat, std::string);
+    cv::Mat calcHorProf(cv::Mat, unsigned, unsigned);
+    cv::Mat calcVertProf(cv::Mat, unsigned, unsigned);
+    void store(std::string, cv::Mat, cv::Mat);
 
 signals:
     void finished();
