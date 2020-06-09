@@ -23,6 +23,7 @@ SOURCES += \
         confighandlers.cpp \
         downloader.cpp \
         downloadupdater.cpp \
+        featcalcupdater.cpp \
         featurecalculator.cpp \
         main.cpp \
         mainwindow.cpp \
@@ -41,6 +42,7 @@ HEADERS += \
     confighandlers.h \
     downloader.h \
     downloadupdater.h \
+    featcalcupdater.h \
     featurecalculator.h \
     mainwindow.h \
     storer.h \

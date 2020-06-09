@@ -16,6 +16,7 @@
 #include "storer.h"
 #include "storeupdater.h"
 #include "featurecalculator.h"
+#include "featcalcupdater.h"
 
 const std::unordered_map<std::string, std::string> c_sourceUrl = {
         {"subset", "https://raw.githubusercontent.com/Matt-Conrad/CXR_View_Classification/master/datasets/NLMCXR_subset_dataset.tgz"},
@@ -72,6 +73,7 @@ public:
     Storer * storer = new Storer(columns_info_name, configFilename, "elements", folder_full_path);
     StoreUpdater * storeUpdater = new StoreUpdater(columns_info_name, configFilename, "elements", folder_full_path);
     FeatureCalculator * featCalc = new FeatureCalculator(columns_info_name, configFilename, "elements", folder_full_path);
+    FeatCalcUpdater * featCalcUpdater = new FeatCalcUpdater(columns_info_name, configFilename, "elements", folder_full_path);
 
     MainWindow mainWindow = MainWindow(this);
 
@@ -80,6 +82,8 @@ signals:
     void initStage2();
     void initStage3();
     void initStage4();
+    void initStage5();
+    void initStage6();
 };
 
 #endif // APPCONTROLLER_H

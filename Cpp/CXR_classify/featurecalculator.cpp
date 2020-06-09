@@ -19,7 +19,7 @@ FeatureCalculator::FeatureCalculator(std::string columnsInfo, std::string config
 
 void FeatureCalculator::calculateFeatures()
 {
-//    addTableToDb();
+    addTableToDb();
 
     try
     {
@@ -35,6 +35,7 @@ void FeatureCalculator::calculateFeatures()
         quint64 count = 0;
         for (int rownum=0; rownum < r.size(); ++rownum)
         {
+            std::this_thread::sleep_for (std::chrono::seconds(1));
             const pqxx::row row = r[rownum];
             const char * filePath = row["file_path"].c_str();
             count++;
@@ -100,8 +101,6 @@ void FeatureCalculator::store(std::string filePath, cv::Mat horProfile, cv::Mat 
         std::string sqlQuery = "INSERT INTO " + featTableName + " (file_name, file_path, hor_profile, vert_profile) VALUES ('" +
                 filePath.substr(filePath.find_last_of("/") + 1) + "', '" + filePath + "', '{" + boost::algorithm::join(horVecString, ", ") +
                 "}', '{" + boost::algorithm::join(vertVecString, ", ") + "}');";
-
-        std::cout << sqlQuery << std::endl;
 
         // Start a transaction
         pqxx::work w(c);

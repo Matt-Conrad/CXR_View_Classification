@@ -192,17 +192,31 @@ void MainWindow::stage4_ui()
     centralWidget->findChild<QPushButton *>("classifyBtn")->setDisabled(true);
 
     // Create a worker thread to download and a worker thread to update the GUI at the click of the button
-    QThread * featureThread = new QThread;
-    controller->featCalc->moveToThread(featureThread);
-    connect(centralWidget->findChild<QPushButton *>("featuresBtn"), SIGNAL (clicked()), featureThread, SLOT (start()));
+    QThread * featCalcThread = new QThread;
+    controller->featCalc->moveToThread(featCalcThread);
+    connect(centralWidget->findChild<QPushButton *>("featuresBtn"), SIGNAL (clicked()), featCalcThread, SLOT (start()));
+
+    QThread * featCalcUpdaterThread = new QThread;
+    controller->featCalcUpdater->moveToThread(featCalcUpdaterThread);
+    connect(centralWidget->findChild<QPushButton *>("featuresBtn"), SIGNAL (clicked()), featCalcUpdaterThread, SLOT (start()));
 
     // Connect the threads to the functions of the classes in the threads
-    connect(featureThread, SIGNAL (started()), controller->featCalc, SLOT (calculateFeatures()));
+    connect(featCalcThread, SIGNAL (started()), controller->featCalc, SLOT (calculateFeatures()));
+    connect(featCalcUpdaterThread, SIGNAL (started()), controller->featCalcUpdater, SLOT (updateProgressBar()));
+
+    // Connect the updater to the dashboard
+    connect(controller->featCalcUpdater, SIGNAL (attemptUpdateProBarBounds(quint64, quint64)), this, SLOT (updateProBarBounds(quint64, quint64)));
+    connect(controller->featCalcUpdater, SIGNAL (attemptUpdateProBarValue(quint64)), this, SLOT (updateProBarValue(quint64)));
+    connect(controller->featCalcUpdater, SIGNAL (attemptUpdateText(QString)), this, SLOT (updateText(QString)));
 
     // When functions in the threads finished, quit the thread, delete the objects in the threads, and delete the threads when able
-    connect(controller->featCalc, SIGNAL (finished()), featureThread, SLOT (quit()));
+    connect(controller->featCalc, SIGNAL (finished()), featCalcThread, SLOT (quit()));
+    connect(controller->featCalcUpdater, SIGNAL (finished()), featCalcUpdaterThread, SLOT (quit()));
+    connect(controller->featCalcUpdater, SIGNAL (finished()), this, SLOT(stage5_ui()));
     connect(controller->featCalc, SIGNAL (finished()), controller->featCalc, SLOT (deleteLater()));
-    connect(featureThread, SIGNAL (finished()), featureThread, SLOT (deleteLater()));
+    connect(controller->featCalcUpdater, SIGNAL (finished()), controller->featCalcUpdater, SLOT (deleteLater()));
+    connect(featCalcThread, SIGNAL (finished()), featCalcThread, SLOT (deleteLater()));
+    connect(featCalcUpdaterThread, SIGNAL (finished()), featCalcUpdaterThread, SLOT (deleteLater()));
 }
 
 void MainWindow::stage5_ui()
