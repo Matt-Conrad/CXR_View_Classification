@@ -227,6 +227,11 @@ void MainWindow::stage5_ui()
     centralWidget->findChild<QPushButton *>("featuresBtn")->setDisabled(true);
     centralWidget->findChild<QPushButton *>("labelBtn")->setDisabled(false);
     centralWidget->findChild<QPushButton *>("classifyBtn")->setDisabled(true);
+
+    connect(centralWidget->findChild<QPushButton *>("labelBtn"), SIGNAL (clicked()), controller->labeler, SLOT (fillWindow()));
+    connect(controller->labeler, SIGNAL (attemptUpdateText(QString)), this, SLOT (updateText(QString)));
+    connect(controller->labeler, SIGNAL (finished()), this, SLOT(stage6_ui()));
+    connect(controller->labeler, SIGNAL (finished()), controller->labeler, SLOT (deleteLater()));
 }
 
 void MainWindow::stage6_ui()

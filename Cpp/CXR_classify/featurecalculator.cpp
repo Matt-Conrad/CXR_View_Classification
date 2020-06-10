@@ -112,7 +112,7 @@ void FeatureCalculator::store(std::string filePath, cv::Mat horProfile, cv::Mat 
     }
     catch (std::exception const &e)
     {
-      std::cerr << e.what() << std::endl;
+        std::cerr << e.what() << std::endl;
     }
 }
 

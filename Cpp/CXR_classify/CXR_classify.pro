@@ -25,6 +25,7 @@ SOURCES += \
         downloadupdater.cpp \
         featcalcupdater.cpp \
         featurecalculator.cpp \
+        labeler.cpp \
         main.cpp \
         mainwindow.cpp \
         storer.cpp \
@@ -44,6 +45,7 @@ HEADERS += \
     downloadupdater.h \
     featcalcupdater.h \
     featurecalculator.h \
+    labeler.h \
     mainwindow.h \
     storer.h \
     storeupdater.h \

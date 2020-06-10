@@ -17,6 +17,7 @@
 #include "storeupdater.h"
 #include "featurecalculator.h"
 #include "featcalcupdater.h"
+#include "labeler.h"
 
 const std::unordered_map<std::string, std::string> c_sourceUrl = {
         {"subset", "https://raw.githubusercontent.com/Matt-Conrad/CXR_View_Classification/master/datasets/NLMCXR_subset_dataset.tgz"},
@@ -74,6 +75,7 @@ public:
     StoreUpdater * storeUpdater = new StoreUpdater(columns_info_name, configFilename, "elements", folder_full_path);
     FeatureCalculator * featCalc = new FeatureCalculator(columns_info_name, configFilename, "elements", folder_full_path);
     FeatCalcUpdater * featCalcUpdater = new FeatCalcUpdater(columns_info_name, configFilename, "elements", folder_full_path);
+    Labeler * labeler = new Labeler(configFilename, columns_info_name);
 
     MainWindow mainWindow = MainWindow(this);
 

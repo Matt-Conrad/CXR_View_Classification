@@ -25,6 +25,9 @@ void AppController::initGuiState()
     } else if (std::filesystem::exists(filename) && std::filesystem::exists(folder_full_path) && tableExists(metaTableName) && tableExists(featTableName) && !tableExists(labelTableName)) {
         connect(this, SIGNAL (initStage5()), &mainWindow, SLOT (stage5_ui()));
         emit initStage5();
+    } else if (std::filesystem::exists(filename) && std::filesystem::exists(folder_full_path) && tableExists(metaTableName) && tableExists(featTableName) && tableExists(labelTableName)) {
+        connect(this, SIGNAL (initStage6()), &mainWindow, SLOT (stage6_ui()));
+        emit initStage6();
     }
 }
 
