@@ -4,6 +4,8 @@ DownloadUpdater::DownloadUpdater(std::string filename_fullpath, std::string data
 {
     DownloadUpdater::filename_fullpath = filename_fullpath;
     DownloadUpdater::dataset = dataset;
+    DownloadUpdater::filename = filename_fullpath.substr(filename_fullpath.find_last_of("/") + 1);
+    DownloadUpdater::expected_size = expected_sizes.at(filename);
 }
 
 void DownloadUpdater::updateProgressBar()
@@ -29,7 +31,8 @@ void DownloadUpdater::updateProgressBar()
 quint64 DownloadUpdater::getTgzSize()
 {
     if (dataset == "full_set") {
-        return int(std::filesystem::file_size(filename_fullpath) / 100);
+        return quint64(std::filesystem::file_size(filename_fullpath) / 100);
+//        return std::filesystem::file_size(filename_fullpath);
     } else if (dataset == "subset") {
         return std::filesystem::file_size(filename_fullpath);
     } else {
@@ -41,6 +44,7 @@ quint64 DownloadUpdater::getTgzMax()
 {
     if (dataset == "full_set") {
         return quint64(expected_size / 100);
+//        return expected_size;
     } else if (dataset == "subset") {
         return expected_size;
     } else {

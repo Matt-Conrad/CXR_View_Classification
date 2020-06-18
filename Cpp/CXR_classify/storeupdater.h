@@ -13,7 +13,7 @@ class StoreUpdater : public QObject
 friend class AppController;
 
 public:
-    StoreUpdater(std::string, std::string, std::string, std::string);
+    StoreUpdater(std::string, std::string, std::string, std::string, std::string);
 
 private:
     std::string columnsInfo;
@@ -29,7 +29,7 @@ private:
 
     std::string metadataTableName;
 
-    const quint64 expected_num_files = expected_num_files_in_dataset.at("NLMCXR_subset_dataset.tgz");
+    quint64 expected_num_files;
 
     bool tableExists(std::string);
     quint64 countRecords();

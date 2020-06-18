@@ -35,13 +35,14 @@ void Storer::dicomToDb()
 
     for (auto & p : std::filesystem::recursive_directory_iterator(folderFullPath)) {
         if (p.path().extension() == ".dcm") {
-            std::this_thread::sleep_for (std::chrono::seconds(1));
+//            std::this_thread::sleep_for (std::chrono::seconds(1));
             try
             {
                 // Connect to the database
                 pqxx::connection c("host=" + host + " port=" + port + " dbname=" + database + " user=" + user + " password=" + password);
 
                 // Create SQL query
+                std::cout << p.path().string() << std::endl;
                 std::string sqlQuery = createSqlQuery(metadataTableName, elements, p.path().string());
 
                 // Start a transaction

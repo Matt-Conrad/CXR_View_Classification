@@ -18,6 +18,7 @@
 #include "featurecalculator.h"
 #include "featcalcupdater.h"
 #include "labeler.h"
+#include "labelimporter.h"
 
 const std::unordered_map<std::string, std::string> c_sourceUrl = {
         {"subset", "https://raw.githubusercontent.com/Matt-Conrad/CXR_View_Classification/master/datasets/NLMCXR_subset_dataset.tgz"},
@@ -69,13 +70,14 @@ public:
     AppController();
     Downloader * downloader = new Downloader(url, filename_fullpath, dataset);
     DownloadUpdater * downloadUpdater = new DownloadUpdater(filename_fullpath, dataset);
-    Unpacker * unpacker = new Unpacker(filename_fullpath);
-    UnpackUpdater * unpackUpdater = new UnpackUpdater(folder_full_path, dataset);
+    Unpacker * unpacker = new Unpacker(filename_fullpath, folder_full_path, parentFolder, dataset);
+    UnpackUpdater * unpackUpdater = new UnpackUpdater(folder_full_path, dataset, filename);
     Storer * storer = new Storer(columns_info_name, configFilename, "elements", folder_full_path);
-    StoreUpdater * storeUpdater = new StoreUpdater(columns_info_name, configFilename, "elements", folder_full_path);
+    StoreUpdater * storeUpdater = new StoreUpdater(columns_info_name, configFilename, "elements", folder_full_path, filename);
     FeatureCalculator * featCalc = new FeatureCalculator(columns_info_name, configFilename, "elements", folder_full_path);
-    FeatCalcUpdater * featCalcUpdater = new FeatCalcUpdater(columns_info_name, configFilename, "elements", folder_full_path);
+    FeatCalcUpdater * featCalcUpdater = new FeatCalcUpdater(columns_info_name, configFilename, "elements", folder_full_path, filename);
     Labeler * labeler = new Labeler(configFilename, columns_info_name);
+    LabelImporter * labelImporter = new LabelImporter(labelTableName, (parentFolder + "/../CXR_classify/image_labels.csv"), columns_info_full_path, configFilename, "labels");
 
     MainWindow mainWindow = MainWindow(this);
 

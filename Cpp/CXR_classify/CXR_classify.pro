@@ -26,6 +26,7 @@ SOURCES += \
         featcalcupdater.cpp \
         featurecalculator.cpp \
         labeler.cpp \
+        labelimporter.cpp \
         main.cpp \
         mainwindow.cpp \
         storer.cpp \
@@ -46,6 +47,7 @@ HEADERS += \
     featcalcupdater.h \
     featurecalculator.h \
     labeler.h \
+    labelimporter.h \
     mainwindow.h \
     storer.h \
     storeupdater.h \
@@ -56,4 +58,6 @@ LIBS += -ldl -lboost_system -lboost_filesystem -lstdc++fs  -lcurl -lz -lbz2  -la
 
 DISTFILES += \
     columns_info.json \
-    config.ini
+    config.ini \
+    image_labels.csv
+

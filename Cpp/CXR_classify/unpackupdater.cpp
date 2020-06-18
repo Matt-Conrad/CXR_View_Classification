@@ -1,9 +1,10 @@
 #include "unpackupdater.h"
 
-UnpackUpdater::UnpackUpdater(std::string folder_full_path, std::string dataset) : QObject()
+UnpackUpdater::UnpackUpdater(std::string folder_full_path, std::string dataset, std::string filename) : QObject()
 {
     UnpackUpdater::folder_full_path = folder_full_path;
     UnpackUpdater::dataset = dataset;
+    UnpackUpdater::expected_num_files = expected_num_files_in_dataset.at(filename);
 }
 
 void UnpackUpdater::updateProgressBar()

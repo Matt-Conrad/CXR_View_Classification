@@ -4,6 +4,7 @@
 #include <QObject>
 #include <filesystem>
 #include <unordered_map>
+#include <iostream>
 
 const std::unordered_map<std::string, uint64_t> expected_sizes = {
         {"NLMCXR_subset_dataset.tgz", 88320855},
@@ -22,8 +23,9 @@ public:
 private:
     std::string filename_fullpath;
     std::string dataset;
+    std::string filename;
 
-    const quint64 expected_size = expected_sizes.at("NLMCXR_subset_dataset.tgz");
+    quint64 expected_size;
 
     quint64 getTgzMax();
     quint64 getTgzSize();

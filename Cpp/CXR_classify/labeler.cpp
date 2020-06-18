@@ -11,13 +11,12 @@ Labeler::Labeler(std::string configFilename, std::string columnsInfo) : QWidget(
     Labeler::database = configParser(configFilename, "postgresql").get<std::string>("database");
     Labeler::user = configParser(configFilename, "postgresql").get<std::string>("user");
     Labeler::password = configParser(configFilename, "postgresql").get<std::string>("password");
-
-    queryImageList();
 }
 
 void Labeler::closeLabelApp()
 {
     closeConnection();
+    emit attemptUpdateText("Image labeling complete");
     emit finished();
     this->close();
 }
@@ -29,9 +28,9 @@ void Labeler::closeConnection()
 
 void Labeler::fillWindow()
 {
+    queryImageList();
     emit attemptUpdateText("Please manually label images");
     addTableToDb();
-
     QGridLayout * layout = new QGridLayout;
     layout->addWidget(label, 0, 0, 1, 2);
     layout->addWidget(image, 1, 0, 1, 2);
@@ -40,7 +39,6 @@ void Labeler::fillWindow()
 
     // Set layout
     this->setLayout(layout);
-//    image->setText("Image");
     displayNextImage();
     connect(this->frontalButton, SIGNAL(clicked()), this, SLOT(frontal()));
     connect(this->lateralButton, SIGNAL(clicked()), this, SLOT(lateral()));
@@ -114,7 +112,6 @@ void Labeler::queryImageList()
 {
     std::string metadataTableName = configParser(configFilename, "table_info").get<std::string>("metadata_table_name");
     std::string sqlQuery = "SELECT file_path, bits_stored FROM " + metadataTableName + " ORDER BY file_path;";
-
     try
     {
         // Connect to the database
@@ -131,7 +128,7 @@ void Labeler::queryImageList()
     }
     catch (std::exception const &e)
     {
-        std::cerr << e.what() << std::endl;
+        std::cout << "error" << std::endl;
     }
 }
 

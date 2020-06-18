@@ -1,10 +1,13 @@
 #include "unpacker.h"
+#include <iostream>
 
-Unpacker::Unpacker(std::string filename_fullpath, QObject *parent) : QObject(parent)
+Unpacker::Unpacker(std::string filename_fullpath, std::string folder_full_path, std::string parentFolder, std::string dataset) : QObject()
 {
     Unpacker::filename_fullpath = filename_fullpath;
+    Unpacker::folder_full_path = folder_full_path;
+    Unpacker::parentFolder = parentFolder;
+    Unpacker::dataset = dataset;
 }
-
 
 static int copy_data(struct archive *ar, struct archive *aw)
 {
@@ -27,7 +30,7 @@ static int copy_data(struct archive *ar, struct archive *aw)
     }
 }
 
-static int extract(const char *filename)
+static int extract(const char *filename, std::string destination)
 {
     struct archive *a;
     struct archive *ext;
@@ -47,16 +50,21 @@ static int extract(const char *filename)
     ext = archive_write_disk_new();
     archive_write_disk_set_options(ext, flags);
     archive_write_disk_set_standard_lookup(ext);
-    if ((r = archive_read_open_filename(a, filename, 10240)))
+    if ((r = archive_read_open_filename(a, filename, 10240))) // read in TGZ
         return 1;
     for (;;) {
-        r = archive_read_next_header(a, &entry);
+        r = archive_read_next_header(a, &entry); // get next file to unpack in TGZ
         if (r == ARCHIVE_EOF)
             break;
         if (r < ARCHIVE_OK)
             fprintf(stderr, "%s\n", archive_error_string(a));
         if (r < ARCHIVE_WARN)
             return 1;
+        // This is for the full set
+        const char* currentFile = archive_entry_pathname(entry);
+        const std::string fullOutputPath = destination + "/" + currentFile;
+        archive_entry_set_pathname(entry, fullOutputPath.c_str());
+        //
         r = archive_write_header(ext, entry);
         if (r < ARCHIVE_OK)
             fprintf(stderr, "%s\n", archive_error_string(ext));
@@ -82,6 +90,12 @@ static int extract(const char *filename)
 
 void Unpacker::unpack()
 {
-    extract(filename_fullpath.c_str());
+    if (dataset == "full_set") {
+        std::filesystem::create_directory(folder_full_path);
+        extract(filename_fullpath.c_str(), folder_full_path);
+    } else {
+        extract(filename_fullpath.c_str(), parentFolder);
+    }
     emit finished();
+
 }

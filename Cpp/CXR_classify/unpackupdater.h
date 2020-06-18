@@ -17,13 +17,13 @@ class UnpackUpdater : public QObject
 friend class AppController;
 
 public:
-    UnpackUpdater(std::string folder_full_path, std::string dataset);
+    UnpackUpdater(std::string, std::string, std::string);
 
 private:
     std::string folder_full_path;
     std::string dataset;
 
-    const quint64 expected_num_files = expected_num_files_in_dataset.at("NLMCXR_subset_dataset.tgz");
+    quint64 expected_num_files;
 
     quint64 countDcms();
 

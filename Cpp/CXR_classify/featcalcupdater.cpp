@@ -1,6 +1,6 @@
 #include "featcalcupdater.h"
 
-FeatCalcUpdater::FeatCalcUpdater(std::string columnsInfo, std::string configFilename, std::string sectionName, std::string folderFullPath) : QObject()
+FeatCalcUpdater::FeatCalcUpdater(std::string columnsInfo, std::string configFilename, std::string sectionName, std::string folderFullPath, std::string filename) : QObject()
 {
     FeatCalcUpdater::columnsInfo = columnsInfo;
     FeatCalcUpdater::configFilename = configFilename;
@@ -14,6 +14,7 @@ FeatCalcUpdater::FeatCalcUpdater(std::string columnsInfo, std::string configFile
     FeatCalcUpdater::password = configParser(configFilename, "postgresql").get<std::string>("password");
 
     FeatCalcUpdater::featTableName = configParser(configFilename, "table_info").get<std::string>("features_table_name");
+    FeatCalcUpdater::expected_num_files = expected_num_files_in_dataset.at(filename);
 }
 
 void FeatCalcUpdater::updateProgressBar()

@@ -1,6 +1,6 @@
 #include "storeupdater.h"
 
-StoreUpdater::StoreUpdater(std::string columnsInfo, std::string configFilename, std::string sectionName, std::string folderFullPath) : QObject()
+StoreUpdater::StoreUpdater(std::string columnsInfo, std::string configFilename, std::string sectionName, std::string folderFullPath, std::string filename) : QObject()
 {
     StoreUpdater::columnsInfo = columnsInfo;
     StoreUpdater::configFilename = configFilename;
@@ -14,6 +14,8 @@ StoreUpdater::StoreUpdater(std::string columnsInfo, std::string configFilename, 
     StoreUpdater::password = configParser(configFilename, "postgresql").get<std::string>("password");
 
     StoreUpdater::metadataTableName = configParser(configFilename, "table_info").get<std::string>("metadata_table_name");
+
+    StoreUpdater::expected_num_files = expected_num_files_in_dataset.at(filename);
 }
 
 void StoreUpdater::updateProgressBar()
