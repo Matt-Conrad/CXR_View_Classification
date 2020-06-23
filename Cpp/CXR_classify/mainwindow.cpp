@@ -250,4 +250,8 @@ void MainWindow::stage6_ui()
     centralWidget->findChild<QPushButton *>("featuresBtn")->setDisabled(true);
     centralWidget->findChild<QPushButton *>("labelBtn")->setDisabled(true);
     centralWidget->findChild<QPushButton *>("classifyBtn")->setDisabled(false);
+
+    connect(centralWidget->findChild<QPushButton *>("classifyBtn"), SIGNAL (clicked()), controller->trainer, SLOT (trainClassifier()));
+    connect(controller->trainer, SIGNAL (attemptUpdateText(QString)), this, SLOT (updateText(QString)));
+    connect(controller->trainer, SIGNAL (finished()), controller->labeler, SLOT (deleteLater()));
 }

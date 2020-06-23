@@ -19,6 +19,7 @@
 #include "featcalcupdater.h"
 #include "labeler.h"
 #include "labelimporter.h"
+#include "trainer.h"
 
 const std::unordered_map<std::string, std::string> c_sourceUrl = {
         {"subset", "https://raw.githubusercontent.com/Matt-Conrad/CXR_View_Classification/master/datasets/NLMCXR_subset_dataset.tgz"},
@@ -50,10 +51,6 @@ private:
     std::string user = configParser(configFilename, "postgresql").get<std::string>("user");
     std::string password = configParser(configFilename, "postgresql").get<std::string>("password");
 
-    // Object variables
-    // label_app
-    // classifier
-
     // From config file
     std::string dbName = configParser(configFilename, "postgresql").get<std::string>("database");
     std::string metaTableName = configParser(configFilename, "table_info").get<std::string>("metadata_table_name");
@@ -78,6 +75,7 @@ public:
     FeatCalcUpdater * featCalcUpdater = new FeatCalcUpdater(columns_info_name, configFilename, "elements", folder_full_path, filename);
     Labeler * labeler = new Labeler(configFilename, columns_info_name);
     LabelImporter * labelImporter = new LabelImporter(labelTableName, (parentFolder + "/../CXR_classify/image_labels.csv"), columns_info_full_path, configFilename, "labels");
+    Trainer * trainer = new Trainer(configFilename, featTableName, labelTableName);
 
     MainWindow mainWindow = MainWindow(this);
 
