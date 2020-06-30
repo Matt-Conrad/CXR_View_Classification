@@ -22,7 +22,7 @@ void FeatCalcUpdater::updateProgressBar()
     emit attemptUpdateText("Calculating features");
     emit attemptUpdateProBarBounds(0, expected_num_files);
 
-    while (!tableExists(featTableName)) {
+    while (!bdo::tableExists(host, port, user, password, database, featTableName)) {
         ;
     }
 
@@ -56,33 +56,5 @@ quint64 FeatCalcUpdater::countRecords() {
     catch (std::exception const &e)
     {
         std::cerr << e.what() << std::endl;
-    }
-}
-
-bool FeatCalcUpdater::tableExists(std::string tableName)
-{
-    try
-    {
-        // Connect to the database
-        pqxx::connection c("host=" + host + " port=" + port + " dbname=" + database + " user=" + user + " password=" + password);
-
-        // Start a transaction
-        pqxx::work w(c);
-
-        // Execute query
-        pqxx::result r = w.exec("SELECT * FROM information_schema.tables WHERE table_name=\'" + tableName + "\';");
-
-        w.commit();
-
-        // Return based on result
-        if (r.size() == 0) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-    catch (std::exception const &e)
-    {
-        return false;
     }
 }

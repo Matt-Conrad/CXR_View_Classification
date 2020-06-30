@@ -19,13 +19,13 @@ Storer::Storer(std::string columnsInfo, std::string configFilename, std::string 
 void Storer::dicomToDb()
 {
     // Create the database if it isn't already there
-    if (!dbExists()){
-        createNewDb();
+    if (!bdo::dbExists(host, port, user, password, database)){
+        bdo::createNewDb(host, port, database);
     }
 
     // Create table if it isn't already there
-    if (!tableExists(metadataTableName)) {
-        addTableToDb();
+    if (!bdo::tableExists(host, port, user, password, database, metadataTableName)) {
+        bdo::addTableToDb(host, port, user, password, database, columnsInfo, "elements", metadataTableName);
     }
 
     // Open the json with the list of elements we're interested in
@@ -113,112 +113,4 @@ std::string Storer::createSqlQuery(std::string tableName, boost::property_tree::
     std::string sqlQuery = "INSERT INTO " + tableName + " (" + boost::algorithm::join(names, ", ") + ") VALUES (" + boost::algorithm::join(values, ", ") + ");";
 
     return sqlQuery;
-}
-
-void Storer::addTableToDb()
-{
-    boost::property_tree::ptree columnsJson;
-    boost::property_tree::read_json(columnsInfo, columnsJson);
-    boost::property_tree::ptree elements = columnsJson.get_child("elements");
-
-    std::string sqlQuery = "CREATE TABLE " + metadataTableName + " (file_name VARCHAR(255) PRIMARY KEY, file_path VARCHAR(255)";
-
-    for (boost::property_tree::ptree::value_type & column : elements) {
-        sqlQuery += (", " + column.first + " " + column.second.get<std::string>("db_datatype"));
-    }
-    sqlQuery += ");";
-
-    try
-    {
-        // Connect to the database
-        pqxx::connection c("host=" + host + " port=" + port + " dbname=" + database + " user=" + user + " password=" + password);
-
-        // Start a transaction
-        pqxx::nontransaction w(c);
-
-        // Execute query
-        pqxx::result r = w.exec(sqlQuery);
-
-        // Commit your transaction
-        w.commit();
-    }
-    catch (std::exception const &e)
-    {
-      std::cerr << e.what() << std::endl;
-    }
-}
-
-bool Storer::tableExists(std::string tableName)
-{
-    try
-    {
-        // Connect to the database
-        pqxx::connection c("host=" + host + " port=" + port + " dbname=" + database + " user=" + user + " password=" + password);
-
-        // Start a transaction
-        pqxx::work w(c);
-
-        // Execute query
-        pqxx::result r = w.exec("SELECT * FROM information_schema.tables WHERE table_name=\'" + tableName + "\';");
-
-        // Return based on result
-        if (r.size() == 0) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-    catch (std::exception const &e)
-    {
-        return false;
-    }
-}
-
-void Storer::createNewDb()
-{
-    try
-    {
-        // Connect to the database
-        pqxx::connection c("host=" + host + " port=" + port + " dbname=postgres user=postgres password=postgres");
-
-        // Start a transaction
-        pqxx::nontransaction w(c);
-
-        // Execute query
-        pqxx::result r = w.exec("CREATE DATABASE " + database + ';');
-
-        // Commit your transaction
-        w.commit();
-    }
-    catch (std::exception const &e)
-    {
-      std::cerr << e.what() << std::endl;
-    }
-}
-
-bool Storer::dbExists()
-{
-    try
-    {
-        // Connect to the database
-        pqxx::connection c("host=" + host + " port=" + port + " dbname=postgres user=" + user + " password=" + password);
-
-        // Start a transaction
-        pqxx::work w(c);
-
-        // Execute query
-        pqxx::result r = w.exec("SELECT datname FROM pg_catalog.pg_database WHERE datname=\'" + database + "\'");
-
-        // Return based on result
-        if (r.size() == 0) {
-            return false;
-        } else {
-            return true;
-        }
-
-    }
-    catch (std::exception const &e)
-    {
-      std::cerr << e.what() << std::endl;
-    }
 }

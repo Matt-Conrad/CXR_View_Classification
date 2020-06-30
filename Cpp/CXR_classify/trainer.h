@@ -11,12 +11,13 @@
 #include "mlpack/core/data/split_data.hpp"
 #include "mlpack/core/cv/metrics/accuracy.hpp"
 #include "confighandlers.h"
+#include "unpackupdater.h"
 
 class Trainer : public QObject
 {
     Q_OBJECT
 public:
-    Trainer(std::string, std::string, std::string);
+    Trainer(std::string, std::string, std::string, std::string);
 
 public slots:
     void trainClassifier();
@@ -30,6 +31,8 @@ private:
     std::string database;
     std::string user;
     std::string password;
+
+    quint64 expected_num_files;
 
 signals:
     void finished();

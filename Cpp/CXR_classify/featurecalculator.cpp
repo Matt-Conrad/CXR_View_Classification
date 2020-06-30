@@ -19,7 +19,7 @@ FeatureCalculator::FeatureCalculator(std::string columnsInfo, std::string config
 
 void FeatureCalculator::calculateFeatures()
 {
-    addTableToDb();
+    bdo::addTableToDb(host, port, user, password, database, columnsInfo, "features_list", featTableName);
 
     try
     {
@@ -307,37 +307,5 @@ cv::Mat FeatureCalculator::preprocessing(cv::Mat image, std::string photometric,
     return imageDownsize;
 }
 
-void FeatureCalculator::addTableToDb()
-{
-    boost::property_tree::ptree columnsJson;
-    boost::property_tree::read_json(columnsInfo, columnsJson);
-    boost::property_tree::ptree elements = columnsJson.get_child("features_list");
-
-    std::string sqlQuery = "CREATE TABLE " + featTableName + " (file_name VARCHAR(255) PRIMARY KEY, file_path VARCHAR(255)";
-
-    for (boost::property_tree::ptree::value_type & column : elements) {
-        sqlQuery += (", " + column.first + " " + column.second.get<std::string>("db_datatype"));
-    }
-    sqlQuery += ");";
-
-    try
-    {
-        // Connect to the database
-        pqxx::connection c("host=" + host + " port=" + port + " dbname=" + database + " user=" + user + " password=" + password);
-
-        // Start a transaction
-        pqxx::nontransaction w(c);
-
-        // Execute query
-        pqxx::result r = w.exec(sqlQuery);
-
-        // Commit your transaction
-        w.commit();
-    }
-    catch (std::exception const &e)
-    {
-        std::cerr << e.what() << std::endl;
-    }
-}
 
 

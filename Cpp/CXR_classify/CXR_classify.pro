@@ -20,6 +20,7 @@ INCLUDEPATH += /usr/local/include/opencv4
 
 SOURCES += \
         appcontroller.cpp \
+        basicDbOps.cpp \
         confighandlers.cpp \
         downloader.cpp \
         downloadupdater.cpp \
@@ -42,6 +43,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     appcontroller.h \
+    basicDbOps.h \
     confighandlers.h \
     downloader.h \
     downloadupdater.h \

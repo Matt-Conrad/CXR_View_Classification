@@ -23,7 +23,7 @@ void StoreUpdater::updateProgressBar()
     emit attemptUpdateText("Storing metadata");
     emit attemptUpdateProBarBounds(0, expected_num_files);
 
-    while (!tableExists(metadataTableName)) {
+    while (!bdo::tableExists(host, port, user, password, database, metadataTableName)) {
         ;
     }
 
@@ -60,30 +60,4 @@ quint64 StoreUpdater::countRecords() {
     }
 }
 
-bool StoreUpdater::tableExists(std::string tableName)
-{
-    try
-    {
-        // Connect to the database
-        pqxx::connection c("host=" + host + " port=" + port + " dbname=" + database + " user=" + user + " password=" + password);
 
-        // Start a transaction
-        pqxx::work w(c);
-
-        // Execute query
-        pqxx::result r = w.exec("SELECT * FROM information_schema.tables WHERE table_name=\'" + tableName + "\';");
-
-        w.commit();
-
-        // Return based on result
-        if (r.size() == 0) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-    catch (std::exception const &e)
-    {
-        return false;
-    }
-}

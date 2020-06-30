@@ -20,6 +20,7 @@
 #include "labeler.h"
 #include "labelimporter.h"
 #include "trainer.h"
+#include "basicDbOps.h"
 
 const std::unordered_map<std::string, std::string> c_sourceUrl = {
         {"subset", "https://raw.githubusercontent.com/Matt-Conrad/CXR_View_Classification/master/datasets/NLMCXR_subset_dataset.tgz"},
@@ -60,9 +61,6 @@ private:
     void initGuiState();
     QThreadPool threadpool = QThreadPool();
 
-    // Helpers to be removed later
-    bool tableExists(std::string tableName);
-
 public:
     AppController();
     Downloader * downloader = new Downloader(url, filename_fullpath, dataset);
@@ -75,7 +73,7 @@ public:
     FeatCalcUpdater * featCalcUpdater = new FeatCalcUpdater(columns_info_name, configFilename, "elements", folder_full_path, filename);
     Labeler * labeler = new Labeler(configFilename, columns_info_name);
     LabelImporter * labelImporter = new LabelImporter(labelTableName, (parentFolder + "/../CXR_classify/image_labels.csv"), columns_info_full_path, configFilename, "labels");
-    Trainer * trainer = new Trainer(configFilename, featTableName, labelTableName);
+    Trainer * trainer = new Trainer(configFilename, featTableName, labelTableName, filename);
 
     MainWindow mainWindow = MainWindow(this);
 

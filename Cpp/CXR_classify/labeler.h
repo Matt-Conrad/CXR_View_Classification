@@ -1,7 +1,6 @@
 #ifndef LABELER_H
 #define LABELER_H
 
-#include <QObject>
 #include <QWidget>
 #include <QPushButton>
 #include <QGridLayout>
@@ -19,6 +18,7 @@
 #include "opencv2/core/types_c.h"
 #include "opencv2/imgproc.hpp"
 #include "confighandlers.h"
+#include "basicDbOps.h"
 
 class Labeler : public QWidget
 {
@@ -50,7 +50,6 @@ private:
     void queryImageList();
     void displayNextImage();
     void storeLabel(std::string);
-    void addTableToDb();
     void closeLabelApp();
     void closeConnection();
 

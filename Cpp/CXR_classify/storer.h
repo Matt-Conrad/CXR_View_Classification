@@ -16,6 +16,7 @@
 #include <thread>
 #include <chrono>
 #include "confighandlers.h"
+#include "basicDbOps.h"
 
 class Storer : public QObject
 {
@@ -40,10 +41,6 @@ private:
 
     std::string metadataTableName;
 
-    bool dbExists();
-    void createNewDb();
-    bool tableExists(std::string);
-    void addTableToDb();
     std::string createSqlQuery(std::string, boost::property_tree::ptree, std::string);
 
 signals:

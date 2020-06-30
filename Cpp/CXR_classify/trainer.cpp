@@ -1,6 +1,6 @@
 #include "trainer.h"
 
-Trainer::Trainer(std::string dbConfigFilename, std::string featTableName, std::string labelTableName) : QObject()
+Trainer::Trainer(std::string dbConfigFilename, std::string featTableName, std::string labelTableName, std::string filename) : QObject()
 {
     Trainer::featTableName = featTableName;
     Trainer::labelTableName = labelTableName;
@@ -10,6 +10,8 @@ Trainer::Trainer(std::string dbConfigFilename, std::string featTableName, std::s
     Trainer::database = configParser(dbConfigFilename, "postgresql").get<std::string>("database");
     Trainer::user = configParser(dbConfigFilename, "postgresql").get<std::string>("user");
     Trainer::password = configParser(dbConfigFilename, "postgresql").get<std::string>("password");
+
+    Trainer::expected_num_files = expected_num_files_in_dataset.at(filename);
 }
 
 void Trainer::trainClassifier()
@@ -29,7 +31,7 @@ void Trainer::trainClassifier()
         pqxx::result r = w.exec(sqlQuery);
 
         std::vector<std::string> fileNames = {};
-        static double X[7468][400];
+        static double X[10][400];
 
         for (int rownum = 0; rownum < r.size(); rownum++) {
             // Filenames
@@ -77,7 +79,7 @@ void Trainer::trainClassifier()
         }
 
         // First, load the data.
-        arma::mat xArma(&X[0][0], 400, 7468); // transpose because Armadillo stores data column-by-column (for compatibility with LAPACK)
+        arma::mat xArma(&X[0][0], 400, 10); // transpose because Armadillo stores data column-by-column (for compatibility with LAPACK)
         arma::Row yArma(y);
         arma::mat xTrain, xTest;
         arma::Row<size_t> yTrain, yTest;
@@ -85,16 +87,24 @@ void Trainer::trainClassifier()
         mlpack::data::Split(xArma, yArma, xTrain, xTest, yTrain, yTest, 0.33, true);
 
         const size_t numClasses = 2;
-        mlpack::cv::KFoldCV<mlpack::svm::LinearSVM<>, mlpack::cv::Accuracy> cv(10, xTrain, yTrain, numClasses);
 
-        double cvAcc = cv.Evaluate();
-        std::cout << "KFoldCV Accuracy: " << cvAcc;
+        int nSplits = 10;
+        double cvAcc;
+        if (xTrain.n_cols < nSplits) {
+            mlpack::cv::KFoldCV<mlpack::svm::LinearSVM<>, mlpack::cv::Accuracy> cv(xTrain.n_cols, xTrain, yTrain, numClasses);
+            cvAcc = cv.Evaluate();
+        } else {
+            mlpack::cv::KFoldCV<mlpack::svm::LinearSVM<>, mlpack::cv::Accuracy> cv(nSplits, xTrain, yTrain, numClasses);
+            cvAcc = cv.Evaluate();
+        }
+
+        std::string result("KFoldCV Accuracy: " + std::to_string(cvAcc));
+        emit attemptUpdateText(result.c_str());
 
     }
     catch (std::exception const &e)
     {
         std::cout << e.what() << std::endl;
     }
-    emit attemptUpdateText("Done training classifier");
     emit finished();
 }

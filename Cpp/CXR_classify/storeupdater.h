@@ -6,6 +6,7 @@
 #include <iostream>
 #include "unpackupdater.h"
 #include "confighandlers.h"
+#include "basicDbOps.h"
 
 class StoreUpdater : public QObject
 {
@@ -31,7 +32,6 @@ private:
 
     quint64 expected_num_files;
 
-    bool tableExists(std::string);
     quint64 countRecords();
 
 public slots:

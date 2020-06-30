@@ -8,6 +8,7 @@
 #include <pqxx/pqxx>
 #include <iostream>
 #include "confighandlers.h"
+#include "basicDbOps.h"
 
 class LabelImporter : public QObject
 {
@@ -16,7 +17,7 @@ public:
     LabelImporter(std::string, std::string, std::string, std::string, std::string);
 
 private:
-    std::string tableName;
+    std::string labelTableName;
     std::string csvFullPath;
     std::string elementsJson;
     std::string dbConfigFilename;
@@ -27,8 +28,6 @@ private:
     std::string database;
     std::string user;
     std::string password;
-
-    void addTableToDb();
 
 public slots:
     void importLabels();

@@ -25,6 +25,7 @@
 #include "opencv2/imgproc.hpp"
 #include <opencv2/imgcodecs/imgcodecs.hpp>
 #include "confighandlers.h"
+#include "basicDbOps.h"
 
 class FeatureCalculator : public QObject
 {
@@ -50,7 +51,6 @@ private:
     std::string metadataTableName;
     std::string featTableName;
 
-    void addTableToDb();
     cv::Mat preprocessing(cv::Mat, std::string, uint8_t);
     cv::Mat calcHorProf(cv::Mat, unsigned, unsigned);
     cv::Mat calcVertProf(cv::Mat, unsigned, unsigned);

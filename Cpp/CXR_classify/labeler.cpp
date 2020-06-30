@@ -30,7 +30,7 @@ void Labeler::fillWindow()
 {
     queryImageList();
     emit attemptUpdateText("Please manually label images");
-    addTableToDb();
+    bdo::addTableToDb(host, port, user, password, database, columnsInfo, "labels", labelTableName);
     QGridLayout * layout = new QGridLayout;
     layout->addWidget(label, 0, 0, 1, 2);
     layout->addWidget(image, 1, 0, 1, 2);
@@ -129,39 +129,6 @@ void Labeler::queryImageList()
     catch (std::exception const &e)
     {
         std::cout << "error" << std::endl;
-    }
-}
-
-void Labeler::addTableToDb()
-{
-    boost::property_tree::ptree columnsJson;
-    boost::property_tree::read_json(columnsInfo, columnsJson);
-    boost::property_tree::ptree elements = columnsJson.get_child("labels");
-
-    std::string sqlQuery = "CREATE TABLE " + labelTableName + " (file_name VARCHAR(255) PRIMARY KEY, file_path VARCHAR(255)";
-
-    for (boost::property_tree::ptree::value_type & column : elements) {
-        sqlQuery += (", " + column.first + " " + column.second.get<std::string>("db_datatype"));
-    }
-    sqlQuery += ");";
-
-    try
-    {
-        // Connect to the database
-        pqxx::connection c("host=" + host + " port=" + port + " dbname=" + database + " user=" + user + " password=" + password);
-
-        // Start a transaction
-        pqxx::nontransaction w(c);
-
-        // Execute query
-        pqxx::result r = w.exec(sqlQuery);
-
-        // Commit your transaction
-        w.commit();
-    }
-    catch (std::exception const &e)
-    {
-        std::cerr << e.what() << std::endl;
     }
 }
 
