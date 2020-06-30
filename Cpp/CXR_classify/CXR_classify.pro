@@ -56,7 +56,7 @@ HEADERS += \
     unpacker.h \
     unpackupdater.h
 
-LIBS += -ldl -lboost_system -lboost_filesystem -lstdc++fs  -lcurl -lz -lbz2  -larchive -lpqxx -lpq -pthread -ldcmimgle -ldcmdata -loflog -lofstd -lz -liconv -lcharset -lopencv_core -lopencv_imgproc -lopencv_highgui -fopenmp -larmadillo -lmlpack -lboost_serialization
+LIBS += -ldl -lboost_system -lboost_filesystem -lstdc++fs  -lcurl -lz -lbz2  -larchive -lpqxx -lpq -pthread -ldcmimgle -ldcmdata -loflog -lofstd -lz -liconv -lcharset -lopencv_core -lopencv_imgproc -lopencv_imgcodecs -lopencv_highgui -fopenmp -larmadillo -lmlpack -lboost_serialization
 
 DISTFILES += \
     columns_info.json \

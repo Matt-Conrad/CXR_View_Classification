@@ -1,4 +1,4 @@
-#include "featurecalculator.h"
+﻿#include "featurecalculator.h"
 
 FeatureCalculator::FeatureCalculator(std::string columnsInfo, std::string configFilename, std::string sectionName, std::string folderFullPath) : QObject()
 {
@@ -35,32 +35,71 @@ void FeatureCalculator::calculateFeatures()
         quint64 count = 0;
         for (int rownum=0; rownum < r.size(); ++rownum)
         {
-            std::this_thread::sleep_for (std::chrono::seconds(1));
             const pqxx::row row = r[rownum];
             const char * filePath = row["file_path"].c_str();
             count++;
 
             DicomImage * dcmImage = new DicomImage(filePath);
-            uint16_t * pixelData = (uint16_t *) (dcmImage->getOutputData(16));
+            uint16_t * pixelData = (uint16_t *) (dcmImage->getOutputData(16)); // This scales the pixel values so that the intensity range is 0 - 2^16 instead of 0 - 2^bits_stored
 
             uint64_t height = dcmImage->getHeight();
             uint64_t width = dcmImage->getWidth();
 
+            // Need to divide this by 16 for some reason. Probably because the bits stored is 12 but the values that are read are scaled to 16 bits?
             cv::Mat originalImage(height, width, CV_16U, pixelData);
+            cv::Mat originalImageDouble;
+            originalImage.convertTo(originalImageDouble, CV_64F);
 
+            //DEBUGGING
             DcmFileFormat file_format;
             file_format.loadFile(filePath);
+
+            DcmTagKey bitsStoredKey(40, 257); // bits stored
+            OFString bitsStoredValue;
+            file_format.getDataset()->findAndGetOFString(bitsStoredKey, bitsStoredValue);
+
+            cv::Mat rawIntensityImage(originalImage.rows, originalImage.cols, CV_64F);
+            // We must scale the intensities back down from 16 bits to either 12 or 15
+            if (bitsStoredValue == "12") {
+                rawIntensityImage = originalImageDouble / 16.0; // 16 - 12 = 4 bits = 2^4 = 16
+            } else if (bitsStoredValue == "15") {
+                rawIntensityImage = originalImageDouble / 2.0; // 16 - 15 = 1 bit = 2^1 = 2
+            } else if (bitsStoredValue == "10") {
+                rawIntensityImage = originalImageDouble / 64.0; // 16 - 10 = 6 bits = 2^6 = 64
+            } else if (bitsStoredValue == "14") {
+                rawIntensityImage = originalImageDouble / 2.0; // 16 - 14 = 2 bits = 2^2 = 4
+            } else {
+                std::cout << "BITS STORED NOT EXPECTED" << std::endl;
+            }
+
+            cv::Mat rawIntensityImageInt;
+            rawIntensityImage.convertTo(rawIntensityImageInt, CV_16U);//, 1, -0.5); // This rounding might cause inconsistencies
+
+//            std::ofstream myfile;
+//            myfile.open("./cpp.csv");
+//            myfile<< cv::format(rawIntensityImageInt, cv::Formatter::FMT_CSV) << std::endl;
+//            myfile.close();
+//            std::cout << "Image saved" << std::endl;
+//            std::this_thread::sleep_for(std::chrono::seconds(100));
 
             DcmTagKey photometricKey(40, 4); // photometric interpretation
             OFString photometricValue;
             file_format.getDataset()->findAndGetOFString(photometricKey, photometricValue);
 
-            cv::Mat preprocessedImage = preprocessing(originalImage, photometricValue.c_str());
+            std::cout << filePath << std::endl;
+
+            cv::Mat preprocessedImage = preprocessing(rawIntensityImage, photometricValue.c_str(), atoi(bitsStoredValue.c_str()));
+
+//            std::cout << "Preprocessed" << std::endl;
 
             cv::Mat horProfile = calcHorProf(preprocessedImage, 200, 200);
+//            std::cout << "Horizontal Profile" << std::endl;
             cv::Mat vertProfile = calcVertProf(preprocessedImage, 200, 200);
+//            std::cout << "Vertical Profile" << std::endl;
 
             store(filePath, horProfile, vertProfile);
+
+//            std::cout << "Stored" << std::endl;
 
             delete dcmImage;
         }
@@ -92,15 +131,24 @@ void FeatureCalculator::store(std::string filePath, cv::Mat horProfile, cv::Mat 
             return std::to_string(val);
         });
 
+//        std::cout << "Hor profile: " << horProfile << std::endl;
+//        std::this_thread::sleep_for(std::chrono::seconds(100));
+
         std::vector<std::string> vertVecString(vertVec.size());
         std::transform(vertVec.begin(), vertVec.end(), vertVecString.begin(), [](const float& val)
         {
             return std::to_string(val);
         });
 
+//        std::cout << "Vert profile: " << vertProfile << std::endl;
+//        std::this_thread::sleep_for(std::chrono::seconds(100));
+
         std::string sqlQuery = "INSERT INTO " + featTableName + " (file_name, file_path, hor_profile, vert_profile) VALUES ('" +
                 filePath.substr(filePath.find_last_of("/") + 1) + "', '" + filePath + "', '{" + boost::algorithm::join(horVecString, ", ") +
                 "}', '{" + boost::algorithm::join(vertVecString, ", ") + "}');";
+
+//        std::cout << sqlQuery << std::endl;
+//        std::this_thread::sleep_for(std::chrono::seconds(100));
 
         // Start a transaction
         pqxx::work w(c);
@@ -120,9 +168,16 @@ cv::Mat FeatureCalculator::calcHorProf(cv::Mat image, unsigned width, unsigned h
 {
     cv::Mat imageSquare(height, width, CV_32F);
     cv::resize(image, imageSquare, cv::Size(width, height), 0, 0, cv::INTER_AREA);
-    \
-    cv::Mat horProfile(height, width, CV_32F);
+
+    cv::Mat horProfile(1, width, CV_32F);
     cv::reduce(imageSquare, horProfile, 0, cv::REDUCE_AVG, CV_32F);
+
+//    std::ofstream myfile;
+//    myfile.open("./cpp.csv");
+//    myfile<< cv::format(horProfile, cv::Formatter::FMT_CSV) << std::endl;
+//    myfile.close();
+//    std::cout << "Image saved" << std::endl;
+//    std::this_thread::sleep_for(std::chrono::seconds(100));
 
     return horProfile;
 }
@@ -132,61 +187,62 @@ cv::Mat FeatureCalculator::calcVertProf(cv::Mat image, unsigned width, unsigned 
     cv::Mat imageSquare(height, width, CV_32F);
     cv::resize(image, imageSquare, cv::Size(width, height), 0, 0, cv::INTER_AREA);
 
-    cv::Mat vertProfile(height, width, CV_32F);
-    cv::reduce(imageSquare, vertProfile, 0, cv::REDUCE_AVG, CV_32F);
+    cv::Mat vertProfile(height, 1, CV_32F);
+    cv::reduce(imageSquare, vertProfile, 1, cv::REDUCE_AVG, CV_32F);
+
+//    std::ofstream myfile;
+//    myfile.open("./cpp2.csv");
+//    myfile<< cv::format(vertProfile, cv::Formatter::FMT_CSV) << std::endl;
+//    myfile.close();
+//    std::cout << "Image saved" << std::endl;
+//    std::this_thread::sleep_for(std::chrono::seconds(100));
 
     return vertProfile;
 }
 
-cv::Mat FeatureCalculator::preprocessing(cv::Mat image, std::string photometric)
+cv::Mat FeatureCalculator::preprocessing(cv::Mat image, std::string photometric, uint8_t bitsStored)
 {
-    double highestPossibleIntensity = 65536;
+//    std::cout << image.type() << std::endl;
+//    std::vector<int> compression_params;
+//    compression_params.push_back(cv::IMWRITE_PNG_COMPRESSION);
+//    compression_params.push_back(0);
+//    cv::imwrite("./image.png", image, compression_params);
+//    std::this_thread::sleep_for(std::chrono::seconds(100));
+
+    // Normalize image by dividing the intensities by the highest possible intensity so that it's dynamic range is between 1.0
+    double highestPossibleIntensity = pow(2, bitsStored) - 1;
     cv::Mat imageDouble(image.rows, image.cols, CV_64F);
     image.convertTo(imageDouble, CV_64F);
     cv::Mat imageNorm(image.rows, image.cols, CV_64F);
     imageNorm = imageDouble / highestPossibleIntensity;
 
-    if (photometric == "MONOCHROME1") {
-        imageNorm = 1.0 - imageNorm;
-    }
+//    std::cout << "Normalized" << std::endl;
 
-    // Create histogram
-    unsigned histogram[65536] = {};
-    for (auto j = 0; j < imageNorm.rows; j++) {
-        for (auto i = 0; i < imageNorm.cols; i++) {
-            ++histogram[(unsigned) (imageNorm.at<double>(j,i) * 65535)];
-        }
-    }
+    // Invert the image if it's monochrome 1
+//    if (photometric == "MONOCHROME1") {
+//        imageNorm = 1.0 - imageNorm;
+//    }
 
-    // Get 1st percentile
-    int sum = 0;
-    int index = 0;
-    while (sum < 0.01 * imageNorm.rows * imageNorm.cols) {
-        sum += histogram[index];
-        index++;
-    }
+//    std::ofstream myfile;
+//    myfile.open("./cpp2.csv");
+//    myfile<< cv::format(imageNorm, cv::Formatter::FMT_CSV) << std::endl;
+//    myfile.close();
+//    std::cout << "Image saved" << std::endl;
+//    std::this_thread::sleep_for(std::chrono::seconds(100));
 
-    double firstPercentile = index/65535.0;
+//    std::cout << "Inverted" << std::endl;
 
-    // Get median
-    sum = 0;
-    index = 0;
-    while (sum < 0.50 * imageNorm.rows * imageNorm.cols) {
-        sum += histogram[index];
-        index++;
-    }
+    cv::Mat imageNormFlat = imageNorm.reshape(1, 1);
+    cv::Mat imageNormSorted;
+    cv::sort(imageNormFlat, imageNormSorted, cv::SORT_ASCENDING);
 
-    double median = index/65535.0;
+    uint64_t nPixels = image.rows * image.cols;
 
-    // Get 99th percentile
-    sum = 0;
-    index = 65535;
-    while (sum < 0.01 * imageNorm.rows * imageNorm.cols) {
-        sum += histogram[index];
-        index--;
-    }
+    uint64_t firstIndex = 0.01 * nPixels;
+    uint64_t ninenineIndex = 0.99 * nPixels;
 
-    double nineninePercentile = index/65535.0;
+    double firstPercentile = imageNormSorted.at<double>(firstIndex);
+    double nineninePercentile = imageNormSorted.at<double>(ninenineIndex);
 
     cv::Mat enhancedImage(imageNorm.rows, imageNorm.cols, CV_64F);
     // Contrast stretch
@@ -203,30 +259,36 @@ cv::Mat FeatureCalculator::preprocessing(cv::Mat image, std::string photometric)
         }
     }
 
+//    std::cout << "Enhanced" << std::endl;
+
     cv::Mat enhancedImageFloat(image.rows, image.cols, CV_32F);
     enhancedImage.convertTo(enhancedImageFloat, CV_32F);
+
+    cv::Mat enhancedImageFlat = enhancedImageFloat.reshape(1, 1);
+    cv::Mat enhancedImageSorted;
+    cv::sort(enhancedImageFlat, enhancedImageSorted, cv::SORT_ASCENDING);
+
+    uint64_t medianIndex = 0.50 * nPixels;
+    float median = enhancedImageSorted.at<float>(medianIndex);
 
     cv::Mat imageBinarized(image.rows, image.cols, CV_32F);
     cv::threshold(enhancedImageFloat, imageBinarized, median, 1.0, cv::THRESH_BINARY);
 
-    // vector with all non-black point positions
-    std::vector<cv::Point> nonBlackList;
-    nonBlackList.reserve(imageBinarized.rows * imageBinarized.cols);
+//    std::cout << "Binarized" << std::endl;
 
-    // add all non-black points to the vector
-    for(int j = 0; j < imageBinarized.rows; ++j) {
-        for(int i = 0; i < imageBinarized.cols; ++i) {
-            // if not black: add to the list
-            if(imageBinarized.at<float>(j,i) != 1.0) {
-                nonBlackList.push_back(cv::Point(i,j));
-            }
-        }
-    }
+//    std::cout << "1st percentile: " << firstPercentile << std::endl;
+//    std::cout << "Median: " << median << std::endl;
+//    std::cout << "99th percentile: " << nineninePercentile << std::endl;
 
-    // create bounding rect around those points
-    cv::Rect bb = cv::boundingRect(nonBlackList);
+    cv::Mat points;
+    cv::findNonZero(imageBinarized, points);
+    cv::Rect bb = cv::boundingRect(points);
 
-    cv::Mat imageCropped = imageBinarized(bb);
+//    std::cout << "Bounding" << std::endl;
+
+    cv::Mat imageCropped = enhancedImageFloat(bb);
+
+//    std::cout << "Cropped" << std::endl;
 
     float scalePercent = 0.5;
     unsigned width = imageCropped.cols * scalePercent;
@@ -235,6 +297,8 @@ cv::Mat FeatureCalculator::preprocessing(cv::Mat image, std::string photometric)
     cv::Mat imageDownsize(height, width, CV_32F);
 
     cv::resize(imageCropped, imageDownsize, cv::Size(width, height), 0.5, 0.5, cv::INTER_AREA);
+
+//    std::cout << "Downsized" << std::endl;
 
 //    cv::namedWindow("image", cv::WINDOW_NORMAL);
 //    cv::imshow("image", imageDownsize);
@@ -275,8 +339,5 @@ void FeatureCalculator::addTableToDb()
         std::cerr << e.what() << std::endl;
     }
 }
-
-
-
 
 

@@ -29,7 +29,7 @@ void Trainer::trainClassifier()
         pqxx::result r = w.exec(sqlQuery);
 
         std::vector<std::string> fileNames = {};
-        static double X[7470][400];
+        static double X[7468][400];
 
         for (int rownum = 0; rownum < r.size(); rownum++) {
             // Filenames
@@ -77,7 +77,7 @@ void Trainer::trainClassifier()
         }
 
         // First, load the data.
-        arma::mat xArma(&X[0][0], 400, 7470); // transpose because Armadillo stores data column-by-column (for compatibility with LAPACK)
+        arma::mat xArma(&X[0][0], 400, 7468); // transpose because Armadillo stores data column-by-column (for compatibility with LAPACK)
         arma::Row yArma(y);
         arma::mat xTrain, xTest;
         arma::Row<size_t> yTrain, yTest;
