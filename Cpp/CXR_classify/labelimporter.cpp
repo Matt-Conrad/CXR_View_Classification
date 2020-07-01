@@ -8,17 +8,19 @@ LabelImporter::LabelImporter(std::string labelTableName, std::string csvFullPath
     LabelImporter::dbConfigFilename = dbConfigFilename;
     LabelImporter::sectionName = sectionName;
 
-    LabelImporter::host = configParser(dbConfigFilename, "postgresql").get<std::string>("host");
-    LabelImporter::port = configParser(dbConfigFilename, "postgresql").get<std::string>("port");
-    LabelImporter::database = configParser(dbConfigFilename, "postgresql").get<std::string>("database");
-    LabelImporter::user = configParser(dbConfigFilename, "postgresql").get<std::string>("user");
-    LabelImporter::password = configParser(dbConfigFilename, "postgresql").get<std::string>("password");
+    LabelImporter::host = config::getSection(dbConfigFilename, "postgresql").get<std::string>("host");
+    LabelImporter::port = config::getSection(dbConfigFilename, "postgresql").get<std::string>("port");
+    LabelImporter::database = config::getSection(dbConfigFilename, "postgresql").get<std::string>("database");
+    LabelImporter::user = config::getSection(dbConfigFilename, "postgresql").get<std::string>("user");
+    LabelImporter::password = config::getSection(dbConfigFilename, "postgresql").get<std::string>("password");
+
+    LabelImporter::dbInfo = config::getSection(dbConfigFilename, "postgresql");
 }
 
 void LabelImporter::importLabels()
 {
     emit attemptUpdateText("Attempting to import image labels");
-    bdo::addTableToDb(host, port, user, password, database, elementsJson, "labels", labelTableName);
+    bdo::addTableToDb(dbInfo, elementsJson, "labels", labelTableName);
 
     // Open the json with the list of elements we're interested in
     boost::property_tree::ptree columnsJson;

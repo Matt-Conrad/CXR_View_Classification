@@ -7,25 +7,21 @@ Storer::Storer(std::string columnsInfo, std::string configFilename, std::string 
     Storer::sectionName = sectionName;
     Storer::folderFullPath = folderFullPath;
 
-    Storer::host = configParser(configFilename, "postgresql").get<std::string>("host");
-    Storer::port = configParser(configFilename, "postgresql").get<std::string>("port");
-    Storer::database = configParser(configFilename, "postgresql").get<std::string>("database");
-    Storer::user = configParser(configFilename, "postgresql").get<std::string>("user");
-    Storer::password = configParser(configFilename, "postgresql").get<std::string>("password");
+    Storer::dbInfo = config::getSection(configFilename, "postgresql");
 
-    Storer::metadataTableName = configParser(configFilename, "table_info").get<std::string>("metadata_table_name");
+    Storer::metadataTableName = config::getSection(configFilename, "table_info").get<std::string>("metadata_table_name");
 }
 
 void Storer::dicomToDb()
 {
     // Create the database if it isn't already there
-    if (!bdo::dbExists(host, port, user, password, database)){
-        bdo::createNewDb(host, port, database);
+    if (!bdo::dbExists(dbInfo)){
+        bdo::createNewDb(dbInfo);
     }
 
     // Create table if it isn't already there
-    if (!bdo::tableExists(host, port, user, password, database, metadataTableName)) {
-        bdo::addTableToDb(host, port, user, password, database, columnsInfo, "elements", metadataTableName);
+    if (!bdo::tableExists(dbInfo, metadataTableName)) {
+        bdo::addTableToDb(dbInfo, columnsInfo, "elements", metadataTableName);
     }
 
     // Open the json with the list of elements we're interested in
@@ -39,14 +35,14 @@ void Storer::dicomToDb()
             try
             {
                 // Connect to the database
-                pqxx::connection c("host=" + host + " port=" + port + " dbname=" + database + " user=" + user + " password=" + password);
+                pqxx::connection * connection = bdo::openConnection(dbInfo);
 
                 // Create SQL query
                 std::cout << p.path().string() << std::endl;
                 std::string sqlQuery = createSqlQuery(metadataTableName, elements, p.path().string());
 
                 // Start a transaction
-                pqxx::work w(c);
+                pqxx::work w(*connection);
 
                 // Execute query
                 pqxx::result r = w.exec(sqlQuery);

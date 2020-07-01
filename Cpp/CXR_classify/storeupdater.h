@@ -4,6 +4,7 @@
 #include <QObject>
 #include <pqxx/pqxx>
 #include <iostream>
+#include <boost/property_tree/ptree.hpp>
 #include "unpackupdater.h"
 #include "confighandlers.h"
 #include "basicDbOps.h"
@@ -22,17 +23,11 @@ private:
     std::string sectionName;
     std::string folderFullPath;
 
-    std::string host;
-    std::string port;
-    std::string database;
-    std::string user;
-    std::string password;
+    boost::property_tree::ptree dbInfo;
 
     std::string metadataTableName;
 
     quint64 expected_num_files;
-
-    quint64 countRecords();
 
 public slots:
     void updateProgressBar();

@@ -7,6 +7,7 @@
 #include <QThreadPool>
 #include <QObject>
 #include <QThread>
+#include <boost/property_tree/ptree.hpp>
 #include "mainwindow.h"
 #include "downloader.h"
 #include "confighandlers.h"
@@ -36,7 +37,7 @@ class AppController : public QObject
 private:
     // String variables
     std::string configFilename = "../CXR_classify/config.ini";
-    std::string dataset = configParser(configFilename, "dataset_info").get<std::string>("dataset");
+    std::string dataset = config::getSection(configFilename, "dataset_info").get<std::string>("dataset");
     std::string url = c_sourceUrl.at(dataset);
     std::string parentFolder = boost::dll::program_location().parent_path().string();
     std::string filename = url.substr(url.find_last_of("/") + 1);
@@ -46,17 +47,18 @@ private:
     std::string columns_info_name = "../CXR_classify/columns_info.json";
     std::string columns_info_full_path = parentFolder + "/" + columns_info_name;
 
-    std::string host = configParser(configFilename, "postgresql").get<std::string>("host");;
-    std::string port = configParser(configFilename, "postgresql").get<std::string>("port");
-    std::string database = configParser(configFilename, "postgresql").get<std::string>("database");
-    std::string user = configParser(configFilename, "postgresql").get<std::string>("user");
-    std::string password = configParser(configFilename, "postgresql").get<std::string>("password");
+    boost::property_tree::ptree dbInfo = config::getSection(configFilename, "postgresql");
+    std::string host = config::getSection(configFilename, "postgresql").get<std::string>("host");
+    std::string port = config::getSection(configFilename, "postgresql").get<std::string>("port");
+    std::string database = config::getSection(configFilename, "postgresql").get<std::string>("database");
+    std::string user = config::getSection(configFilename, "postgresql").get<std::string>("user");
+    std::string password = config::getSection(configFilename, "postgresql").get<std::string>("password");
 
     // From config file
-    std::string dbName = configParser(configFilename, "postgresql").get<std::string>("database");
-    std::string metaTableName = configParser(configFilename, "table_info").get<std::string>("metadata_table_name");
-    std::string featTableName = configParser(configFilename, "table_info").get<std::string>("features_table_name");
-    std::string labelTableName = configParser(configFilename, "table_info").get<std::string>("label_table_name");
+    std::string dbName = config::getSection(configFilename, "postgresql").get<std::string>("database");
+    std::string metaTableName = config::getSection(configFilename, "table_info").get<std::string>("metadata_table_name");
+    std::string featTableName = config::getSection(configFilename, "table_info").get<std::string>("features_table_name");
+    std::string labelTableName = config::getSection(configFilename, "table_info").get<std::string>("label_table_name");
 
     void initGuiState();
     QThreadPool threadpool = QThreadPool();

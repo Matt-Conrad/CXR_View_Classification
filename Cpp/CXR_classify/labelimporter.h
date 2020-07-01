@@ -29,6 +29,8 @@ private:
     std::string user;
     std::string password;
 
+    boost::property_tree::ptree dbInfo;
+
 public slots:
     void importLabels();
 

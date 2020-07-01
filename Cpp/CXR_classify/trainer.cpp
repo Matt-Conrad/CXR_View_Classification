@@ -5,11 +5,11 @@ Trainer::Trainer(std::string dbConfigFilename, std::string featTableName, std::s
     Trainer::featTableName = featTableName;
     Trainer::labelTableName = labelTableName;
 
-    Trainer::host = configParser(dbConfigFilename, "postgresql").get<std::string>("host");
-    Trainer::port = configParser(dbConfigFilename, "postgresql").get<std::string>("port");
-    Trainer::database = configParser(dbConfigFilename, "postgresql").get<std::string>("database");
-    Trainer::user = configParser(dbConfigFilename, "postgresql").get<std::string>("user");
-    Trainer::password = configParser(dbConfigFilename, "postgresql").get<std::string>("password");
+    Trainer::host = config::getSection(dbConfigFilename, "postgresql").get<std::string>("host");
+    Trainer::port = config::getSection(dbConfigFilename, "postgresql").get<std::string>("port");
+    Trainer::database = config::getSection(dbConfigFilename, "postgresql").get<std::string>("database");
+    Trainer::user = config::getSection(dbConfigFilename, "postgresql").get<std::string>("user");
+    Trainer::password = config::getSection(dbConfigFilename, "postgresql").get<std::string>("password");
 
     Trainer::expected_num_files = expected_num_files_in_dataset.at(filename);
 }

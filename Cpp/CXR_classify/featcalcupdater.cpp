@@ -7,13 +7,9 @@ FeatCalcUpdater::FeatCalcUpdater(std::string columnsInfo, std::string configFile
     FeatCalcUpdater::sectionName = sectionName;
     FeatCalcUpdater::folderFullPath = folderFullPath;
 
-    FeatCalcUpdater::host = configParser(configFilename, "postgresql").get<std::string>("host");
-    FeatCalcUpdater::port = configParser(configFilename, "postgresql").get<std::string>("port");
-    FeatCalcUpdater::database = configParser(configFilename, "postgresql").get<std::string>("database");
-    FeatCalcUpdater::user = configParser(configFilename, "postgresql").get<std::string>("user");
-    FeatCalcUpdater::password = configParser(configFilename, "postgresql").get<std::string>("password");
+    FeatCalcUpdater::dbInfo = config::getSection(configFilename, "postgresql");
 
-    FeatCalcUpdater::featTableName = configParser(configFilename, "table_info").get<std::string>("features_table_name");
+    FeatCalcUpdater::featTableName = config::getSection(configFilename, "table_info").get<std::string>("features_table_name");
     FeatCalcUpdater::expected_num_files = expected_num_files_in_dataset.at(filename);
 }
 
@@ -22,39 +18,17 @@ void FeatCalcUpdater::updateProgressBar()
     emit attemptUpdateText("Calculating features");
     emit attemptUpdateProBarBounds(0, expected_num_files);
 
-    while (!bdo::tableExists(host, port, user, password, database, featTableName)) {
+    while (!bdo::tableExists(dbInfo, featTableName)) {
         ;
     }
 
     emit attemptUpdateProBarValue(0);
-    while (countRecords() < expected_num_files) {
-        emit attemptUpdateProBarValue(countRecords());
+    while (bdo::countRecords(dbInfo, featTableName) < expected_num_files) {
+        emit attemptUpdateProBarValue(bdo::countRecords(dbInfo, featTableName));
     }
-    emit attemptUpdateProBarValue(countRecords());
+    emit attemptUpdateProBarValue(bdo::countRecords(dbInfo, featTableName));
     emit attemptUpdateText("Done calculating features");
 
     emit finished();
 }
 
-quint64 FeatCalcUpdater::countRecords() {
-    try
-    {
-        // Connect to the database
-        pqxx::connection c("host=" + host + " port=" + port + " dbname=" + database + " user=" + user + " password=" + password);
-
-        // Start a transaction
-        pqxx::work w(c);
-
-        // Execute query
-        pqxx::result r = w.exec("SELECT COUNT(*) FROM " + featTableName + ";");
-
-        w.commit();
-
-        // Return based on result
-        return r[0][0].as<int>();
-    }
-    catch (std::exception const &e)
-    {
-        std::cerr << e.what() << std::endl;
-    }
-}

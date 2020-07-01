@@ -7,27 +7,23 @@ FeatureCalculator::FeatureCalculator(std::string columnsInfo, std::string config
     FeatureCalculator::sectionName = sectionName;
     FeatureCalculator::folderFullPath = folderFullPath;
 
-    FeatureCalculator::host = configParser(configFilename, "postgresql").get<std::string>("host");
-    FeatureCalculator::port = configParser(configFilename, "postgresql").get<std::string>("port");
-    FeatureCalculator::database = configParser(configFilename, "postgresql").get<std::string>("database");
-    FeatureCalculator::user = configParser(configFilename, "postgresql").get<std::string>("user");
-    FeatureCalculator::password = configParser(configFilename, "postgresql").get<std::string>("password");
+    FeatureCalculator::dbInfo = config::getSection(configFilename, "postgresql");
 
-    FeatureCalculator::metadataTableName = configParser(configFilename, "table_info").get<std::string>("metadata_table_name");
-    FeatureCalculator::featTableName = configParser(configFilename, "table_info").get<std::string>("features_table_name");
+    FeatureCalculator::metadataTableName = config::getSection(configFilename, "table_info").get<std::string>("metadata_table_name");
+    FeatureCalculator::featTableName = config::getSection(configFilename, "table_info").get<std::string>("features_table_name");
 }
 
 void FeatureCalculator::calculateFeatures()
 {
-    bdo::addTableToDb(host, port, user, password, database, columnsInfo, "features_list", featTableName);
+    bdo::addTableToDb(dbInfo, columnsInfo, "features_list", featTableName);
 
     try
     {
         // Connect to the database
-        pqxx::connection c("host=" + host + " port=" + port + " dbname=" + database + " user=" + user + " password=" + password);
+        pqxx::connection * connection = bdo::openConnection(dbInfo);
 
         // Start a transaction
-        pqxx::work w(c);
+        pqxx::work w(*connection);
 
         // Execute query
         pqxx::result r = w.exec("SELECT * FROM " + metadataTableName + ";");
@@ -119,7 +115,7 @@ void FeatureCalculator::store(std::string filePath, cv::Mat horProfile, cv::Mat 
     try
     {
         // Connect to the database
-        pqxx::connection c("host=" + host + " port=" + port + " dbname=" + database + " user=" + user + " password=" + password);
+        pqxx::connection * connection = bdo::openConnection(dbInfo);
 
         // Create SQL query
         std::vector<float> horVec(horProfile.begin<float>(), horProfile.end<float>());
@@ -151,7 +147,7 @@ void FeatureCalculator::store(std::string filePath, cv::Mat horProfile, cv::Mat 
 //        std::this_thread::sleep_for(std::chrono::seconds(100));
 
         // Start a transaction
-        pqxx::work w(c);
+        pqxx::work w(*connection);
 
         // Execute query
         pqxx::result r = w.exec(sqlQuery);

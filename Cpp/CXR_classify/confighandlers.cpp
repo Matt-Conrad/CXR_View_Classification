@@ -1,7 +1,7 @@
 
 #include "confighandlers.h"
 
-boost::property_tree::ptree configParser(std::string filename, std::string sectionName)
+boost::property_tree::ptree config::getSection(std::string filename, std::string sectionName)
 {
     boost::property_tree::ptree configFile;
 

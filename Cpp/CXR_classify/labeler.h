@@ -32,11 +32,7 @@ private:
     std::string columnsInfo;
     std::string labelTableName;
 
-    std::string host;
-    std::string port;
-    std::string database;
-    std::string user;
-    std::string password;
+    boost::property_tree::ptree dbInfo;
 
     pqxx::result imageList;
     pqxx::result::const_iterator record;

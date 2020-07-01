@@ -7,12 +7,15 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/algorithm/string/join.hpp>
+#include "confighandlers.h"
 
 namespace bdo {
-    bool dbExists(std::string, std::string, std::string, std::string, std::string);
-    void createNewDb(std::string, std::string, std::string);
-    bool tableExists(std::string, std::string, std::string, std::string, std::string, std::string);
-    void addTableToDb(std::string, std::string, std::string, std::string, std::string, std::string, std::string, std::string);
+    bool dbExists(boost::property_tree::ptree);
+    void createNewDb(boost::property_tree::ptree);
+    bool tableExists(boost::property_tree::ptree, std::string);
+    void addTableToDb(boost::property_tree::ptree, std::string, std::string, std::string);
+    int countRecords(boost::property_tree::ptree, std::string);
+    pqxx::connection * openConnection(boost::property_tree::ptree);
 }
 
 #endif // POSTGRES_H

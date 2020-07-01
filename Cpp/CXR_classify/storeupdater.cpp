@@ -7,13 +7,9 @@ StoreUpdater::StoreUpdater(std::string columnsInfo, std::string configFilename, 
     StoreUpdater::sectionName = sectionName;
     StoreUpdater::folderFullPath = folderFullPath;
 
-    StoreUpdater::host = configParser(configFilename, "postgresql").get<std::string>("host");
-    StoreUpdater::port = configParser(configFilename, "postgresql").get<std::string>("port");
-    StoreUpdater::database = configParser(configFilename, "postgresql").get<std::string>("database");
-    StoreUpdater::user = configParser(configFilename, "postgresql").get<std::string>("user");
-    StoreUpdater::password = configParser(configFilename, "postgresql").get<std::string>("password");
+    StoreUpdater::dbInfo = config::getSection(configFilename, "postgresql");
 
-    StoreUpdater::metadataTableName = configParser(configFilename, "table_info").get<std::string>("metadata_table_name");
+    StoreUpdater::metadataTableName = config::getSection(configFilename, "table_info").get<std::string>("metadata_table_name");
 
     StoreUpdater::expected_num_files = expected_num_files_in_dataset.at(filename);
 }
@@ -23,41 +19,19 @@ void StoreUpdater::updateProgressBar()
     emit attemptUpdateText("Storing metadata");
     emit attemptUpdateProBarBounds(0, expected_num_files);
 
-    while (!bdo::tableExists(host, port, user, password, database, metadataTableName)) {
+    while (!bdo::tableExists(dbInfo, metadataTableName)) {
         ;
     }
 
     emit attemptUpdateProBarValue(0);
-    while (countRecords() < expected_num_files) {
-        emit attemptUpdateProBarValue(countRecords());
+    while (bdo::countRecords(dbInfo, metadataTableName) < expected_num_files) {
+        emit attemptUpdateProBarValue(bdo::countRecords(dbInfo, metadataTableName));
     }
-    emit attemptUpdateProBarValue(countRecords());
+    emit attemptUpdateProBarValue(bdo::countRecords(dbInfo, metadataTableName));
     emit attemptUpdateText("Done storing metadata");
 
     emit finished();
 }
 
-quint64 StoreUpdater::countRecords() {
-    try
-    {
-        // Connect to the database
-        pqxx::connection c("host=" + host + " port=" + port + " dbname=" + database + " user=" + user + " password=" + password);
-
-        // Start a transaction
-        pqxx::work w(c);
-
-        // Execute query
-        pqxx::result r = w.exec("SELECT COUNT(*) FROM " + metadataTableName + ";");
-
-        w.commit();
-
-        // Return based on result
-        return r[0][0].as<int>();
-    }
-    catch (std::exception const &e)
-    {
-        std::cerr << e.what() << std::endl;
-    }
-}
 
 

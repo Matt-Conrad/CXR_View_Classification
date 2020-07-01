@@ -33,11 +33,7 @@ private:
     std::string sectionName;
     std::string folderFullPath;
 
-    std::string host;
-    std::string port;
-    std::string database;
-    std::string user;
-    std::string password;
+    boost::property_tree::ptree dbInfo;
 
     std::string metadataTableName;
 

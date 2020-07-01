@@ -1,7 +1,13 @@
 #include "basicDbOps.h"
 
-bool bdo::dbExists(std::string host, std::string port, std::string user, std::string password, std::string database)
+bool bdo::dbExists(boost::property_tree::ptree dbInfo)
 {
+    std::string host = dbInfo.get<std::string>("host");
+    std::string port = dbInfo.get<std::string>("port");
+    std::string database = dbInfo.get<std::string>("database");
+    std::string user = dbInfo.get<std::string>("user");
+    std::string password = dbInfo.get<std::string>("password");
+
     try
     {
         // Connect to the database
@@ -27,8 +33,12 @@ bool bdo::dbExists(std::string host, std::string port, std::string user, std::st
     }
 }
 
-void bdo::createNewDb(std::string host, std::string port, std::string database)
+void bdo::createNewDb(boost::property_tree::ptree dbInfo)
 {
+    std::string host = dbInfo.get<std::string>("host");
+    std::string port = dbInfo.get<std::string>("port");
+    std::string database = dbInfo.get<std::string>("database");
+
     try
     {
         // Connect to the database
@@ -49,8 +59,14 @@ void bdo::createNewDb(std::string host, std::string port, std::string database)
     }
 }
 
-bool bdo::tableExists(std::string host, std::string port, std::string user, std::string password, std::string database, std::string tableName)
+bool bdo::tableExists(boost::property_tree::ptree dbInfo, std::string tableName)
 {
+    std::string host = dbInfo.get<std::string>("host");
+    std::string port = dbInfo.get<std::string>("port");
+    std::string database = dbInfo.get<std::string>("database");
+    std::string user = dbInfo.get<std::string>("user");
+    std::string password = dbInfo.get<std::string>("password");
+
     try
     {
         // Connect to the database
@@ -75,8 +91,14 @@ bool bdo::tableExists(std::string host, std::string port, std::string user, std:
     }
 }
 
-void bdo::addTableToDb(std::string host, std::string port, std::string user, std::string password, std::string database, std::string columnsInfo, std::string section, std::string tableName)
+void bdo::addTableToDb(boost::property_tree::ptree dbInfo, std::string columnsInfo, std::string section, std::string tableName)
 {
+    std::string host = dbInfo.get<std::string>("host");
+    std::string port = dbInfo.get<std::string>("port");
+    std::string database = dbInfo.get<std::string>("database");
+    std::string user = dbInfo.get<std::string>("user");
+    std::string password = dbInfo.get<std::string>("password");
+
     boost::property_tree::ptree columnsJson;
     boost::property_tree::read_json(columnsInfo, columnsJson);
     boost::property_tree::ptree elements = columnsJson.get_child(section);
@@ -106,4 +128,45 @@ void bdo::addTableToDb(std::string host, std::string port, std::string user, std
     {
       std::cerr << e.what() << std::endl;
     }
+}
+
+int bdo::countRecords(boost::property_tree::ptree dbInfo, std::string tableName) {
+    std::string host = dbInfo.get<std::string>("host");
+    std::string port = dbInfo.get<std::string>("port");
+    std::string database = dbInfo.get<std::string>("database");
+    std::string user = dbInfo.get<std::string>("user");
+    std::string password = dbInfo.get<std::string>("password");
+
+    try
+    {
+        // Connect to the database
+        pqxx::connection c("host=" + host + " port=" + port + " dbname=" + database + " user=" + user + " password=" + password);
+
+        // Start a transaction
+        pqxx::work w(c);
+
+        // Execute query
+        pqxx::result r = w.exec("SELECT COUNT(*) FROM " + tableName + ";");
+
+        w.commit();
+
+        // Return based on result
+        return r[0][0].as<int>();
+    }
+    catch (std::exception const &e)
+    {
+        std::cerr << e.what() << std::endl;
+    }
+}
+
+pqxx::connection * bdo::openConnection(boost::property_tree::ptree dbInfo) {
+    std::string host = dbInfo.get<std::string>("host");
+    std::string port = dbInfo.get<std::string>("port");
+    std::string database = dbInfo.get<std::string>("database");
+    std::string user = dbInfo.get<std::string>("user");
+    std::string password = dbInfo.get<std::string>("password");
+
+    pqxx::connection * connection = new pqxx::connection("host=" + host + " port=" + port + " dbname=" + database + " user=" + user + " password=" + password);
+
+    return connection;
 }
