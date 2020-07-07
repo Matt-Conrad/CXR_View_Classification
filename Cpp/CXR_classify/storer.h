@@ -17,12 +17,13 @@
 #include <chrono>
 #include "confighandlers.h"
 #include "basicDbOps.h"
+#include "unpackupdater.h"
 
 class Storer : public QObject
 {
     Q_OBJECT
 public:
-    Storer(std::string, std::string, std::string, std::string);
+    Storer(std::string, std::string, std::string, std::string, std::string);
 
 public slots:
     void dicomToDb();
@@ -36,11 +37,15 @@ private:
     boost::property_tree::ptree dbInfo;
 
     std::string metadataTableName;
+    quint64 expected_num_files;
 
     std::string createSqlQuery(std::string, boost::property_tree::ptree, std::string);
 
 signals:
     void finished();
+    void attemptUpdateProBarValue(quint64);
+    void attemptUpdateProBarBounds(quint64, quint64);
+    void attemptUpdateText(QString);
 };
 
 #endif // STORER_H

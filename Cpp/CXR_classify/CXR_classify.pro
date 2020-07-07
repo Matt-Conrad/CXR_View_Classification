@@ -31,7 +31,6 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
         storer.cpp \
-        storeupdater.cpp \
         trainer.cpp \
         unpacker.cpp \
         unpackupdater.cpp
@@ -53,7 +52,6 @@ HEADERS += \
     labelimporter.h \
     mainwindow.h \
     storer.h \
-    storeupdater.h \
     trainer.h \
     unpacker.h \
     unpackupdater.h

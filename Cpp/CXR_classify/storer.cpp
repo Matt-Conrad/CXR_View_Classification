@@ -1,6 +1,6 @@
 #include "storer.h"
 
-Storer::Storer(std::string columnsInfo, std::string configFilename, std::string sectionName, std::string folderFullPath) : QObject()
+Storer::Storer(std::string columnsInfo, std::string configFilename, std::string sectionName, std::string folderFullPath, std::string filename) : QObject()
 {
     Storer::columnsInfo = columnsInfo;
     Storer::configFilename = configFilename;
@@ -10,10 +10,15 @@ Storer::Storer(std::string columnsInfo, std::string configFilename, std::string 
     Storer::dbInfo = config::getSection(configFilename, "postgresql");
 
     Storer::metadataTableName = config::getSection(configFilename, "table_info").get<std::string>("metadata_table_name");
+
+    Storer::expected_num_files = expected_num_files_in_dataset.at(filename);
 }
 
 void Storer::dicomToDb()
 {
+    emit attemptUpdateText("Storing metadata");
+    emit attemptUpdateProBarBounds(0, expected_num_files);
+
     // Create the database if it isn't already there
     if (!bdo::dbExists(dbInfo)){
         bdo::createNewDb(dbInfo);
@@ -24,11 +29,14 @@ void Storer::dicomToDb()
         bdo::addTableToDb(dbInfo, columnsInfo, "elements", metadataTableName);
     }
 
+    emit attemptUpdateProBarValue(0);
+
     // Open the json with the list of elements we're interested in
     boost::property_tree::ptree columnsJson;
     boost::property_tree::read_json(columnsInfo, columnsJson);
     boost::property_tree::ptree elements = columnsJson.get_child("elements");
 
+    quint64 storeCount = 0;
     for (auto & p : std::filesystem::recursive_directory_iterator(folderFullPath)) {
         if (p.path().extension() == ".dcm") {
 //            std::this_thread::sleep_for (std::chrono::seconds(1));
@@ -50,6 +58,9 @@ void Storer::dicomToDb()
                 w.commit();
 
                 bdo::deleteConnection(connection);
+
+                storeCount++;
+                emit attemptUpdateProBarValue(storeCount);
             }
             catch (std::exception const &e)
             {
@@ -57,7 +68,7 @@ void Storer::dicomToDb()
             }
         }
     }
-
+    emit attemptUpdateText("Done storing metadata");
     emit finished();
 }
 

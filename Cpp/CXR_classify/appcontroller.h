@@ -15,7 +15,6 @@
 #include "downloadupdater.h"
 #include "unpackupdater.h"
 #include "storer.h"
-#include "storeupdater.h"
 #include "featurecalculator.h"
 #include "featcalcupdater.h"
 #include "labeler.h"
@@ -69,8 +68,7 @@ public:
     DownloadUpdater * downloadUpdater = new DownloadUpdater(filename_fullpath, dataset);
     Unpacker * unpacker = new Unpacker(filename_fullpath, folder_full_path, parentFolder, dataset);
     UnpackUpdater * unpackUpdater = new UnpackUpdater(folder_full_path, dataset, filename);
-    Storer * storer = new Storer(columns_info_name, configFilename, "elements", folder_full_path);
-    StoreUpdater * storeUpdater = new StoreUpdater(columns_info_name, configFilename, "elements", folder_full_path, filename);
+    Storer * storer = new Storer(columns_info_name, configFilename, "elements", folder_full_path, filename);
     FeatureCalculator * featCalc = new FeatureCalculator(columns_info_name, configFilename, "elements", folder_full_path);
     FeatCalcUpdater * featCalcUpdater = new FeatCalcUpdater(columns_info_name, configFilename, "elements", folder_full_path, filename);
     Labeler * labeler = new Labeler(configFilename, columns_info_name);

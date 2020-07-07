@@ -158,28 +158,20 @@ void MainWindow::stage3_ui()
     QThread * storeThread = new QThread;
     controller->storer->moveToThread(storeThread);
     connect(centralWidget->findChild<QPushButton *>("storeBtn"), SIGNAL (clicked()), storeThread, SLOT (start()));
-
-    QThread * storeUpdaterThread = new QThread;
-    controller->storeUpdater->moveToThread(storeUpdaterThread);
-    connect(centralWidget->findChild<QPushButton *>("storeBtn"), SIGNAL (clicked()), storeUpdaterThread, SLOT (start()));
 \
     // Connect the threads to the functions of the classes in the threads
     connect(storeThread, SIGNAL (started()), controller->storer, SLOT (dicomToDb()));
-    connect(storeUpdaterThread, SIGNAL (started()), controller->storeUpdater, SLOT (updateProgressBar()));
 
     // Connect the updater to the dashboard
-    connect(controller->storeUpdater, SIGNAL (attemptUpdateProBarBounds(quint64, quint64)), this, SLOT (updateProBarBounds(quint64, quint64)));
-    connect(controller->storeUpdater, SIGNAL (attemptUpdateProBarValue(quint64)), this, SLOT (updateProBarValue(quint64)));
-    connect(controller->storeUpdater, SIGNAL (attemptUpdateText(QString)), this, SLOT (updateText(QString)));
+    connect(controller->storer, SIGNAL (attemptUpdateProBarBounds(quint64, quint64)), this, SLOT (updateProBarBounds(quint64, quint64)));
+    connect(controller->storer, SIGNAL (attemptUpdateProBarValue(quint64)), this, SLOT (updateProBarValue(quint64)));
+    connect(controller->storer, SIGNAL (attemptUpdateText(QString)), this, SLOT (updateText(QString)));
 
     // When functions in the threads finished, quit the thread, delete the objects in the threads, and delete the threads when able
     connect(controller->storer, SIGNAL (finished()), storeThread, SLOT (quit()));
-    connect(controller->storeUpdater, SIGNAL (finished()), storeUpdaterThread, SLOT (quit()));
-    connect(controller->storeUpdater, SIGNAL (finished()), this, SLOT(stage4_ui()));
+    connect(controller->storer, SIGNAL (finished()), this, SLOT(stage4_ui()));
     connect(controller->storer, SIGNAL (finished()), controller->storer, SLOT (deleteLater()));
-    connect(controller->storeUpdater, SIGNAL (finished()), controller->storeUpdater, SLOT (deleteLater()));
     connect(storeThread, SIGNAL (finished()), storeThread, SLOT (deleteLater()));
-    connect(storeUpdaterThread, SIGNAL (finished()), storeUpdaterThread, SLOT (deleteLater()));
 }
 
 void MainWindow::stage4_ui()
