@@ -12,6 +12,7 @@
 #include "mlpack/core/cv/metrics/accuracy.hpp"
 #include "confighandlers.h"
 #include "unpackupdater.h"
+#include "basicDbOps.h"
 
 class Trainer : public QObject
 {
@@ -26,11 +27,7 @@ private:
     std::string featTableName;
     std::string labelTableName;
 
-    std::string host;
-    std::string port;
-    std::string database;
-    std::string user;
-    std::string password;
+    boost::property_tree::ptree dbInfo;
 
     quint64 expected_num_files;
 

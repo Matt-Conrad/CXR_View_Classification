@@ -8,12 +8,6 @@ LabelImporter::LabelImporter(std::string labelTableName, std::string csvFullPath
     LabelImporter::dbConfigFilename = dbConfigFilename;
     LabelImporter::sectionName = sectionName;
 
-    LabelImporter::host = config::getSection(dbConfigFilename, "postgresql").get<std::string>("host");
-    LabelImporter::port = config::getSection(dbConfigFilename, "postgresql").get<std::string>("port");
-    LabelImporter::database = config::getSection(dbConfigFilename, "postgresql").get<std::string>("database");
-    LabelImporter::user = config::getSection(dbConfigFilename, "postgresql").get<std::string>("user");
-    LabelImporter::password = config::getSection(dbConfigFilename, "postgresql").get<std::string>("password");
-
     LabelImporter::dbInfo = config::getSection(dbConfigFilename, "postgresql");
 }
 
@@ -39,16 +33,18 @@ void LabelImporter::importLabels()
     try
     {
         // Connect to the database
-        pqxx::connection c("host=" + host + " port=" + port + " dbname=" + database + " user=" + user + " password=" + password);
+        pqxx::connection * connection = bdo::openConnection(dbInfo);
 
         // Start a transaction
-        pqxx::work w(c);
+        pqxx::work w(*connection);
 
         // Execute query
         pqxx::result r = w.exec(sqlQuery);
 
         // Commit your transaction
         w.commit();
+
+        bdo::deleteConnection(connection);
     }
     catch (std::exception const &e)
     {

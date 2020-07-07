@@ -48,6 +48,8 @@ void Storer::dicomToDb()
                 pqxx::result r = w.exec(sqlQuery);
 
                 w.commit();
+
+                bdo::deleteConnection(connection);
             }
             catch (std::exception const &e)
             {

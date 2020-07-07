@@ -101,6 +101,7 @@ void FeatureCalculator::calculateFeatures()
         }
 
         w.commit();
+        bdo::deleteConnection(connection);
     }
     catch (std::exception const &e)
     {
@@ -153,6 +154,7 @@ void FeatureCalculator::store(std::string filePath, cv::Mat horProfile, cv::Mat 
         pqxx::result r = w.exec(sqlQuery);
 
         w.commit();
+        bdo::deleteConnection(connection);
     }
     catch (std::exception const &e)
     {

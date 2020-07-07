@@ -170,3 +170,9 @@ pqxx::connection * bdo::openConnection(boost::property_tree::ptree dbInfo) {
 
     return connection;
 }
+
+void bdo::deleteConnection(pqxx::connection * & connection) {
+    delete connection;
+}
+
+

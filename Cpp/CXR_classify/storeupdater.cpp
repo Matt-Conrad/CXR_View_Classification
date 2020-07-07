@@ -24,7 +24,7 @@ void StoreUpdater::updateProgressBar()
     }
 
     emit attemptUpdateProBarValue(0);
-    while (bdo::countRecords(dbInfo, metadataTableName) < expected_num_files) {
+    while (((quint64) bdo::countRecords(dbInfo, metadataTableName)) < expected_num_files) {
         emit attemptUpdateProBarValue(bdo::countRecords(dbInfo, metadataTableName));
     }
     emit attemptUpdateProBarValue(bdo::countRecords(dbInfo, metadataTableName));

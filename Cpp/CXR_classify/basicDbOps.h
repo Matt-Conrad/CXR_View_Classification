@@ -16,6 +16,7 @@ namespace bdo {
     void addTableToDb(boost::property_tree::ptree, std::string, std::string, std::string);
     int countRecords(boost::property_tree::ptree, std::string);
     pqxx::connection * openConnection(boost::property_tree::ptree);
+    void deleteConnection(pqxx::connection * &);
 }
 
 #endif // POSTGRES_H

@@ -19,7 +19,7 @@ void Labeler::closeLabelApp()
 
 void Labeler::closeConnection()
 {
-    delete connection;
+    bdo::deleteConnection(connection);
 }
 
 void Labeler::fillWindow()

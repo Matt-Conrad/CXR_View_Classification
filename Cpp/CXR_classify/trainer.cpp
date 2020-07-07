@@ -5,11 +5,7 @@ Trainer::Trainer(std::string dbConfigFilename, std::string featTableName, std::s
     Trainer::featTableName = featTableName;
     Trainer::labelTableName = labelTableName;
 
-    Trainer::host = config::getSection(dbConfigFilename, "postgresql").get<std::string>("host");
-    Trainer::port = config::getSection(dbConfigFilename, "postgresql").get<std::string>("port");
-    Trainer::database = config::getSection(dbConfigFilename, "postgresql").get<std::string>("database");
-    Trainer::user = config::getSection(dbConfigFilename, "postgresql").get<std::string>("user");
-    Trainer::password = config::getSection(dbConfigFilename, "postgresql").get<std::string>("password");
+    Trainer::dbInfo = config::getSection(dbConfigFilename, "postgresql");
 
     Trainer::expected_num_files = expected_num_files_in_dataset.at(filename);
 }
@@ -20,10 +16,10 @@ void Trainer::trainClassifier()
     try
     {
         // Connect to the database
-        pqxx::connection c("host=" + host + " port=" + port + " dbname=" + database + " user=" + user + " password=" + password);
+        pqxx::connection * connection = bdo::openConnection(dbInfo);
 
         // Start a transaction
-        pqxx::work w(c);
+        pqxx::work w(*connection);
 
         std::string sqlQuery = "SELECT file_name, hor_profile, vert_profile FROM " + featTableName + " ORDER BY file_path ASC;";
 
@@ -100,6 +96,9 @@ void Trainer::trainClassifier()
 
         std::string result("KFoldCV Accuracy: " + std::to_string(cvAcc));
         emit attemptUpdateText(result.c_str());
+
+        w.commit();
+        bdo::deleteConnection(connection);
 
     }
     catch (std::exception const &e)
