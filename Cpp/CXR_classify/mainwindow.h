@@ -15,7 +15,6 @@
 #include "downloader.h"
 #include "downloadupdater.h"
 #include "unpacker.h"
-#include "unpackupdater.h"
 
 class AppController;
 

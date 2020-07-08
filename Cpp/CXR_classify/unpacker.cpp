@@ -1,15 +1,16 @@
 #include "unpacker.h"
-#include <iostream>
 
-Unpacker::Unpacker(std::string filename_fullpath, std::string folder_full_path, std::string parentFolder, std::string dataset) : QObject()
+Unpacker::Unpacker(std::string filename_fullpath, std::string folder_full_path, std::string parentFolder, std::string dataset, std::string filename) : QObject()
 {
     Unpacker::filename_fullpath = filename_fullpath;
     Unpacker::folder_full_path = folder_full_path;
     Unpacker::parentFolder = parentFolder;
     Unpacker::dataset = dataset;
+
+    Unpacker::expected_num_files = expected_num_files_in_dataset.at(filename);
 }
 
-static int copy_data(struct archive *ar, struct archive *aw)
+int Unpacker::copy_data(struct archive *ar, struct archive *aw)
 {
     int r;
     const void *buff;
@@ -30,7 +31,7 @@ static int copy_data(struct archive *ar, struct archive *aw)
     }
 }
 
-static int extract(const char *filename, std::string destination)
+int Unpacker::extract(const char *filename, std::string destination)
 {
     struct archive *a;
     struct archive *ext;
@@ -52,6 +53,7 @@ static int extract(const char *filename, std::string destination)
     archive_write_disk_set_standard_lookup(ext);
     if ((r = archive_read_open_filename(a, filename, 10240))) // read in TGZ
         return 1;
+
     for (;;) {
         r = archive_read_next_header(a, &entry); // get next file to unpack in TGZ
         if (r == ARCHIVE_EOF)
@@ -80,6 +82,7 @@ static int extract(const char *filename, std::string destination)
             fprintf(stderr, "%s\n", archive_error_string(ext));
         if (r < ARCHIVE_WARN)
             return 1;
+        emit attemptUpdateProBarValue(countDcms());
     }
     archive_read_close(a);
     archive_read_free(a);
@@ -90,12 +93,28 @@ static int extract(const char *filename, std::string destination)
 
 void Unpacker::unpack()
 {
+    emit attemptUpdateText("Unpacking images");
+    emit attemptUpdateProBarBounds(0, expected_num_files);
+    emit attemptUpdateProBarValue(0);
     if (dataset == "full_set") {
         std::filesystem::create_directory(folder_full_path);
         extract(filename_fullpath.c_str(), folder_full_path);
+        emit attemptUpdateProBarValue(countDcms());
     } else {
         extract(filename_fullpath.c_str(), parentFolder);
     }
+    emit attemptUpdateProBarValue(countDcms());
+    emit attemptUpdateText("Images unpacked");
     emit finished();
+}
 
+quint64 Unpacker::countDcms()
+{
+    quint64 count = 0;
+    for (auto & p : std::filesystem::recursive_directory_iterator(folder_full_path)) {
+        if (p.path().extension() == ".dcm") {
+            count++;
+        }
+    }
+    return count;
 }

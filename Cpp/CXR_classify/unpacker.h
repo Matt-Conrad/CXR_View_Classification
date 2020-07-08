@@ -6,12 +6,26 @@
 #include <filesystem>
 #include <archive.h>
 #include <archive_entry.h>
+#include <unordered_map>
+#include <fstream>
+#include <iostream>
+#include <boost/iostreams/filtering_streambuf.hpp>
+#include <boost/iostreams/copy.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+
+const std::unordered_map<std::string, uint16_t> expected_num_files_in_dataset = {
+        {"NLMCXR_subset_dataset.tgz", 10},
+        {"NLMCXR_dcm.tgz", 7470}
+    };
 
 class Unpacker : public QObject
 {
     Q_OBJECT
+
+friend class AppController;
+
 public:
-    Unpacker(std::string, std::string, std::string, std::string);
+    Unpacker(std::string, std::string, std::string, std::string, std::string);
 
 private:
     std::string filename_fullpath;
@@ -19,11 +33,23 @@ private:
     std::string parentFolder;
     std::string dataset;
 
+    int extract(const char *, std::string);
+    int copy_data(struct archive *ar, struct archive *aw);
+
+    quint64 expected_num_files;
+
+    quint64 countDcms();
+
+    void extracter();
+
 public slots:
     void unpack();
 
 signals:
     void finished();
+    void attemptUpdateProBarValue(quint64);
+    void attemptUpdateProBarBounds(quint64, quint64);
+    void attemptUpdateText(QString);
 };
 
 #endif // UNPACKER_H

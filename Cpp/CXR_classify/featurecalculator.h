@@ -26,7 +26,7 @@
 #include <opencv2/imgcodecs/imgcodecs.hpp>
 #include "confighandlers.h"
 #include "basicDbOps.h"
-#include "unpackupdater.h"
+#include "unpacker.h"
 
 class FeatureCalculator : public QObject
 {

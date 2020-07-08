@@ -13,7 +13,6 @@
 #include "confighandlers.h"
 #include "unpacker.h"
 #include "downloadupdater.h"
-#include "unpackupdater.h"
 #include "storer.h"
 #include "featurecalculator.h"
 #include "labeler.h"
@@ -65,8 +64,7 @@ public:
     AppController();
     Downloader * downloader = new Downloader(url, filename_fullpath, dataset);
     DownloadUpdater * downloadUpdater = new DownloadUpdater(filename_fullpath, dataset);
-    Unpacker * unpacker = new Unpacker(filename_fullpath, folder_full_path, parentFolder, dataset);
-    UnpackUpdater * unpackUpdater = new UnpackUpdater(folder_full_path, dataset, filename);
+    Unpacker * unpacker = new Unpacker(filename_fullpath, folder_full_path, parentFolder, dataset, filename);
     Storer * storer = new Storer(columns_info_name, configFilename, "elements", folder_full_path, filename);
     FeatureCalculator * featCalc = new FeatureCalculator(columns_info_name, configFilename, "elements", folder_full_path, filename);
     Labeler * labeler = new Labeler(configFilename, columns_info_name);
