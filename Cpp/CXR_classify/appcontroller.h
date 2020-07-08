@@ -16,7 +16,6 @@
 #include "unpackupdater.h"
 #include "storer.h"
 #include "featurecalculator.h"
-#include "featcalcupdater.h"
 #include "labeler.h"
 #include "labelimporter.h"
 #include "trainer.h"
@@ -69,8 +68,7 @@ public:
     Unpacker * unpacker = new Unpacker(filename_fullpath, folder_full_path, parentFolder, dataset);
     UnpackUpdater * unpackUpdater = new UnpackUpdater(folder_full_path, dataset, filename);
     Storer * storer = new Storer(columns_info_name, configFilename, "elements", folder_full_path, filename);
-    FeatureCalculator * featCalc = new FeatureCalculator(columns_info_name, configFilename, "elements", folder_full_path);
-    FeatCalcUpdater * featCalcUpdater = new FeatCalcUpdater(columns_info_name, configFilename, "elements", folder_full_path, filename);
+    FeatureCalculator * featCalc = new FeatureCalculator(columns_info_name, configFilename, "elements", folder_full_path, filename);
     Labeler * labeler = new Labeler(configFilename, columns_info_name);
     LabelImporter * labelImporter = new LabelImporter(labelTableName, (parentFolder + "/../CXR_classify/image_labels.csv"), columns_info_full_path, configFilename, "labels");
     Trainer * trainer = new Trainer(configFilename, featTableName, labelTableName, filename);

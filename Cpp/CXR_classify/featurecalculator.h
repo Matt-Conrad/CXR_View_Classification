@@ -26,12 +26,13 @@
 #include <opencv2/imgcodecs/imgcodecs.hpp>
 #include "confighandlers.h"
 #include "basicDbOps.h"
+#include "unpackupdater.h"
 
 class FeatureCalculator : public QObject
 {
     Q_OBJECT
 public:
-    FeatureCalculator(std::string, std::string, std::string, std::string);
+    FeatureCalculator(std::string, std::string, std::string, std::string, std::string);
 
 public slots:
     void calculateFeatures();
@@ -47,6 +48,8 @@ private:
     std::string metadataTableName;
     std::string featTableName;
 
+    quint64 expected_num_files;
+
     cv::Mat preprocessing(cv::Mat, std::string, uint8_t);
     cv::Mat calcHorProf(cv::Mat, unsigned, unsigned);
     cv::Mat calcVertProf(cv::Mat, unsigned, unsigned);
@@ -54,6 +57,9 @@ private:
 
 signals:
     void finished();
+    void attemptUpdateProBarValue(quint64);
+    void attemptUpdateProBarBounds(quint64, quint64);
+    void attemptUpdateText(QString);
 };
 
 #endif // FEATURECALCULATOR_H

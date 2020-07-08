@@ -1,6 +1,6 @@
 ﻿#include "featurecalculator.h"
 
-FeatureCalculator::FeatureCalculator(std::string columnsInfo, std::string configFilename, std::string sectionName, std::string folderFullPath) : QObject()
+FeatureCalculator::FeatureCalculator(std::string columnsInfo, std::string configFilename, std::string sectionName, std::string folderFullPath, std::string filename) : QObject()
 {
     FeatureCalculator::columnsInfo = columnsInfo;
     FeatureCalculator::configFilename = configFilename;
@@ -11,12 +11,18 @@ FeatureCalculator::FeatureCalculator(std::string columnsInfo, std::string config
 
     FeatureCalculator::metadataTableName = config::getSection(configFilename, "table_info").get<std::string>("metadata_table_name");
     FeatureCalculator::featTableName = config::getSection(configFilename, "table_info").get<std::string>("features_table_name");
+
+    FeatureCalculator::expected_num_files = expected_num_files_in_dataset.at(filename);
 }
 
 void FeatureCalculator::calculateFeatures()
 {
+    emit attemptUpdateText("Calculating features");
+    emit attemptUpdateProBarBounds(0, expected_num_files);
+
     bdo::addTableToDb(dbInfo, columnsInfo, "features_list", featTableName);
 
+    emit attemptUpdateProBarValue(0);
     try
     {
         // Connect to the database
@@ -98,6 +104,8 @@ void FeatureCalculator::calculateFeatures()
 //            std::cout << "Stored" << std::endl;
 
             delete dcmImage;
+
+            emit attemptUpdateProBarValue(count);
         }
 
         w.commit();
@@ -107,6 +115,8 @@ void FeatureCalculator::calculateFeatures()
     {
         std::cerr << e.what() << std::endl;
     }
+    emit attemptUpdateText("Done calculating features");
+    emit attemptUpdateProBarValue(bdo::countRecords(dbInfo, featTableName));
 
     emit finished();
 }

@@ -24,7 +24,6 @@ SOURCES += \
         confighandlers.cpp \
         downloader.cpp \
         downloadupdater.cpp \
-        featcalcupdater.cpp \
         featurecalculator.cpp \
         labeler.cpp \
         labelimporter.cpp \
@@ -46,7 +45,6 @@ HEADERS += \
     confighandlers.h \
     downloader.h \
     downloadupdater.h \
-    featcalcupdater.h \
     featurecalculator.h \
     labeler.h \
     labelimporter.h \
