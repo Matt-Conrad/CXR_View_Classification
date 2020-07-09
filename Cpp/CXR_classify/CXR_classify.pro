@@ -1,4 +1,5 @@
 QT += widgets
+QT += network
 
 QMAKE_CXXFLAGS += -std=c++17
 
@@ -23,7 +24,6 @@ SOURCES += \
         basicDbOps.cpp \
         confighandlers.cpp \
         downloader.cpp \
-        downloadupdater.cpp \
         featurecalculator.cpp \
         labeler.cpp \
         labelimporter.cpp \
@@ -43,7 +43,6 @@ HEADERS += \
     basicDbOps.h \
     confighandlers.h \
     downloader.h \
-    downloadupdater.h \
     featurecalculator.h \
     labeler.h \
     labelimporter.h \
@@ -52,7 +51,7 @@ HEADERS += \
     trainer.h \
     unpacker.h \
 
-LIBS += -ldl -lboost_system -lboost_filesystem -lstdc++fs  -lcurl -lz -lbz2  -larchive -lpqxx -lpq -pthread -ldcmimgle -ldcmdata -loflog -lofstd -lz -liconv -lcharset -lopencv_core -lopencv_imgproc -lopencv_imgcodecs -lopencv_highgui -fopenmp -larmadillo -lmlpack -lboost_serialization -lboost_iostreams
+LIBS += -ldl -lboost_system -lboost_filesystem -lstdc++fs -lz -lbz2  -larchive -lpqxx -lpq -pthread -ldcmimgle -ldcmdata -loflog -lofstd -lz -liconv -lcharset -lopencv_core -lopencv_imgproc -lopencv_imgcodecs -lopencv_highgui -fopenmp -larmadillo -lmlpack -lboost_serialization -lboost_iostreams
 
 DISTFILES += \
     columns_info.json \

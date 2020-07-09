@@ -85,27 +85,19 @@ void MainWindow::stage1_ui()
     controller->downloader->moveToThread(downloadThread);
     connect(centralWidget->findChild<QPushButton *>("downloadBtn"), SIGNAL (clicked()), downloadThread, SLOT (start()));
 
-    QThread * downloadUpdaterThread = new QThread;
-    controller->downloadUpdater->moveToThread(downloadUpdaterThread);
-    connect(centralWidget->findChild<QPushButton *>("downloadBtn"), SIGNAL (clicked()), downloadUpdaterThread, SLOT (start()));
-\
     // Connect the threads to the functions of the classes in the threads
     connect(downloadThread, SIGNAL (started()), controller->downloader, SLOT (getDataset()));
-    connect(downloadUpdaterThread, SIGNAL (started()), controller->downloadUpdater, SLOT (updateProgressBar()));
 
     // Connect the updater to the dashboard
-    connect(controller->downloadUpdater, SIGNAL (attemptUpdateProBarBounds(quint64, quint64)), this, SLOT (updateProBarBounds(quint64, quint64)));
-    connect(controller->downloadUpdater, SIGNAL (attemptUpdateProBarValue(quint64)), this, SLOT (updateProBarValue(quint64)));
-    connect(controller->downloadUpdater, SIGNAL (attemptUpdateText(QString)), this, SLOT (updateText(QString)));
+    connect(controller->downloader, SIGNAL (attemptUpdateProBarBounds(quint64, quint64)), this, SLOT (updateProBarBounds(quint64, quint64)));
+    connect(controller->downloader, SIGNAL (attemptUpdateProBarValue(quint64)), this, SLOT (updateProBarValue(quint64)));
+    connect(controller->downloader, SIGNAL (attemptUpdateText(QString)), this, SLOT (updateText(QString)));
 
     // When functions in the threads finished, quit the thread, delete the objects in the threads, and delete the threads when able
     connect(controller->downloader, SIGNAL (finished()), downloadThread, SLOT (quit()));
-    connect(controller->downloadUpdater, SIGNAL (finished()), downloadUpdaterThread, SLOT (quit()));
-    connect(controller->downloadUpdater, SIGNAL (finished()), this, SLOT(stage2_ui()));
+    connect(controller->downloader, SIGNAL (finished()), this, SLOT(stage2_ui()));
     connect(controller->downloader, SIGNAL (finished()), controller->downloader, SLOT (deleteLater()));
-    connect(controller->downloadUpdater, SIGNAL (finished()), controller->downloadUpdater, SLOT (deleteLater()));
     connect(downloadThread, SIGNAL (finished()), downloadThread, SLOT (deleteLater()));
-    connect(downloadUpdaterThread, SIGNAL (finished()), downloadUpdaterThread, SLOT (deleteLater()));
 }
 
 void MainWindow::stage2_ui()

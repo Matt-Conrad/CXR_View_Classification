@@ -4,7 +4,10 @@ Downloader::Downloader(std::string url, std::string filename_fullpath, std::stri
 {
     Downloader::url = url;
     Downloader::filename_fullpath = filename_fullpath;
+    Downloader::filename = filename_fullpath.substr(filename_fullpath.find_last_of("/") + 1);
     Downloader::dataset = dataset;
+
+    Downloader::expected_size = expected_sizes.at(filename);
 }
 
 void Downloader::getDataset()
@@ -19,6 +22,8 @@ void Downloader::getDataset()
     } else {
         Downloader::downloadDataset();
     }
+    emit attemptUpdateProBarValue(getTgzSize());
+    emit attemptUpdateText("Image download complete");
     emit finished();
 }
 
@@ -27,53 +32,61 @@ void Downloader::downloadDataset()
     download();
 }
 
-static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)
-{
-  size_t written = fwrite(ptr, size, nmemb, (FILE *)stream);
-  return written;
-}
-
 int Downloader::download()
 {
-    CURL *curl_handle;
-    static const char *pagefilename = filename_fullpath.c_str();
-    FILE *pagefile;
+    emit attemptUpdateText("Downloading images");
+    emit attemptUpdateProBarBounds(0, getTgzMax());
 
-    curl_global_init(CURL_GLOBAL_ALL);
-
-    /* init the curl session */
-    curl_handle = curl_easy_init();
-
-    /* set URL to get here */
-    curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());
-
-    /* Switch on full protocol/debug output while testing */
-    curl_easy_setopt(curl_handle, CURLOPT_VERBOSE, 1L);
-
-    /* disable progress meter, set to 0L to enable and disable debug output */
-    curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L);
-
-    /* send all data to this function  */
-    curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_data);
-
-    /* open the file */
-    pagefile = fopen(pagefilename, "wb");
-    if(pagefile) {
-
-        /* write the page body to this file handle */
-        curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, pagefile);
-
-        /* get it! */
-        curl_easy_perform(curl_handle);
-
-        /* close the header file */
-        fclose(pagefile);
+    QNetworkAccessManager nam;
+    QFile file(filename_fullpath.c_str());
+    if(!file.open(QIODevice::ReadWrite)) {
+        std::cout << "Can't open write file" << std::endl;
     }
+    QNetworkRequest request(QUrl(url.c_str()));
+    QNetworkReply* reply = nam.get(request);
+    QEventLoop event;
 
-    /* cleanup curl stuff */
-    curl_easy_cleanup(curl_handle);
+    QObject::connect(reply, &QNetworkReply::readyRead, [&]{
+        //this will be called every time a chunk of data is received
+        QByteArray data= reply->readAll();
+        emit attemptUpdateProBarValue(getTgzSize());
+        file.write(data);
+    });
 
-    curl_global_cleanup();
+    //use the finished signal from the reply object to close the file
+    //and delete the reply object
+    QObject::connect(reply, &QNetworkReply::finished, [&]{
+        QByteArray data= reply->readAll();
+        file.write(data);
+        file.close();
+        reply->deleteLater();
+        event.quit();
+    });
 
+    event.exec();
     return 0;
+}
+
+quint64 Downloader::getTgzSize()
+{
+    if (dataset == "full_set") {
+        return quint64(std::filesystem::file_size(filename_fullpath) / 100);
+//        return std::filesystem::file_size(filename_fullpath);
+    } else if (dataset == "subset") {
+        return std::filesystem::file_size(filename_fullpath);
+    } else {
+        return 0;
+    }
+}
+
+quint64 Downloader::getTgzMax()
+{
+    if (dataset == "full_set") {
+        return quint64(expected_size / 100);
+//        return expected_size;
+    } else if (dataset == "subset") {
+        return expected_size;
+    } else {
+        return 0;
+    }
 }

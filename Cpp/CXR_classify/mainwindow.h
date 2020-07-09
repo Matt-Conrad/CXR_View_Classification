@@ -12,10 +12,6 @@
 #include <filesystem>
 #include <pqxx/pqxx>
 
-#include "downloader.h"
-#include "downloadupdater.h"
-#include "unpacker.h"
-
 class AppController;
 
 class MainWindow : public QMainWindow
