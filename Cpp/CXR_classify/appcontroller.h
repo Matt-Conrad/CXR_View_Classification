@@ -4,7 +4,6 @@
 #include <boost/dll/runtime_symbol_info.hpp>
 #include <string>
 #include <filesystem>
-#include <QThreadPool>
 #include <QObject>
 #include <QThread>
 #include <boost/property_tree/ptree.hpp>
@@ -44,11 +43,6 @@ private:
     std::string columns_info_full_path = parentFolder + "/" + columns_info_name;
 
     boost::property_tree::ptree dbInfo = config::getSection(configFilename, "postgresql");
-    std::string host = config::getSection(configFilename, "postgresql").get<std::string>("host");
-    std::string port = config::getSection(configFilename, "postgresql").get<std::string>("port");
-    std::string database = config::getSection(configFilename, "postgresql").get<std::string>("database");
-    std::string user = config::getSection(configFilename, "postgresql").get<std::string>("user");
-    std::string password = config::getSection(configFilename, "postgresql").get<std::string>("password");
 
     // From config file
     std::string dbName = config::getSection(configFilename, "postgresql").get<std::string>("database");
@@ -57,7 +51,6 @@ private:
     std::string labelTableName = config::getSection(configFilename, "table_info").get<std::string>("label_table_name");
 
     void initGuiState();
-    QThreadPool threadpool = QThreadPool();
 
 public:
     AppController();

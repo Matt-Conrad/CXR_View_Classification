@@ -40,8 +40,6 @@ private:
 
     quint64 countDcms();
 
-    void extracter();
-
 public slots:
     void unpack();
 

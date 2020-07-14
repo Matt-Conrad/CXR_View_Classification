@@ -10,7 +10,7 @@ Unpacker::Unpacker(std::string filename_fullpath, std::string folder_full_path, 
     Unpacker::expected_num_files = expected_num_files_in_dataset.at(filename);
 }
 
-int Unpacker::copy_data(struct archive *ar, struct archive *aw)
+int Unpacker::copy_data(struct archive * ar, struct archive * aw)
 {
     int r;
     const void *buff;
@@ -31,7 +31,7 @@ int Unpacker::copy_data(struct archive *ar, struct archive *aw)
     }
 }
 
-int Unpacker::extract(const char *filename, std::string destination)
+int Unpacker::extract(const char * filename, std::string destination)
 {
     struct archive *a;
     struct archive *ext;
