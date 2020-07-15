@@ -3,8 +3,6 @@
 Storer::Storer(ConfigHandler * configHandler) : QObject()
 {
     Storer::configHandler = configHandler;
-    Storer::columnsInfo = configHandler->getSetting("misc", "columns_info_relative_path");
-    Storer::folderFullPath = configHandler->getSetting("misc","parent_folder") + "/" + configHandler->getSetting("misc","dataset_folder_name");
     Storer::expected_num_files = expected_num_files_in_dataset.at(configHandler->getSetting("misc","tgz_filename"));
 }
 
@@ -12,6 +10,8 @@ void Storer::dicomToDb()
 {
     boost::property_tree::ptree dbInfo = configHandler->getSection("postgresql");
     std::string metadataTableName = configHandler->getSetting("table_info", "metadata_table_name");
+    std::string columnsInfo = configHandler->getSetting("misc", "columns_info_relative_path");
+    std::string folderFullPath = configHandler->getSetting("misc","parent_folder") + "/" + configHandler->getSetting("misc","dataset_folder_name");
 
     emit attemptUpdateText("Storing metadata");
     emit attemptUpdateProBarBounds(0, expected_num_files);

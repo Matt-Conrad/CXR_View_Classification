@@ -29,7 +29,6 @@ public:
 private:
     ConfigHandler * configHandler;
     unsigned count = 0;
-    std::string columnsInfo;
 
     pqxx::result imageList;
     pqxx::result::const_iterator record;

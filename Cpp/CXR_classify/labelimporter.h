@@ -17,8 +17,6 @@ public:
     LabelImporter(ConfigHandler *);
 
 private:
-    std::string csvFullPath;
-    std::string elementsJson;
     ConfigHandler * configHandler;
 
 public slots:

@@ -29,9 +29,6 @@ public slots:
     void dicomToDb();
 
 private:
-    std::string columnsInfo;
-    std::string folderFullPath;
-
     quint64 expected_num_files;
 
     ConfigHandler * configHandler;

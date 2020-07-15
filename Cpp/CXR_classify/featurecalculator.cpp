@@ -3,8 +3,6 @@
 FeatureCalculator::FeatureCalculator(ConfigHandler * configHandler) : QObject()
 {
     FeatureCalculator::configHandler = configHandler;
-    FeatureCalculator::columnsInfo = configHandler->getSetting("misc", "columns_info_relative_path");
-    FeatureCalculator::folderFullPath = configHandler->getSetting("misc","parent_folder") + "/" + configHandler->getSetting("misc","dataset_folder_name");
 
     FeatureCalculator::expected_num_files = expected_num_files_in_dataset.at(configHandler->getSetting("misc","tgz_filename"));
 }
@@ -14,6 +12,7 @@ void FeatureCalculator::calculateFeatures()
     boost::property_tree::ptree dbInfo = configHandler->getSection("postgresql");
     std::string metadataTableName = configHandler->getSetting("table_info", "metadata_table_name");
     std::string featTableName = configHandler->getSetting("table_info", "features_table_name");
+    std::string columnsInfo = configHandler->getSetting("misc", "columns_info_relative_path");
 
     emit attemptUpdateText("Calculating features");
     emit attemptUpdateProBarBounds(0, expected_num_files);

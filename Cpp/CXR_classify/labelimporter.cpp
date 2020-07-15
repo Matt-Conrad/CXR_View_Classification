@@ -3,14 +3,14 @@
 LabelImporter::LabelImporter(ConfigHandler * configHandler) : QObject()
 {
     LabelImporter::configHandler = configHandler;
-    LabelImporter::csvFullPath = configHandler->getSetting("misc", "parent_folder") + "/" + configHandler->getSetting("misc", "csv_relative_path");;
-    LabelImporter::elementsJson = configHandler->getSetting("misc", "parent_folder") + "/" + configHandler->getSetting("misc", "columns_info_relative_path");;
 }
 
 void LabelImporter::importLabels()
 {
     boost::property_tree::ptree dbInfo = configHandler->getSection("postgresql");
     std::string labelTableName = configHandler->getSetting("table_info", "label_table_name");
+    std::string csvFullPath = configHandler->getSetting("misc", "parent_folder") + "/" + configHandler->getSetting("misc", "csv_relative_path");
+    std::string elementsJson = configHandler->getSetting("misc", "parent_folder") + "/" + configHandler->getSetting("misc", "columns_info_relative_path");
 
     emit attemptUpdateText("Attempting to import image labels");
     bdo::addTableToDb(dbInfo, elementsJson, "labels", labelTableName);

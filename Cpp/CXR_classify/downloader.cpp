@@ -4,14 +4,13 @@ Downloader::Downloader(std::string url, ConfigHandler * configHandler) : QObject
 {
     Downloader::url = url;
     Downloader::configHandler = configHandler;
-    Downloader::filename = configHandler->getSetting("misc","tgz_filename");
-    Downloader::filename_fullpath = configHandler->getSetting("misc","parent_folder") + "/" + configHandler->getSetting("misc","tgz_filename");
 
-    Downloader::expected_size = expected_sizes.at(filename);
+    Downloader::expected_size = expected_sizes.at(configHandler->getSetting("misc","tgz_filename"));
 }
 
 void Downloader::getDataset()
 {
+    std::string filename_fullpath = configHandler->getSetting("misc","parent_folder") + "/" + configHandler->getSetting("misc","tgz_filename");
     if (std::filesystem::exists(filename_fullpath) && !std::filesystem::is_directory(filename_fullpath)) {
         if (std::filesystem::file_size(filename_fullpath) == 88320855) { // replace hard code with expected size
             std::cout << "File  was downloaded properly" << std::endl;
@@ -34,6 +33,8 @@ void Downloader::downloadDataset()
 
 int Downloader::download()
 {
+    std::string filename_fullpath = configHandler->getSetting("misc","parent_folder") + "/" + configHandler->getSetting("misc","tgz_filename");
+
     emit attemptUpdateText("Downloading images");
     emit attemptUpdateProBarBounds(0, getTgzMax());
 
@@ -69,7 +70,9 @@ int Downloader::download()
 
 quint64 Downloader::getTgzSize()
 {
+    std::string filename_fullpath = configHandler->getSetting("misc","parent_folder") + "/" + configHandler->getSetting("misc","tgz_filename");
     std::string dataset = configHandler->getSetting("dataset_info", "dataset");
+
     if (dataset == "full_set") {
         return quint64(std::filesystem::file_size(filename_fullpath) / 100);
 //        return std::filesystem::file_size(filename_fullpath);

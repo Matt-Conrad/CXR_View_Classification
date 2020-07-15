@@ -3,7 +3,6 @@
 Labeler::Labeler(ConfigHandler * configHandler) : QWidget()
 {
     Labeler::configHandler = configHandler;
-    Labeler::columnsInfo = configHandler->getSetting("misc", "columns_info_relative_path");
 }
 
 void Labeler::closeLabelApp()
@@ -23,6 +22,7 @@ void Labeler::fillWindow()
 {
     boost::property_tree::ptree dbInfo = configHandler->getSection("postgresql");
     std::string labelTableName = configHandler->getSetting("table_info", "label_table_name");
+    std::string columnsInfo = configHandler->getSetting("misc", "columns_info_relative_path");
 
     queryImageList();
     emit attemptUpdateText("Please manually label images");

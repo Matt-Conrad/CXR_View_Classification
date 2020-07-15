@@ -29,9 +29,6 @@ public:
     Unpacker(ConfigHandler *);
 
 private:
-    std::string filename_fullpath;
-    std::string folder_full_path;
-    std::string parentFolder;
     ConfigHandler * configHandler;
 
     int extract(const char *, std::string);

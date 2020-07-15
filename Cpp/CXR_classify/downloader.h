@@ -24,8 +24,6 @@ public:
 
 private:
     std::string url;
-    std::string filename_fullpath;
-    std::string filename;
 
     quint64 expected_size;
 
