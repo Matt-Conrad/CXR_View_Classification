@@ -1,11 +1,11 @@
 #include "downloader.h"
 
-Downloader::Downloader(std::string url, std::string filename_fullpath, ConfigHandler * configHandler) : QObject()
+Downloader::Downloader(std::string url, ConfigHandler * configHandler) : QObject()
 {
     Downloader::url = url;
-    Downloader::filename_fullpath = filename_fullpath;
-    Downloader::filename = filename_fullpath.substr(filename_fullpath.find_last_of("/") + 1);
     Downloader::configHandler = configHandler;
+    Downloader::filename = configHandler->getSetting("misc","tgz_filename");
+    Downloader::filename_fullpath = configHandler->getSetting("misc","parent_folder") + "/" + configHandler->getSetting("misc","tgz_filename");
 
     Downloader::expected_size = expected_sizes.at(filename);
 }

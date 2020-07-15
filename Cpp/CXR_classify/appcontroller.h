@@ -33,26 +33,28 @@ private:
     // String variables
     ConfigHandler * configHandler = new ConfigHandler("../CXR_classify/config.ini");
     std::string url = c_sourceUrl.at(configHandler->getSetting("dataset_info", "dataset"));
-    std::string parentFolder = boost::dll::program_location().parent_path().string();
-    std::string filename = url.substr(url.find_last_of("/") + 1);
-    std::string filename_fullpath = parentFolder + "/" + filename;
-    std::string folder_name = filename.substr(0, filename.find_last_of("."));
-    std::string folder_full_path = parentFolder + "/" + folder_name;
-    std::string columns_info_name = "../CXR_classify/columns_info.json";
-    std::string columns_info_full_path = parentFolder + "/" + columns_info_name;
-    std::string csvFullPath = parentFolder + "/../CXR_classify/image_labels.csv";
+
+//    std::string parentFolder = boost::dll::program_location().parent_path().string();
+//    std::string filename = url.substr(url.find_last_of("/") + 1);
+//    std::string filename_fullpath = parentFolder + "/" + filename;
+//    std::string folder_name = filename.substr(0, filename.find_last_of("."));
+//    std::string folder_full_path = parentFolder + "/" + folder_name;
+//    std::string columns_info_name = "../CXR_classify/columns_info.json";
+//    std::string columns_info_full_path = parentFolder + "/" + columns_info_name;
+//    std::string csvFullPath = parentFolder + "/../CXR_classify/image_labels.csv";
 
     void initGuiState();
 
 public:
     AppController();
-    Downloader * downloader = new Downloader(url, filename_fullpath, configHandler);
-    Unpacker * unpacker = new Unpacker(filename_fullpath, folder_full_path, parentFolder, filename, configHandler);
-    Storer * storer = new Storer(columns_info_name, folder_full_path, filename, configHandler);
-    FeatureCalculator * featCalc = new FeatureCalculator(columns_info_name, folder_full_path, filename, configHandler);
-    Labeler * labeler = new Labeler(columns_info_name, configHandler);
-    LabelImporter * labelImporter = new LabelImporter(csvFullPath, columns_info_full_path, configHandler);
-    Trainer * trainer = new Trainer(filename, configHandler);
+    ~AppController();
+    Downloader * downloader = new Downloader(url, configHandler);
+    Unpacker * unpacker = new Unpacker(configHandler);
+    Storer * storer = new Storer(configHandler);
+    FeatureCalculator * featCalc = new FeatureCalculator(configHandler);
+    Labeler * labeler = new Labeler(configHandler);
+    LabelImporter * labelImporter = new LabelImporter(configHandler);
+    Trainer * trainer = new Trainer(configHandler);
 
     MainWindow mainWindow = MainWindow(this);
 

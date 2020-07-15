@@ -14,7 +14,7 @@ class LabelImporter : public QObject
 {
     Q_OBJECT
 public:
-    LabelImporter(std::string, std::string, ConfigHandler *);
+    LabelImporter(ConfigHandler *);
 
 private:
     std::string csvFullPath;

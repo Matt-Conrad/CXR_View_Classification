@@ -1,9 +1,9 @@
 #include "trainer.h"
 
-Trainer::Trainer(std::string filename, ConfigHandler * configHandler) : QObject()
+Trainer::Trainer(ConfigHandler * configHandler) : QObject()
 {
-    Trainer::expected_num_files = expected_num_files_in_dataset.at(filename);
     Trainer::configHandler = configHandler;
+    Trainer::expected_num_files = expected_num_files_in_dataset.at(configHandler->getSetting("misc","tgz_filename"));
 }
 
 void Trainer::trainClassifier()

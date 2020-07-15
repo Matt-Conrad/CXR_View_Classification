@@ -19,7 +19,7 @@ class Downloader : public QObject
 friend class AppController;
 
 public:
-    Downloader(std::string, std::string, ConfigHandler *);
+    Downloader(std::string, ConfigHandler *);
     void downloadDataset();
 
 private:

@@ -24,7 +24,7 @@ class Labeler : public QWidget
 {
     Q_OBJECT
 public:
-    Labeler(std::string, ConfigHandler *);
+    Labeler(ConfigHandler *);
 
 private:
     ConfigHandler * configHandler;

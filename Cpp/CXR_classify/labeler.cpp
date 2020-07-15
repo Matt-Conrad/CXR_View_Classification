@@ -1,9 +1,9 @@
 #include "labeler.h"
 
-Labeler::Labeler(std::string columnsInfo, ConfigHandler * configHandler) : QWidget()
+Labeler::Labeler(ConfigHandler * configHandler) : QWidget()
 {
-    Labeler::columnsInfo = columnsInfo;
     Labeler::configHandler = configHandler;
+    Labeler::columnsInfo = configHandler->getSetting("misc", "columns_info_relative_path");
 }
 
 void Labeler::closeLabelApp()

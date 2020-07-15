@@ -1,13 +1,13 @@
 #include "unpacker.h"
 
-Unpacker::Unpacker(std::string filename_fullpath, std::string folder_full_path, std::string parentFolder, std::string filename, ConfigHandler * configHandler) : QObject()
+Unpacker::Unpacker(ConfigHandler * configHandler) : QObject()
 {
-    Unpacker::filename_fullpath = filename_fullpath;
-    Unpacker::folder_full_path = folder_full_path;
-    Unpacker::parentFolder = parentFolder;
     Unpacker::configHandler = configHandler;
+    Unpacker::parentFolder = configHandler->getSetting("misc","parent_folder");
+    Unpacker::filename_fullpath = parentFolder + "/" + configHandler->getSetting("misc","tgz_filename");
+    Unpacker::folder_full_path = parentFolder + "/" + configHandler->getSetting("misc","dataset_folder_name");
 
-    Unpacker::expected_num_files = expected_num_files_in_dataset.at(filename);
+    Unpacker::expected_num_files = expected_num_files_in_dataset.at(configHandler->getSetting("misc","tgz_filename"));
 }
 
 int Unpacker::copy_data(struct archive * ar, struct archive * aw)

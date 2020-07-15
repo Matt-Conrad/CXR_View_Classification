@@ -32,7 +32,7 @@ class FeatureCalculator : public QObject
 {
     Q_OBJECT
 public:
-    FeatureCalculator(std::string, std::string, std::string, ConfigHandler *);
+    FeatureCalculator(ConfigHandler *);
 
 public slots:
     void calculateFeatures();

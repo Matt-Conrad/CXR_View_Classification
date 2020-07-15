@@ -23,7 +23,7 @@ class Storer : public QObject
 {
     Q_OBJECT
 public:
-    Storer(std::string, std::string, std::string, ConfigHandler *);
+    Storer(ConfigHandler *);
 
 public slots:
     void dicomToDb();

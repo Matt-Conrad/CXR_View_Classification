@@ -18,7 +18,7 @@ class Trainer : public QObject
 {
     Q_OBJECT
 public:
-    Trainer(std::string, ConfigHandler *);
+    Trainer(ConfigHandler *);
 
 public slots:
     void trainClassifier();

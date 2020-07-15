@@ -8,12 +8,15 @@
 class ConfigHandler
 {
 public:
-    ConfigHandler(std::string configFilename);
-    boost::property_tree::ptree getSection(std::string sectionName);
-    std::string getSetting(std::string sectionName, std::string settingName);
+    ConfigHandler(std::string);
+    ~ConfigHandler();
+    boost::property_tree::ptree getSection(std::string);
+    std::string getSetting(std::string, std::string);
+    void setSetting(std::string, std::string, std::string);
 
 private:
     std::string configFilename;
+    boost::property_tree::ptree configFile;
 };
 
 #endif // CONFIGHANDLERS_H

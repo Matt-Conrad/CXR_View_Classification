@@ -1,10 +1,10 @@
 #include "labelimporter.h"
 
-LabelImporter::LabelImporter(std::string csvFullPath, std::string elementsJson, ConfigHandler * configHandler) : QObject()
+LabelImporter::LabelImporter(ConfigHandler * configHandler) : QObject()
 {
-    LabelImporter::csvFullPath = csvFullPath;
-    LabelImporter::elementsJson = elementsJson;
     LabelImporter::configHandler = configHandler;
+    LabelImporter::csvFullPath = configHandler->getSetting("misc", "parent_folder") + "/" + configHandler->getSetting("misc", "csv_relative_path");;
+    LabelImporter::elementsJson = configHandler->getSetting("misc", "parent_folder") + "/" + configHandler->getSetting("misc", "columns_info_relative_path");;
 }
 
 void LabelImporter::importLabels()

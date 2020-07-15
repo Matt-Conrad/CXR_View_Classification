@@ -1,12 +1,12 @@
 ﻿#include "featurecalculator.h"
 
-FeatureCalculator::FeatureCalculator(std::string columnsInfo, std::string folderFullPath, std::string filename, ConfigHandler * configHandler) : QObject()
+FeatureCalculator::FeatureCalculator(ConfigHandler * configHandler) : QObject()
 {
-    FeatureCalculator::columnsInfo = columnsInfo;
-    FeatureCalculator::folderFullPath = folderFullPath;
-
-    FeatureCalculator::expected_num_files = expected_num_files_in_dataset.at(filename);
     FeatureCalculator::configHandler = configHandler;
+    FeatureCalculator::columnsInfo = configHandler->getSetting("misc", "columns_info_relative_path");
+    FeatureCalculator::folderFullPath = configHandler->getSetting("misc","parent_folder") + "/" + configHandler->getSetting("misc","dataset_folder_name");
+
+    FeatureCalculator::expected_num_files = expected_num_files_in_dataset.at(configHandler->getSetting("misc","tgz_filename"));
 }
 
 void FeatureCalculator::calculateFeatures()

@@ -26,7 +26,7 @@ class Unpacker : public QObject
 friend class AppController;
 
 public:
-    Unpacker(std::string, std::string, std::string, std::string, ConfigHandler *);
+    Unpacker(ConfigHandler *);
 
 private:
     std::string filename_fullpath;

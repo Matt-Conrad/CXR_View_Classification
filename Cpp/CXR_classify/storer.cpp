@@ -1,12 +1,11 @@
 #include "storer.h"
 
-Storer::Storer(std::string columnsInfo, std::string folderFullPath, std::string filename, ConfigHandler * configHandler) : QObject()
+Storer::Storer(ConfigHandler * configHandler) : QObject()
 {
-    Storer::columnsInfo = columnsInfo;
-    Storer::folderFullPath = folderFullPath;
-
-    Storer::expected_num_files = expected_num_files_in_dataset.at(filename);
     Storer::configHandler = configHandler;
+    Storer::columnsInfo = configHandler->getSetting("misc", "columns_info_relative_path");
+    Storer::folderFullPath = configHandler->getSetting("misc","parent_folder") + "/" + configHandler->getSetting("misc","dataset_folder_name");
+    Storer::expected_num_files = expected_num_files_in_dataset.at(configHandler->getSetting("misc","tgz_filename"));
 }
 
 void Storer::dicomToDb()
