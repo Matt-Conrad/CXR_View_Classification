@@ -1,18 +1,17 @@
 #include "labelimporter.h"
 
-LabelImporter::LabelImporter(std::string labelTableName, std::string csvFullPath, std::string elementsJson, std::string dbConfigFilename, std::string sectionName) : QObject()
+LabelImporter::LabelImporter(std::string csvFullPath, std::string elementsJson, ConfigHandler * configHandler) : QObject()
 {
-    LabelImporter::labelTableName = labelTableName;
     LabelImporter::csvFullPath = csvFullPath;
     LabelImporter::elementsJson = elementsJson;
-    LabelImporter::dbConfigFilename = dbConfigFilename;
-    LabelImporter::sectionName = sectionName;
-
-    LabelImporter::dbInfo = config::getSection(dbConfigFilename, "postgresql");
+    LabelImporter::configHandler = configHandler;
 }
 
 void LabelImporter::importLabels()
 {
+    boost::property_tree::ptree dbInfo = configHandler->getSection("postgresql");
+    std::string labelTableName = configHandler->getSetting("table_info", "label_table_name");
+
     emit attemptUpdateText("Attempting to import image labels");
     bdo::addTableToDb(dbInfo, elementsJson, "labels", labelTableName);
 

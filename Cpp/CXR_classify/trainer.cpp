@@ -1,17 +1,17 @@
 #include "trainer.h"
 
-Trainer::Trainer(std::string dbConfigFilename, std::string featTableName, std::string labelTableName, std::string filename) : QObject()
+Trainer::Trainer(std::string filename, ConfigHandler * configHandler) : QObject()
 {
-    Trainer::featTableName = featTableName;
-    Trainer::labelTableName = labelTableName;
-
-    Trainer::dbInfo = config::getSection(dbConfigFilename, "postgresql");
-
     Trainer::expected_num_files = expected_num_files_in_dataset.at(filename);
+    Trainer::configHandler = configHandler;
 }
 
 void Trainer::trainClassifier()
 {
+    boost::property_tree::ptree dbInfo = configHandler->getSection("postgresql");
+    std::string featTableName = configHandler->getSetting("table_info", "features_table_name");
+    std::string labelTableName = configHandler->getSetting("table_info", "label_table_name");
+
     emit attemptUpdateText("Training classifier");
     try
     {

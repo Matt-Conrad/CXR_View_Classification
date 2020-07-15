@@ -8,24 +8,29 @@ AppController::AppController()
 
 void AppController::initGuiState()
 {
+    boost::property_tree::ptree dbInfo = configHandler->getSection("postgresql");
+    std::string metadataTableName = configHandler->getSetting("table_info", "metadata_table_name");
+    std::string featTableName = configHandler->getSetting("table_info", "features_table_name");
+    std::string labelTableName = configHandler->getSetting("table_info", "label_table_name");
+
     mainWindow.setWindowIcon(QIcon("../../miscellaneous/icon.jpg"));
 
-    if (!std::filesystem::exists(filename) && !std::filesystem::exists(folder_full_path) && !bdo::tableExists(dbInfo, metaTableName)) {
+    if (!std::filesystem::exists(filename) && !std::filesystem::exists(folder_full_path) && !bdo::tableExists(dbInfo, metadataTableName)) {
         connect(this, SIGNAL (initStage1()), &mainWindow, SLOT (stage1_ui()));
         emit initStage1();
-    } else if (std::filesystem::exists(filename) && !std::filesystem::exists(folder_full_path) && !bdo::tableExists(dbInfo, metaTableName)) {
+    } else if (std::filesystem::exists(filename) && !std::filesystem::exists(folder_full_path) && !bdo::tableExists(dbInfo, metadataTableName)) {
         connect(this, SIGNAL (initStage2()), &mainWindow, SLOT (stage2_ui()));
         emit initStage2();
-    } else if (std::filesystem::exists(filename) && std::filesystem::exists(folder_full_path) && !bdo::tableExists(dbInfo, metaTableName)) {
+    } else if (std::filesystem::exists(filename) && std::filesystem::exists(folder_full_path) && !bdo::tableExists(dbInfo, metadataTableName)) {
         connect(this, SIGNAL (initStage3()), &mainWindow, SLOT (stage3_ui()));
         emit initStage3();
-    } else if (std::filesystem::exists(filename) && std::filesystem::exists(folder_full_path) && bdo::tableExists(dbInfo, metaTableName) && !bdo::tableExists(dbInfo, featTableName)) {
+    } else if (std::filesystem::exists(filename) && std::filesystem::exists(folder_full_path) && bdo::tableExists(dbInfo, metadataTableName) && !bdo::tableExists(dbInfo, featTableName)) {
         connect(this, SIGNAL (initStage4()), &mainWindow, SLOT (stage4_ui()));
         emit initStage4();
-    } else if (std::filesystem::exists(filename) && std::filesystem::exists(folder_full_path) && bdo::tableExists(dbInfo, metaTableName) && bdo::tableExists(dbInfo, featTableName) && !bdo::tableExists(dbInfo, labelTableName)) {
+    } else if (std::filesystem::exists(filename) && std::filesystem::exists(folder_full_path) && bdo::tableExists(dbInfo, metadataTableName) && bdo::tableExists(dbInfo, featTableName) && !bdo::tableExists(dbInfo, labelTableName)) {
         connect(this, SIGNAL (initStage5()), &mainWindow, SLOT (stage5_ui()));
         emit initStage5();
-    } else if (std::filesystem::exists(filename) && std::filesystem::exists(folder_full_path) && bdo::tableExists(dbInfo, metaTableName) && bdo::tableExists(dbInfo, featTableName) && bdo::tableExists(dbInfo, labelTableName)) {
+    } else if (std::filesystem::exists(filename) && std::filesystem::exists(folder_full_path) && bdo::tableExists(dbInfo, metadataTableName) && bdo::tableExists(dbInfo, featTableName) && bdo::tableExists(dbInfo, labelTableName)) {
         connect(this, SIGNAL (initStage6()), &mainWindow, SLOT (stage6_ui()));
         emit initStage6();
     }

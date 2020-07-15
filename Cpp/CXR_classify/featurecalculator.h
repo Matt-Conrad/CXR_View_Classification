@@ -32,23 +32,18 @@ class FeatureCalculator : public QObject
 {
     Q_OBJECT
 public:
-    FeatureCalculator(std::string, std::string, std::string, std::string, std::string);
+    FeatureCalculator(std::string, std::string, std::string, ConfigHandler *);
 
 public slots:
     void calculateFeatures();
 
 private:
     std::string columnsInfo;
-    std::string configFilename;
-    std::string sectionName;
     std::string folderFullPath;
 
-    boost::property_tree::ptree dbInfo;
-
-    std::string metadataTableName;
-    std::string featTableName;
-
     quint64 expected_num_files;
+
+    ConfigHandler * configHandler;
 
     cv::Mat preprocessing(cv::Mat, std::string, uint8_t);
     cv::Mat calcHorProf(cv::Mat, unsigned, unsigned);

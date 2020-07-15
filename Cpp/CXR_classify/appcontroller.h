@@ -31,9 +31,8 @@ class AppController : public QObject
 
 private:
     // String variables
-    std::string configFilename = "../CXR_classify/config.ini";
-    std::string dataset = config::getSection(configFilename, "dataset_info").get<std::string>("dataset");
-    std::string url = c_sourceUrl.at(dataset);
+    ConfigHandler * configHandler = new ConfigHandler("../CXR_classify/config.ini");
+    std::string url = c_sourceUrl.at(configHandler->getSetting("dataset_info", "dataset"));
     std::string parentFolder = boost::dll::program_location().parent_path().string();
     std::string filename = url.substr(url.find_last_of("/") + 1);
     std::string filename_fullpath = parentFolder + "/" + filename;
@@ -41,26 +40,19 @@ private:
     std::string folder_full_path = parentFolder + "/" + folder_name;
     std::string columns_info_name = "../CXR_classify/columns_info.json";
     std::string columns_info_full_path = parentFolder + "/" + columns_info_name;
-
-    boost::property_tree::ptree dbInfo = config::getSection(configFilename, "postgresql");
-
-    // From config file
-    std::string dbName = config::getSection(configFilename, "postgresql").get<std::string>("database");
-    std::string metaTableName = config::getSection(configFilename, "table_info").get<std::string>("metadata_table_name");
-    std::string featTableName = config::getSection(configFilename, "table_info").get<std::string>("features_table_name");
-    std::string labelTableName = config::getSection(configFilename, "table_info").get<std::string>("label_table_name");
+    std::string csvFullPath = parentFolder + "/../CXR_classify/image_labels.csv";
 
     void initGuiState();
 
 public:
     AppController();
-    Downloader * downloader = new Downloader(url, filename_fullpath, dataset);
-    Unpacker * unpacker = new Unpacker(filename_fullpath, folder_full_path, parentFolder, dataset, filename);
-    Storer * storer = new Storer(columns_info_name, configFilename, "elements", folder_full_path, filename);
-    FeatureCalculator * featCalc = new FeatureCalculator(columns_info_name, configFilename, "elements", folder_full_path, filename);
-    Labeler * labeler = new Labeler(configFilename, columns_info_name);
-    LabelImporter * labelImporter = new LabelImporter(labelTableName, (parentFolder + "/../CXR_classify/image_labels.csv"), columns_info_full_path, configFilename, "labels");
-    Trainer * trainer = new Trainer(configFilename, featTableName, labelTableName, filename);
+    Downloader * downloader = new Downloader(url, filename_fullpath, configHandler);
+    Unpacker * unpacker = new Unpacker(filename_fullpath, folder_full_path, parentFolder, filename, configHandler);
+    Storer * storer = new Storer(columns_info_name, folder_full_path, filename, configHandler);
+    FeatureCalculator * featCalc = new FeatureCalculator(columns_info_name, folder_full_path, filename, configHandler);
+    Labeler * labeler = new Labeler(columns_info_name, configHandler);
+    LabelImporter * labelImporter = new LabelImporter(csvFullPath, columns_info_full_path, configHandler);
+    Trainer * trainer = new Trainer(filename, configHandler);
 
     MainWindow mainWindow = MainWindow(this);
 

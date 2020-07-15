@@ -1,11 +1,11 @@
 #include "unpacker.h"
 
-Unpacker::Unpacker(std::string filename_fullpath, std::string folder_full_path, std::string parentFolder, std::string dataset, std::string filename) : QObject()
+Unpacker::Unpacker(std::string filename_fullpath, std::string folder_full_path, std::string parentFolder, std::string filename, ConfigHandler * configHandler) : QObject()
 {
     Unpacker::filename_fullpath = filename_fullpath;
     Unpacker::folder_full_path = folder_full_path;
     Unpacker::parentFolder = parentFolder;
-    Unpacker::dataset = dataset;
+    Unpacker::configHandler = configHandler;
 
     Unpacker::expected_num_files = expected_num_files_in_dataset.at(filename);
 }
@@ -93,6 +93,8 @@ int Unpacker::extract(const char * filename, std::string destination)
 
 void Unpacker::unpack()
 {
+    std::string dataset = configHandler->getSetting("dataset_info", "dataset");
+
     emit attemptUpdateText("Unpacking images");
     emit attemptUpdateProBarBounds(0, expected_num_files);
     emit attemptUpdateProBarValue(0);

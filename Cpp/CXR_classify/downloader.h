@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <iostream>
 #include <QtNetwork>
+#include "confighandlers.h"
 
 const std::unordered_map<std::string, uint64_t> expected_sizes = {
         {"NLMCXR_subset_dataset.tgz", 88320855},
@@ -18,16 +19,17 @@ class Downloader : public QObject
 friend class AppController;
 
 public:
-    Downloader(std::string url, std::string filename_fullpath, std::string filename);
+    Downloader(std::string, std::string, ConfigHandler *);
     void downloadDataset();
 
 private:
     std::string url;
     std::string filename_fullpath;
-    std::string dataset;
     std::string filename;
 
     quint64 expected_size;
+
+    ConfigHandler * configHandler;
 
     int download();
 

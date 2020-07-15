@@ -14,16 +14,12 @@ class LabelImporter : public QObject
 {
     Q_OBJECT
 public:
-    LabelImporter(std::string, std::string, std::string, std::string, std::string);
+    LabelImporter(std::string, std::string, ConfigHandler *);
 
 private:
-    std::string labelTableName;
     std::string csvFullPath;
     std::string elementsJson;
-    std::string dbConfigFilename;
-    std::string sectionName;
-
-    boost::property_tree::ptree dbInfo;
+    ConfigHandler * configHandler;
 
 public slots:
     void importLabels();

@@ -24,15 +24,12 @@ class Labeler : public QWidget
 {
     Q_OBJECT
 public:
-    Labeler(std::string, std::string);
+    Labeler(std::string, ConfigHandler *);
 
 private:
+    ConfigHandler * configHandler;
     unsigned count = 0;
-    std::string configFilename;
     std::string columnsInfo;
-    std::string labelTableName;
-
-    boost::property_tree::ptree dbInfo;
 
     pqxx::result imageList;
     pqxx::result::const_iterator record;

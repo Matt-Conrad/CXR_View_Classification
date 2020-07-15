@@ -1,21 +1,19 @@
 #include "storer.h"
 
-Storer::Storer(std::string columnsInfo, std::string configFilename, std::string sectionName, std::string folderFullPath, std::string filename) : QObject()
+Storer::Storer(std::string columnsInfo, std::string folderFullPath, std::string filename, ConfigHandler * configHandler) : QObject()
 {
     Storer::columnsInfo = columnsInfo;
-    Storer::configFilename = configFilename;
-    Storer::sectionName = sectionName;
     Storer::folderFullPath = folderFullPath;
 
-    Storer::dbInfo = config::getSection(configFilename, "postgresql");
-
-    Storer::metadataTableName = config::getSection(configFilename, "table_info").get<std::string>("metadata_table_name");
-
     Storer::expected_num_files = expected_num_files_in_dataset.at(filename);
+    Storer::configHandler = configHandler;
 }
 
 void Storer::dicomToDb()
 {
+    boost::property_tree::ptree dbInfo = configHandler->getSection("postgresql");
+    std::string metadataTableName = configHandler->getSetting("table_info", "metadata_table_name");
+
     emit attemptUpdateText("Storing metadata");
     emit attemptUpdateProBarBounds(0, expected_num_files);
 

@@ -1,22 +1,20 @@
 ﻿#include "featurecalculator.h"
 
-FeatureCalculator::FeatureCalculator(std::string columnsInfo, std::string configFilename, std::string sectionName, std::string folderFullPath, std::string filename) : QObject()
+FeatureCalculator::FeatureCalculator(std::string columnsInfo, std::string folderFullPath, std::string filename, ConfigHandler * configHandler) : QObject()
 {
     FeatureCalculator::columnsInfo = columnsInfo;
-    FeatureCalculator::configFilename = configFilename;
-    FeatureCalculator::sectionName = sectionName;
     FeatureCalculator::folderFullPath = folderFullPath;
 
-    FeatureCalculator::dbInfo = config::getSection(configFilename, "postgresql");
-
-    FeatureCalculator::metadataTableName = config::getSection(configFilename, "table_info").get<std::string>("metadata_table_name");
-    FeatureCalculator::featTableName = config::getSection(configFilename, "table_info").get<std::string>("features_table_name");
-
     FeatureCalculator::expected_num_files = expected_num_files_in_dataset.at(filename);
+    FeatureCalculator::configHandler = configHandler;
 }
 
 void FeatureCalculator::calculateFeatures()
 {
+    boost::property_tree::ptree dbInfo = configHandler->getSection("postgresql");
+    std::string metadataTableName = configHandler->getSetting("table_info", "metadata_table_name");
+    std::string featTableName = configHandler->getSetting("table_info", "features_table_name");
+
     emit attemptUpdateText("Calculating features");
     emit attemptUpdateProBarBounds(0, expected_num_files);
 
@@ -123,6 +121,9 @@ void FeatureCalculator::calculateFeatures()
 
 void FeatureCalculator::store(std::string filePath, cv::Mat horProfile, cv::Mat vertProfile)
 {
+    boost::property_tree::ptree dbInfo = configHandler->getSection("postgresql");
+    std::string featTableName = configHandler->getSetting("table_info", "features_table_name");
+
     try
     {
         // Connect to the database

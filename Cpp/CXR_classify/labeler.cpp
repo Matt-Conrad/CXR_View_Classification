@@ -1,12 +1,9 @@
 #include "labeler.h"
 
-Labeler::Labeler(std::string configFilename, std::string columnsInfo) : QWidget()
+Labeler::Labeler(std::string columnsInfo, ConfigHandler * configHandler) : QWidget()
 {
-    Labeler::configFilename = configFilename;
     Labeler::columnsInfo = columnsInfo;
-    Labeler::labelTableName = config::getSection(configFilename, "table_info").get<std::string>("label_table_name");
-
-    Labeler::dbInfo = config::getSection(configFilename, "postgresql");
+    Labeler::configHandler = configHandler;
 }
 
 void Labeler::closeLabelApp()
@@ -24,6 +21,9 @@ void Labeler::closeConnection()
 
 void Labeler::fillWindow()
 {
+    boost::property_tree::ptree dbInfo = configHandler->getSection("postgresql");
+    std::string labelTableName = configHandler->getSetting("table_info", "label_table_name");
+
     queryImageList();
     emit attemptUpdateText("Please manually label images");
     bdo::addTableToDb(dbInfo, columnsInfo, "labels", labelTableName);
@@ -82,7 +82,7 @@ void Labeler::displayNextImage()
 
 void Labeler::storeLabel(std::string decision)
 {
-    std::string labelTableName = config::getSection(configFilename, "table_info").get<std::string>("label_table_name");
+    std::string labelTableName = configHandler->getSetting("table_info", "label_table_name");
     std::string filePath = record["file_path"].c_str();
     std::string fileName = filePath.substr(filePath.find_last_of("/") + 1);
     std::string sqlQuery = "INSERT INTO " + labelTableName + "  (file_name, file_path, image_view) VALUES ('" + fileName + "', '" +
@@ -106,7 +106,9 @@ void Labeler::storeLabel(std::string decision)
 
 void Labeler::queryImageList()
 {
-    std::string metadataTableName = config::getSection(configFilename, "table_info").get<std::string>("metadata_table_name");
+    boost::property_tree::ptree dbInfo = configHandler->getSection("postgresql");
+    std::string metadataTableName = configHandler->getSetting("table_info", "metadata_table_name");
+
     std::string sqlQuery = "SELECT file_path, bits_stored FROM " + metadataTableName + " ORDER BY file_path;";
     try
     {

@@ -18,18 +18,14 @@ class Trainer : public QObject
 {
     Q_OBJECT
 public:
-    Trainer(std::string, std::string, std::string, std::string);
+    Trainer(std::string, ConfigHandler *);
 
 public slots:
     void trainClassifier();
 
 private:
-    std::string featTableName;
-    std::string labelTableName;
-
-    boost::property_tree::ptree dbInfo;
-
     quint64 expected_num_files;
+    ConfigHandler * configHandler;
 
 signals:
     void finished();

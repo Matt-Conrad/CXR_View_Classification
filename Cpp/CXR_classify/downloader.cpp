@@ -1,11 +1,11 @@
 #include "downloader.h"
 
-Downloader::Downloader(std::string url, std::string filename_fullpath, std::string dataset) : QObject()
+Downloader::Downloader(std::string url, std::string filename_fullpath, ConfigHandler * configHandler) : QObject()
 {
     Downloader::url = url;
     Downloader::filename_fullpath = filename_fullpath;
     Downloader::filename = filename_fullpath.substr(filename_fullpath.find_last_of("/") + 1);
-    Downloader::dataset = dataset;
+    Downloader::configHandler = configHandler;
 
     Downloader::expected_size = expected_sizes.at(filename);
 }
@@ -69,6 +69,7 @@ int Downloader::download()
 
 quint64 Downloader::getTgzSize()
 {
+    std::string dataset = configHandler->getSetting("dataset_info", "dataset");
     if (dataset == "full_set") {
         return quint64(std::filesystem::file_size(filename_fullpath) / 100);
 //        return std::filesystem::file_size(filename_fullpath);
@@ -81,6 +82,7 @@ quint64 Downloader::getTgzSize()
 
 quint64 Downloader::getTgzMax()
 {
+    std::string dataset = configHandler->getSetting("dataset_info", "dataset");
     if (dataset == "full_set") {
         return quint64(expected_size / 100);
 //        return expected_size;

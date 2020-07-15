@@ -23,21 +23,18 @@ class Storer : public QObject
 {
     Q_OBJECT
 public:
-    Storer(std::string, std::string, std::string, std::string, std::string);
+    Storer(std::string, std::string, std::string, ConfigHandler *);
 
 public slots:
     void dicomToDb();
 
 private:
     std::string columnsInfo;
-    std::string configFilename;
-    std::string sectionName;
     std::string folderFullPath;
 
-    boost::property_tree::ptree dbInfo;
-
-    std::string metadataTableName;
     quint64 expected_num_files;
+
+    ConfigHandler * configHandler;
 
     std::string createSqlQuery(std::string, boost::property_tree::ptree, std::string);
 

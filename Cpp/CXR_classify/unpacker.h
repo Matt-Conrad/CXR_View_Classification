@@ -12,6 +12,7 @@
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
+#include "confighandlers.h"
 
 const std::unordered_map<std::string, uint16_t> expected_num_files_in_dataset = {
         {"NLMCXR_subset_dataset.tgz", 10},
@@ -25,13 +26,13 @@ class Unpacker : public QObject
 friend class AppController;
 
 public:
-    Unpacker(std::string, std::string, std::string, std::string, std::string);
+    Unpacker(std::string, std::string, std::string, std::string, ConfigHandler *);
 
 private:
     std::string filename_fullpath;
     std::string folder_full_path;
     std::string parentFolder;
-    std::string dataset;
+    ConfigHandler * configHandler;
 
     int extract(const char *, std::string);
     int copy_data(struct archive *ar, struct archive *aw);
