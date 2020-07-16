@@ -1,4 +1,3 @@
-
 #include "confighandlers.h"
 
 ConfigHandler::ConfigHandler(std::string configFilename)
@@ -41,11 +40,6 @@ boost::property_tree::ptree ConfigHandler::getDbInfo()
 std::string ConfigHandler::getTableName(std::string table)
 {
     return getSetting("table_names", table);
-}
-
-std::string ConfigHandler::getParentFolder()
-{
-    return boost::dll::program_location().parent_path().string();
 }
 
 std::string ConfigHandler::getUrl()

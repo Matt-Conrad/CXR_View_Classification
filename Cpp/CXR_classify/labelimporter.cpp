@@ -1,8 +1,9 @@
 #include "labelimporter.h"
 
-LabelImporter::LabelImporter(ConfigHandler * configHandler) : QObject()
+LabelImporter::LabelImporter(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : QObject()
 {
     LabelImporter::configHandler = configHandler;
+    LabelImporter::dbHandler = dbHandler;
 }
 
 void LabelImporter::importLabels()
@@ -11,7 +12,7 @@ void LabelImporter::importLabels()
     std::string labelTableName = configHandler->getTableName("label");
 
     emit attemptUpdateText("Attempting to import image labels");
-    bdo::addTableToDb(configHandler->getDbInfo(), elementsJson, "labels", labelTableName);
+    dbHandler->addTableToDb(elementsJson, "labels", labelTableName);
 
     // Open the json with the list of elements we're interested in
     boost::property_tree::ptree columnsJson;
@@ -30,7 +31,7 @@ void LabelImporter::importLabels()
     try
     {
         // Connect to the database
-        pqxx::connection * connection = bdo::openConnection(configHandler->getDbInfo());
+        pqxx::connection * connection = dbHandler->openConnection();
 
         // Start a transaction
         pqxx::work w(*connection);
@@ -41,7 +42,7 @@ void LabelImporter::importLabels()
         // Commit your transaction
         w.commit();
 
-        bdo::deleteConnection(connection);
+        dbHandler->deleteConnection(connection);
     }
     catch (std::exception const &e)
     {

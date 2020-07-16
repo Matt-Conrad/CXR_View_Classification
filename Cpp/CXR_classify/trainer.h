@@ -18,7 +18,7 @@ class Trainer : public QObject
 {
     Q_OBJECT
 public:
-    Trainer(ConfigHandler *);
+    Trainer(ConfigHandler *, DatabaseHandler *);
 
 public slots:
     void trainClassifier();
@@ -26,6 +26,7 @@ public slots:
 private:
     quint64 expected_num_files;
     ConfigHandler * configHandler;
+    DatabaseHandler * dbHandler;
 
 signals:
     void finished();

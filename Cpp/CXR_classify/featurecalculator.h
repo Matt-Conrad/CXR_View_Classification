@@ -32,7 +32,7 @@ class FeatureCalculator : public QObject
 {
     Q_OBJECT
 public:
-    FeatureCalculator(ConfigHandler *);
+    FeatureCalculator(ConfigHandler *, DatabaseHandler *);
 
 public slots:
     void calculateFeatures();
@@ -41,8 +41,8 @@ private:
     quint64 expected_num_files;
 
     ConfigHandler * configHandler;
+    DatabaseHandler * dbHandler;
 
-    boost::property_tree::ptree dbInfo;
     std::string featTableName;
 
     cv::Mat preprocessing(cv::Mat, std::string, uint8_t);

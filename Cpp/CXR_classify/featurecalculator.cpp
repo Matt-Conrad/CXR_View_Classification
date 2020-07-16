@@ -1,10 +1,10 @@
 ﻿#include "featurecalculator.h"
 
-FeatureCalculator::FeatureCalculator(ConfigHandler * configHandler) : QObject()
+FeatureCalculator::FeatureCalculator(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : QObject()
 {
     FeatureCalculator::configHandler = configHandler;
+    FeatureCalculator::dbHandler = dbHandler;
 
-    FeatureCalculator::dbInfo = configHandler->getDbInfo();
     FeatureCalculator::featTableName = configHandler->getTableName("features");
     FeatureCalculator::expected_num_files = expected_num_files_in_dataset.at(configHandler->getTgzFilename());
 }
@@ -14,13 +14,13 @@ void FeatureCalculator::calculateFeatures()
     emit attemptUpdateText("Calculating features");
     emit attemptUpdateProBarBounds(0, expected_num_files);
 
-    bdo::addTableToDb(dbInfo, configHandler->getColumnsInfoPath(), "features_list", featTableName);
+    dbHandler->addTableToDb(configHandler->getColumnsInfoPath(), "features_list", featTableName);
 
     emit attemptUpdateProBarValue(0);
     try
     {
         // Connect to the database
-        pqxx::connection * connection = bdo::openConnection(dbInfo);
+        pqxx::connection * connection = dbHandler->openConnection();
 
         // Start a transaction
         pqxx::work w(*connection);
@@ -103,14 +103,14 @@ void FeatureCalculator::calculateFeatures()
         }
 
         w.commit();
-        bdo::deleteConnection(connection);
+        dbHandler->deleteConnection(connection);
     }
     catch (std::exception const &e)
     {
         std::cerr << e.what() << std::endl;
     }
     emit attemptUpdateText("Done calculating features");
-    emit attemptUpdateProBarValue(bdo::countRecords(dbInfo, featTableName));
+    emit attemptUpdateProBarValue(dbHandler->countRecords(featTableName));
 
     emit finished();
 }
@@ -120,7 +120,7 @@ void FeatureCalculator::store(std::string filePath, cv::Mat horProfile, cv::Mat 
     try
     {
         // Connect to the database
-        pqxx::connection * connection = bdo::openConnection(dbInfo);
+        pqxx::connection * connection = dbHandler->openConnection();
 
         // Create SQL query
         std::vector<float> horVec(horProfile.begin<float>(), horProfile.end<float>());
@@ -158,7 +158,7 @@ void FeatureCalculator::store(std::string filePath, cv::Mat horProfile, cv::Mat 
         pqxx::result r = w.exec(sqlQuery);
 
         w.commit();
-        bdo::deleteConnection(connection);
+        dbHandler->deleteConnection(connection);
     }
     catch (std::exception const &e)
     {

@@ -1,9 +1,9 @@
 #include "labeler.h"
 
-Labeler::Labeler(ConfigHandler * configHandler) : QWidget()
+Labeler::Labeler(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : QWidget()
 {
     Labeler::configHandler = configHandler;
-    Labeler::dbInfo = configHandler->getDbInfo();
+    Labeler::dbHandler = dbHandler;
     Labeler::labelTableName = configHandler->getTableName("label");
 }
 
@@ -17,14 +17,14 @@ void Labeler::closeLabelApp()
 
 void Labeler::closeConnection()
 {
-    bdo::deleteConnection(connection);
+    dbHandler->deleteConnection(connection);
 }
 
 void Labeler::fillWindow()
 {
     queryImageList();
     emit attemptUpdateText("Please manually label images");
-    bdo::addTableToDb(dbInfo, configHandler->getColumnsInfoPath(), "labels", labelTableName);
+    dbHandler->addTableToDb(configHandler->getColumnsInfoPath(), "labels", labelTableName);
     QGridLayout * layout = new QGridLayout;
     layout->addWidget(label, 0, 0, 1, 2);
     layout->addWidget(image, 1, 0, 1, 2);
@@ -107,7 +107,7 @@ void Labeler::queryImageList()
     try
     {
         // Connect to the database
-        connection = bdo::openConnection(dbInfo);
+        connection = dbHandler->openConnection();
 
         // Start a transaction
         pqxx::work imageListTransaction(*connection);

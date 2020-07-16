@@ -9,14 +9,27 @@
 #include <boost/algorithm/string/join.hpp>
 #include "confighandlers.h"
 
-namespace bdo {
-    bool dbExists(boost::property_tree::ptree);
-    void createNewDb(boost::property_tree::ptree);
-    bool tableExists(boost::property_tree::ptree, std::string);
-    void addTableToDb(boost::property_tree::ptree, std::string, std::string, std::string);
-    int countRecords(boost::property_tree::ptree, std::string);
-    pqxx::connection * openConnection(boost::property_tree::ptree);
+class DatabaseHandler
+{
+public:
+    DatabaseHandler(ConfigHandler *);
+
+    bool dbExists();
+    void createNewDb();
+    bool tableExists(std::string);
+    void addTableToDb(std::string, std::string, std::string);
+    int countRecords(std::string);
+    pqxx::connection * openConnection();
     void deleteConnection(pqxx::connection * &);
-}
+
+private:
+    ConfigHandler * configHandler;
+
+    std::string host;
+    std::string port;
+    std::string database;
+    std::string user;
+    std::string password;
+};
 
 #endif // POSTGRES_H

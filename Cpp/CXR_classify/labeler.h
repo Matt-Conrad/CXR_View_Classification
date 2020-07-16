@@ -24,13 +24,13 @@ class Labeler : public QWidget
 {
     Q_OBJECT
 public:
-    Labeler(ConfigHandler *);
+    Labeler(ConfigHandler *, DatabaseHandler *);
 
 private:
     ConfigHandler * configHandler;
-    unsigned count = 0;
+    DatabaseHandler * dbHandler;
 
-    boost::property_tree::ptree dbInfo;
+    unsigned count = 0;
 
     std::string labelTableName;
 

@@ -1,8 +1,9 @@
 #include "storer.h"
 
-Storer::Storer(ConfigHandler * configHandler) : QObject()
+Storer::Storer(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : QObject()
 {
     Storer::configHandler = configHandler;
+    Storer::dbHandler = dbHandler;
     Storer::expected_num_files = expected_num_files_in_dataset.at(configHandler->getTgzFilename());
 }
 
@@ -11,19 +12,17 @@ void Storer::dicomToDb()
     emit attemptUpdateText("Storing metadata");
     emit attemptUpdateProBarBounds(0, expected_num_files);
 
-    boost::property_tree::ptree dbInfo = configHandler->getDbInfo();
-
     // Create the database if it isn't already there
-    if (!bdo::dbExists(dbInfo)){
-        bdo::createNewDb(dbInfo);
+    if (!dbHandler->dbExists()){
+        dbHandler->createNewDb();
     }
 
     std::string metadataTableName = configHandler->getTableName("metadata");
     std::string columnsInfoPath = configHandler->getColumnsInfoPath();
 
     // Create table if it isn't already there
-    if (!bdo::tableExists(dbInfo, metadataTableName)) {
-        bdo::addTableToDb(dbInfo, columnsInfoPath, "elements", metadataTableName);
+    if (!dbHandler->tableExists(metadataTableName)) {
+        dbHandler->addTableToDb(columnsInfoPath, "elements", metadataTableName);
     }
 
     emit attemptUpdateProBarValue(0);
@@ -40,7 +39,7 @@ void Storer::dicomToDb()
             try
             {
                 // Connect to the database
-                pqxx::connection * connection = bdo::openConnection(dbInfo);
+                pqxx::connection * connection = dbHandler->openConnection();
 
                 // Create SQL query
                 std::cout << p.path().string() << std::endl;
@@ -54,7 +53,7 @@ void Storer::dicomToDb()
 
                 w.commit();
 
-                bdo::deleteConnection(connection);
+                dbHandler->deleteConnection(connection);
 
                 storeCount++;
                 emit attemptUpdateProBarValue(storeCount);

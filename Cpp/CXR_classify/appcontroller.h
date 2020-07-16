@@ -32,6 +32,7 @@ class AppController : public QObject
 private:
     // String variables
     ConfigHandler * configHandler = new ConfigHandler("../CXR_classify/config.ini");
+    DatabaseHandler * dbHandler = new DatabaseHandler(configHandler);
 
     void initGuiState();
 
@@ -40,11 +41,11 @@ public:
     ~AppController();
     Downloader * downloader = new Downloader(configHandler);
     Unpacker * unpacker = new Unpacker(configHandler);
-    Storer * storer = new Storer(configHandler);
-    FeatureCalculator * featCalc = new FeatureCalculator(configHandler);
-    Labeler * labeler = new Labeler(configHandler);
-    LabelImporter * labelImporter = new LabelImporter(configHandler);
-    Trainer * trainer = new Trainer(configHandler);
+    Storer * storer = new Storer(configHandler, dbHandler);
+    FeatureCalculator * featCalc = new FeatureCalculator(configHandler, dbHandler);
+    Labeler * labeler = new Labeler(configHandler, dbHandler);
+    LabelImporter * labelImporter = new LabelImporter(configHandler, dbHandler);
+    Trainer * trainer = new Trainer(configHandler, dbHandler);
 
     MainWindow mainWindow = MainWindow(this);
 

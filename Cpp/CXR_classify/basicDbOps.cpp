@@ -1,13 +1,19 @@
 #include "basicDbOps.h"
 
-bool bdo::dbExists(boost::property_tree::ptree dbInfo)
+DatabaseHandler::DatabaseHandler(ConfigHandler * configHandler)
 {
-    std::string host = dbInfo.get<std::string>("host");
-    std::string port = dbInfo.get<std::string>("port");
-    std::string database = dbInfo.get<std::string>("database");
-    std::string user = dbInfo.get<std::string>("user");
-    std::string password = dbInfo.get<std::string>("password");
+    DatabaseHandler::configHandler = configHandler;
+    boost::property_tree::ptree dbInfo = configHandler->getDbInfo();
 
+    DatabaseHandler::host = dbInfo.get<std::string>("host");
+    DatabaseHandler::port = dbInfo.get<std::string>("port");
+    DatabaseHandler::database = dbInfo.get<std::string>("database");
+    DatabaseHandler::user = dbInfo.get<std::string>("user");
+    DatabaseHandler::password = dbInfo.get<std::string>("password");
+}
+
+bool DatabaseHandler::dbExists()
+{
     try
     {
         // Connect to the database
@@ -33,12 +39,8 @@ bool bdo::dbExists(boost::property_tree::ptree dbInfo)
     }
 }
 
-void bdo::createNewDb(boost::property_tree::ptree dbInfo)
+void DatabaseHandler::createNewDb()
 {
-    std::string host = dbInfo.get<std::string>("host");
-    std::string port = dbInfo.get<std::string>("port");
-    std::string database = dbInfo.get<std::string>("database");
-
     try
     {
         // Connect to the database
@@ -59,14 +61,8 @@ void bdo::createNewDb(boost::property_tree::ptree dbInfo)
     }
 }
 
-bool bdo::tableExists(boost::property_tree::ptree dbInfo, std::string tableName)
+bool DatabaseHandler::tableExists(std::string tableName)
 {
-    std::string host = dbInfo.get<std::string>("host");
-    std::string port = dbInfo.get<std::string>("port");
-    std::string database = dbInfo.get<std::string>("database");
-    std::string user = dbInfo.get<std::string>("user");
-    std::string password = dbInfo.get<std::string>("password");
-
     try
     {
         // Connect to the database
@@ -91,14 +87,8 @@ bool bdo::tableExists(boost::property_tree::ptree dbInfo, std::string tableName)
     }
 }
 
-void bdo::addTableToDb(boost::property_tree::ptree dbInfo, std::string columnsInfo, std::string section, std::string tableName)
+void DatabaseHandler::addTableToDb(std::string columnsInfo, std::string section, std::string tableName)
 {
-    std::string host = dbInfo.get<std::string>("host");
-    std::string port = dbInfo.get<std::string>("port");
-    std::string database = dbInfo.get<std::string>("database");
-    std::string user = dbInfo.get<std::string>("user");
-    std::string password = dbInfo.get<std::string>("password");
-
     boost::property_tree::ptree columnsJson;
     boost::property_tree::read_json(columnsInfo, columnsJson);
     boost::property_tree::ptree elements = columnsJson.get_child(section);
@@ -130,13 +120,7 @@ void bdo::addTableToDb(boost::property_tree::ptree dbInfo, std::string columnsIn
     }
 }
 
-int bdo::countRecords(boost::property_tree::ptree dbInfo, std::string tableName) {
-    std::string host = dbInfo.get<std::string>("host");
-    std::string port = dbInfo.get<std::string>("port");
-    std::string database = dbInfo.get<std::string>("database");
-    std::string user = dbInfo.get<std::string>("user");
-    std::string password = dbInfo.get<std::string>("password");
-
+int DatabaseHandler::countRecords(std::string tableName) {
     try
     {
         // Connect to the database
@@ -159,19 +143,13 @@ int bdo::countRecords(boost::property_tree::ptree dbInfo, std::string tableName)
     }
 }
 
-pqxx::connection * bdo::openConnection(boost::property_tree::ptree dbInfo) {
-    std::string host = dbInfo.get<std::string>("host");
-    std::string port = dbInfo.get<std::string>("port");
-    std::string database = dbInfo.get<std::string>("database");
-    std::string user = dbInfo.get<std::string>("user");
-    std::string password = dbInfo.get<std::string>("password");
-
+pqxx::connection * DatabaseHandler::openConnection() {
     pqxx::connection * connection = new pqxx::connection("host=" + host + " port=" + port + " dbname=" + database + " user=" + user + " password=" + password);
 
     return connection;
 }
 
-void bdo::deleteConnection(pqxx::connection * & connection) {
+void DatabaseHandler::deleteConnection(pqxx::connection * & connection) {
     delete connection;
 }
 

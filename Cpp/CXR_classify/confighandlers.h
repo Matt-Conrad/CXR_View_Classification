@@ -16,7 +16,6 @@ public:
 
     boost::property_tree::ptree getDbInfo();
     std::string getTableName(std::string);
-    std::string getParentFolder();
     std::string getUrl();
     std::string getTgzFilename();
     std::string getDatasetName();

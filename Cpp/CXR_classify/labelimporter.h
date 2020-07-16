@@ -14,10 +14,11 @@ class LabelImporter : public QObject
 {
     Q_OBJECT
 public:
-    LabelImporter(ConfigHandler *);
+    LabelImporter(ConfigHandler *, DatabaseHandler *);
 
 private:
     ConfigHandler * configHandler;
+    DatabaseHandler * dbHandler;
 
 public slots:
     void importLabels();

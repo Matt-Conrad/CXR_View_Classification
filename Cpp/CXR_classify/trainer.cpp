@@ -1,8 +1,9 @@
 #include "trainer.h"
 
-Trainer::Trainer(ConfigHandler * configHandler) : QObject()
+Trainer::Trainer(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : QObject()
 {
     Trainer::configHandler = configHandler;
+    Trainer::dbHandler = dbHandler;
     Trainer::expected_num_files = expected_num_files_in_dataset.at(configHandler->getTgzFilename());
 }
 
@@ -12,7 +13,7 @@ void Trainer::trainClassifier()
     try
     {
         // Connect to the database
-        pqxx::connection * connection = bdo::openConnection(configHandler->getDbInfo());
+        pqxx::connection * connection = dbHandler->openConnection();
 
         // Start a transaction
         pqxx::work w(*connection);
@@ -94,7 +95,7 @@ void Trainer::trainClassifier()
         emit attemptUpdateText(result.c_str());
 
         w.commit();
-        bdo::deleteConnection(connection);
+        dbHandler->deleteConnection(connection);
 
     }
     catch (std::exception const &e)
