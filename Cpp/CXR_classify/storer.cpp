@@ -3,34 +3,31 @@
 Storer::Storer(ConfigHandler * configHandler) : QObject()
 {
     Storer::configHandler = configHandler;
-    Storer::expected_num_files = expected_num_files_in_dataset.at(configHandler->getSetting("misc","tgz_filename"));
+    Storer::expected_num_files = expected_num_files_in_dataset.at(configHandler->getTgzFilename());
 }
 
 void Storer::dicomToDb()
 {
-    boost::property_tree::ptree dbInfo = configHandler->getSection("postgresql");
-    std::string metadataTableName = configHandler->getSetting("table_info", "metadata_table_name");
-    std::string columnsInfo = configHandler->getSetting("misc", "columns_info_relative_path");
-    std::string folderFullPath = configHandler->getSetting("misc","parent_folder") + "/" + configHandler->getSetting("misc","dataset_folder_name");
+    std::string folderFullPath = configHandler->getParentFolder() + "/" + configHandler->getDatasetName();
 
     emit attemptUpdateText("Storing metadata");
     emit attemptUpdateProBarBounds(0, expected_num_files);
 
     // Create the database if it isn't already there
-    if (!bdo::dbExists(dbInfo)){
-        bdo::createNewDb(dbInfo);
+    if (!bdo::dbExists(configHandler->getDbInfo())){
+        bdo::createNewDb(configHandler->getDbInfo());
     }
 
     // Create table if it isn't already there
-    if (!bdo::tableExists(dbInfo, metadataTableName)) {
-        bdo::addTableToDb(dbInfo, columnsInfo, "elements", metadataTableName);
+    if (!bdo::tableExists(configHandler->getDbInfo(), configHandler->getTableName("metadata"))) {
+        bdo::addTableToDb(configHandler->getDbInfo(), configHandler->getColumnsInfoPath(), "elements", configHandler->getTableName("metadata"));
     }
 
     emit attemptUpdateProBarValue(0);
 
     // Open the json with the list of elements we're interested in
     boost::property_tree::ptree columnsJson;
-    boost::property_tree::read_json(columnsInfo, columnsJson);
+    boost::property_tree::read_json(configHandler->getColumnsInfoPath(), columnsJson);
     boost::property_tree::ptree elements = columnsJson.get_child("elements");
 
     quint64 storeCount = 0;
@@ -40,11 +37,11 @@ void Storer::dicomToDb()
             try
             {
                 // Connect to the database
-                pqxx::connection * connection = bdo::openConnection(dbInfo);
+                pqxx::connection * connection = bdo::openConnection(configHandler->getDbInfo());
 
                 // Create SQL query
                 std::cout << p.path().string() << std::endl;
-                std::string sqlQuery = createSqlQuery(metadataTableName, elements, p.path().string());
+                std::string sqlQuery = createSqlQuery(configHandler->getTableName("metadata"), elements, p.path().string());
 
                 // Start a transaction
                 pqxx::work w(*connection);

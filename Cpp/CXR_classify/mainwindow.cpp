@@ -196,7 +196,7 @@ void MainWindow::stage5_ui()
     centralWidget->findChild<QPushButton *>("labelBtn")->setDisabled(false);
     centralWidget->findChild<QPushButton *>("classifyBtn")->setDisabled(true);
 
-    if (controller->configHandler->getSetting("dataset_info", "dataset") == "subset") {
+    if (controller->configHandler->getDatasetType() == "subset") {
         connect(centralWidget->findChild<QPushButton *>("labelBtn"), SIGNAL (clicked()), controller->labeler, SLOT (fillWindow()));
         connect(controller->labeler, SIGNAL (attemptUpdateText(QString)), this, SLOT (updateText(QString)));
         connect(controller->labeler, SIGNAL (finished()), this, SLOT(stage6_ui()));

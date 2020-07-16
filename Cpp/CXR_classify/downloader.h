@@ -19,12 +19,10 @@ class Downloader : public QObject
 friend class AppController;
 
 public:
-    Downloader(std::string, ConfigHandler *);
+    Downloader(ConfigHandler *);
     void downloadDataset();
 
 private:
-    std::string url;
-
     quint64 expected_size;
 
     ConfigHandler * configHandler;

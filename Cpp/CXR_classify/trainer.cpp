@@ -3,25 +3,21 @@
 Trainer::Trainer(ConfigHandler * configHandler) : QObject()
 {
     Trainer::configHandler = configHandler;
-    Trainer::expected_num_files = expected_num_files_in_dataset.at(configHandler->getSetting("misc","tgz_filename"));
+    Trainer::expected_num_files = expected_num_files_in_dataset.at(configHandler->getTgzFilename());
 }
 
 void Trainer::trainClassifier()
 {
-    boost::property_tree::ptree dbInfo = configHandler->getSection("postgresql");
-    std::string featTableName = configHandler->getSetting("table_info", "features_table_name");
-    std::string labelTableName = configHandler->getSetting("table_info", "label_table_name");
-
     emit attemptUpdateText("Training classifier");
     try
     {
         // Connect to the database
-        pqxx::connection * connection = bdo::openConnection(dbInfo);
+        pqxx::connection * connection = bdo::openConnection(configHandler->getDbInfo());
 
         // Start a transaction
         pqxx::work w(*connection);
 
-        std::string sqlQuery = "SELECT file_name, hor_profile, vert_profile FROM " + featTableName + " ORDER BY file_path ASC;";
+        std::string sqlQuery = "SELECT file_name, hor_profile, vert_profile FROM " + configHandler->getTableName("features") + " ORDER BY file_path ASC;";
 
         // Execute query
         pqxx::result r = w.exec(sqlQuery);
@@ -60,7 +56,7 @@ void Trainer::trainClassifier()
         }
 
         // Put all labels into a list
-        sqlQuery = "SELECT image_view FROM " + labelTableName + " ORDER BY file_path ASC;";
+        sqlQuery = "SELECT image_view FROM " + configHandler->getTableName("label") + " ORDER BY file_path ASC;";
         // Execute query
         std::vector<size_t> y = {};
         pqxx::result labelsResult = w.exec(sqlQuery);

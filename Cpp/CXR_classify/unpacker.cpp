@@ -4,7 +4,7 @@ Unpacker::Unpacker(ConfigHandler * configHandler) : QObject()
 {
     Unpacker::configHandler = configHandler;
 
-    Unpacker::expected_num_files = expected_num_files_in_dataset.at(configHandler->getSetting("misc","tgz_filename"));
+    Unpacker::expected_num_files = expected_num_files_in_dataset.at(configHandler->getTgzFilename());
 }
 
 int Unpacker::copy_data(struct archive * ar, struct archive * aw)
@@ -90,20 +90,18 @@ int Unpacker::extract(const char * filename, std::string destination)
 
 void Unpacker::unpack()
 {
-    std::string parentFolder = configHandler->getSetting("misc","parent_folder");
-    std::string filename_fullpath = parentFolder + "/" + configHandler->getSetting("misc","tgz_filename");
-    std::string folder_full_path = parentFolder + "/" + configHandler->getSetting("misc","dataset_folder_name");
-    std::string dataset = configHandler->getSetting("dataset_info", "dataset");
+    std::string filename_fullpath = configHandler->getParentFolder() + "/" + configHandler->getTgzFilename();
+    std::string folder_full_path = configHandler->getParentFolder() + "/" + configHandler->getDatasetName();
 
     emit attemptUpdateText("Unpacking images");
     emit attemptUpdateProBarBounds(0, expected_num_files);
     emit attemptUpdateProBarValue(0);
-    if (dataset == "full_set") {
+    if (configHandler->getDatasetType() == "full_set") {
         std::filesystem::create_directory(folder_full_path);
         extract(filename_fullpath.c_str(), folder_full_path);
         emit attemptUpdateProBarValue(countDcms());
     } else {
-        extract(filename_fullpath.c_str(), parentFolder);
+        extract(filename_fullpath.c_str(), configHandler->getParentFolder());
     }
     emit attemptUpdateProBarValue(countDcms());
     emit attemptUpdateText("Images unpacked");
@@ -112,7 +110,7 @@ void Unpacker::unpack()
 
 quint64 Unpacker::countDcms()
 {
-    std::string folder_full_path = configHandler->getSetting("misc","parent_folder") + "/" + configHandler->getSetting("misc","dataset_folder_name");
+    std::string folder_full_path = configHandler->getParentFolder() + "/" + configHandler->getDatasetName();
 
     quint64 count = 0;
     for (auto & p : std::filesystem::recursive_directory_iterator(folder_full_path)) {

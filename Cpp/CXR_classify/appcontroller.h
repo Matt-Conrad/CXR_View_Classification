@@ -32,14 +32,13 @@ class AppController : public QObject
 private:
     // String variables
     ConfigHandler * configHandler = new ConfigHandler("../CXR_classify/config.ini");
-    std::string url = c_sourceUrl.at(configHandler->getSetting("dataset_info", "dataset"));
 
     void initGuiState();
 
 public:
     AppController();
     ~AppController();
-    Downloader * downloader = new Downloader(url, configHandler);
+    Downloader * downloader = new Downloader(configHandler);
     Unpacker * unpacker = new Unpacker(configHandler);
     Storer * storer = new Storer(configHandler);
     FeatureCalculator * featCalc = new FeatureCalculator(configHandler);

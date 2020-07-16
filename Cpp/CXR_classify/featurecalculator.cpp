@@ -4,32 +4,27 @@ FeatureCalculator::FeatureCalculator(ConfigHandler * configHandler) : QObject()
 {
     FeatureCalculator::configHandler = configHandler;
 
-    FeatureCalculator::expected_num_files = expected_num_files_in_dataset.at(configHandler->getSetting("misc","tgz_filename"));
+    FeatureCalculator::expected_num_files = expected_num_files_in_dataset.at(configHandler->getTgzFilename());
 }
 
 void FeatureCalculator::calculateFeatures()
 {
-    boost::property_tree::ptree dbInfo = configHandler->getSection("postgresql");
-    std::string metadataTableName = configHandler->getSetting("table_info", "metadata_table_name");
-    std::string featTableName = configHandler->getSetting("table_info", "features_table_name");
-    std::string columnsInfo = configHandler->getSetting("misc", "columns_info_relative_path");
-
     emit attemptUpdateText("Calculating features");
     emit attemptUpdateProBarBounds(0, expected_num_files);
 
-    bdo::addTableToDb(dbInfo, columnsInfo, "features_list", featTableName);
+    bdo::addTableToDb(configHandler->getDbInfo(), configHandler->getColumnsInfoPath(), "features_list", configHandler->getTableName("features"));
 
     emit attemptUpdateProBarValue(0);
     try
     {
         // Connect to the database
-        pqxx::connection * connection = bdo::openConnection(dbInfo);
+        pqxx::connection * connection = bdo::openConnection(configHandler->getDbInfo());
 
         // Start a transaction
         pqxx::work w(*connection);
 
         // Execute query
-        pqxx::result r = w.exec("SELECT * FROM " + metadataTableName + ";");
+        pqxx::result r = w.exec("SELECT * FROM " + configHandler->getTableName("metadata") + ";");
 
         quint64 count = 0;
         for (int rownum=0; rownum < r.size(); ++rownum)
@@ -113,20 +108,17 @@ void FeatureCalculator::calculateFeatures()
         std::cerr << e.what() << std::endl;
     }
     emit attemptUpdateText("Done calculating features");
-    emit attemptUpdateProBarValue(bdo::countRecords(dbInfo, featTableName));
+    emit attemptUpdateProBarValue(bdo::countRecords(configHandler->getDbInfo(), configHandler->getTableName("features")));
 
     emit finished();
 }
 
 void FeatureCalculator::store(std::string filePath, cv::Mat horProfile, cv::Mat vertProfile)
 {
-    boost::property_tree::ptree dbInfo = configHandler->getSection("postgresql");
-    std::string featTableName = configHandler->getSetting("table_info", "features_table_name");
-
     try
     {
         // Connect to the database
-        pqxx::connection * connection = bdo::openConnection(dbInfo);
+        pqxx::connection * connection = bdo::openConnection(configHandler->getDbInfo());
 
         // Create SQL query
         std::vector<float> horVec(horProfile.begin<float>(), horProfile.end<float>());
@@ -150,7 +142,7 @@ void FeatureCalculator::store(std::string filePath, cv::Mat horProfile, cv::Mat 
 //        std::cout << "Vert profile: " << vertProfile << std::endl;
 //        std::this_thread::sleep_for(std::chrono::seconds(100));
 
-        std::string sqlQuery = "INSERT INTO " + featTableName + " (file_name, file_path, hor_profile, vert_profile) VALUES ('" +
+        std::string sqlQuery = "INSERT INTO " + configHandler->getTableName("features") + " (file_name, file_path, hor_profile, vert_profile) VALUES ('" +
                 filePath.substr(filePath.find_last_of("/") + 1) + "', '" + filePath + "', '{" + boost::algorithm::join(horVecString, ", ") +
                 "}', '{" + boost::algorithm::join(vertVecString, ", ") + "}');";
 

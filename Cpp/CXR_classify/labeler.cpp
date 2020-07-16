@@ -20,13 +20,9 @@ void Labeler::closeConnection()
 
 void Labeler::fillWindow()
 {
-    boost::property_tree::ptree dbInfo = configHandler->getSection("postgresql");
-    std::string labelTableName = configHandler->getSetting("table_info", "label_table_name");
-    std::string columnsInfo = configHandler->getSetting("misc", "columns_info_relative_path");
-
     queryImageList();
     emit attemptUpdateText("Please manually label images");
-    bdo::addTableToDb(dbInfo, columnsInfo, "labels", labelTableName);
+    bdo::addTableToDb(configHandler->getDbInfo(), configHandler->getColumnsInfoPath(), "labels", configHandler->getTableName("label"));
     QGridLayout * layout = new QGridLayout;
     layout->addWidget(label, 0, 0, 1, 2);
     layout->addWidget(image, 1, 0, 1, 2);
@@ -82,10 +78,9 @@ void Labeler::displayNextImage()
 
 void Labeler::storeLabel(std::string decision)
 {
-    std::string labelTableName = configHandler->getSetting("table_info", "label_table_name");
     std::string filePath = record["file_path"].c_str();
     std::string fileName = filePath.substr(filePath.find_last_of("/") + 1);
-    std::string sqlQuery = "INSERT INTO " + labelTableName + "  (file_name, file_path, image_view) VALUES ('" + fileName + "', '" +
+    std::string sqlQuery = "INSERT INTO " + configHandler->getTableName("label") + "  (file_name, file_path, image_view) VALUES ('" + fileName + "', '" +
             filePath + "', '" + decision + "');";
     std::cout << sqlQuery << std::endl;
 
@@ -106,14 +101,11 @@ void Labeler::storeLabel(std::string decision)
 
 void Labeler::queryImageList()
 {
-    boost::property_tree::ptree dbInfo = configHandler->getSection("postgresql");
-    std::string metadataTableName = configHandler->getSetting("table_info", "metadata_table_name");
-
-    std::string sqlQuery = "SELECT file_path, bits_stored FROM " + metadataTableName + " ORDER BY file_path;";
+    std::string sqlQuery = "SELECT file_path, bits_stored FROM " + configHandler->getTableName("metadata") + " ORDER BY file_path;";
     try
     {
         // Connect to the database
-        connection = bdo::openConnection(dbInfo);
+        connection = bdo::openConnection(configHandler->getDbInfo());
 
         // Start a transaction
         pqxx::work imageListTransaction(*connection);
