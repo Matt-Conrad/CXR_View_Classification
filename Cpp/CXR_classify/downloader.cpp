@@ -4,17 +4,18 @@ Downloader::Downloader(ConfigHandler * configHandler) : QObject()
 {
     Downloader::configHandler = configHandler;
 
+    Downloader::filenameRelPath = "./" + configHandler->getTgzFilename();
+    Downloader::datasetType = configHandler->getDatasetType();
     Downloader::expected_size = expected_sizes.at(configHandler->getTgzFilename());
 }
 
 void Downloader::getDataset()
 {
-    std::string filename_fullpath = configHandler->getParentFolder() + "/" + configHandler->getTgzFilename();
-    if (std::filesystem::exists(filename_fullpath) && !std::filesystem::is_directory(filename_fullpath)) {
-        if (std::filesystem::file_size(filename_fullpath) == 88320855) { // replace hard code with expected size
+    if (std::filesystem::exists(filenameRelPath) && !std::filesystem::is_directory(filenameRelPath)) {
+        if (std::filesystem::file_size(filenameRelPath) == 88320855) { // replace hard code with expected size
             std::cout << "File  was downloaded properly" << std::endl;
         } else {
-            std::filesystem::remove(filename_fullpath);
+            std::filesystem::remove(filenameRelPath);
             Downloader::downloadDataset();
         }
     } else {
@@ -32,13 +33,11 @@ void Downloader::downloadDataset()
 
 int Downloader::download()
 {
-    std::string filename_fullpath = configHandler->getParentFolder() + "/" + configHandler->getTgzFilename();
-
     emit attemptUpdateText("Downloading images");
     emit attemptUpdateProBarBounds(0, getTgzMax());
 
     QNetworkAccessManager nam;
-    QFile file(filename_fullpath.c_str());
+    QFile file(filenameRelPath.c_str());
     if(!file.open(QIODevice::ReadWrite)) {
         std::cout << "Can't open write file" << std::endl;
     }
@@ -69,12 +68,10 @@ int Downloader::download()
 
 quint64 Downloader::getTgzSize()
 {
-    std::string filename_fullpath = configHandler->getParentFolder() + "/" + configHandler->getTgzFilename();
-
-    if (configHandler->getDatasetType() == "full_set") {
-        return quint64(std::filesystem::file_size(filename_fullpath) / 100);
-    } else if (configHandler->getDatasetType() == "subset") {
-        return std::filesystem::file_size(filename_fullpath);
+    if (datasetType == "full_set") {
+        return quint64(std::filesystem::file_size(filenameRelPath) / 100);
+    } else if (datasetType == "subset") {
+        return std::filesystem::file_size(filenameRelPath);
     } else {
         return 0;
     }
@@ -82,10 +79,9 @@ quint64 Downloader::getTgzSize()
 
 quint64 Downloader::getTgzMax()
 {
-    if (configHandler->getDatasetType() == "full_set") {
+    if (datasetType == "full_set") {
         return quint64(expected_size / 100);
-//        return expected_size;
-    } else if (configHandler->getDatasetType() == "subset") {
+    } else if (datasetType == "subset") {
         return expected_size;
     } else {
         return 0;

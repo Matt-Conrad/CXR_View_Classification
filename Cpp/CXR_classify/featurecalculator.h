@@ -42,6 +42,9 @@ private:
 
     ConfigHandler * configHandler;
 
+    boost::property_tree::ptree dbInfo;
+    std::string featTableName;
+
     cv::Mat preprocessing(cv::Mat, std::string, uint8_t);
     cv::Mat calcHorProf(cv::Mat, unsigned, unsigned);
     cv::Mat calcVertProf(cv::Mat, unsigned, unsigned);

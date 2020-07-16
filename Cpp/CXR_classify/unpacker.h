@@ -34,6 +34,8 @@ private:
     int extract(const char *, std::string);
     int copy_data(struct archive *ar, struct archive *aw);
 
+    std::string folderRelPath;
+
     quint64 expected_num_files;
 
     quint64 countDcms();

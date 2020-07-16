@@ -8,40 +8,43 @@ Storer::Storer(ConfigHandler * configHandler) : QObject()
 
 void Storer::dicomToDb()
 {
-    std::string folderFullPath = configHandler->getParentFolder() + "/" + configHandler->getDatasetName();
-
     emit attemptUpdateText("Storing metadata");
     emit attemptUpdateProBarBounds(0, expected_num_files);
 
+    boost::property_tree::ptree dbInfo = configHandler->getDbInfo();
+
     // Create the database if it isn't already there
-    if (!bdo::dbExists(configHandler->getDbInfo())){
-        bdo::createNewDb(configHandler->getDbInfo());
+    if (!bdo::dbExists(dbInfo)){
+        bdo::createNewDb(dbInfo);
     }
 
+    std::string metadataTableName = configHandler->getTableName("metadata");
+    std::string columnsInfoPath = configHandler->getColumnsInfoPath();
+
     // Create table if it isn't already there
-    if (!bdo::tableExists(configHandler->getDbInfo(), configHandler->getTableName("metadata"))) {
-        bdo::addTableToDb(configHandler->getDbInfo(), configHandler->getColumnsInfoPath(), "elements", configHandler->getTableName("metadata"));
+    if (!bdo::tableExists(dbInfo, metadataTableName)) {
+        bdo::addTableToDb(dbInfo, columnsInfoPath, "elements", metadataTableName);
     }
 
     emit attemptUpdateProBarValue(0);
 
     // Open the json with the list of elements we're interested in
     boost::property_tree::ptree columnsJson;
-    boost::property_tree::read_json(configHandler->getColumnsInfoPath(), columnsJson);
+    boost::property_tree::read_json(columnsInfoPath, columnsJson);
     boost::property_tree::ptree elements = columnsJson.get_child("elements");
 
     quint64 storeCount = 0;
-    for (auto & p : std::filesystem::recursive_directory_iterator(folderFullPath)) {
+    for (auto & p : std::filesystem::recursive_directory_iterator("./" + configHandler->getDatasetName())) {
         if (p.path().extension() == ".dcm") {
 //            std::this_thread::sleep_for (std::chrono::seconds(1));
             try
             {
                 // Connect to the database
-                pqxx::connection * connection = bdo::openConnection(configHandler->getDbInfo());
+                pqxx::connection * connection = bdo::openConnection(dbInfo);
 
                 // Create SQL query
                 std::cout << p.path().string() << std::endl;
-                std::string sqlQuery = createSqlQuery(configHandler->getTableName("metadata"), elements, p.path().string());
+                std::string sqlQuery = createSqlQuery(metadataTableName, elements, p.path().string());
 
                 // Start a transaction
                 pqxx::work w(*connection);

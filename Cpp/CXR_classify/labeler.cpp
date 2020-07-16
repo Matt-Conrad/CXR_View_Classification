@@ -3,6 +3,8 @@
 Labeler::Labeler(ConfigHandler * configHandler) : QWidget()
 {
     Labeler::configHandler = configHandler;
+    Labeler::dbInfo = configHandler->getDbInfo();
+    Labeler::labelTableName = configHandler->getTableName("label");
 }
 
 void Labeler::closeLabelApp()
@@ -22,7 +24,7 @@ void Labeler::fillWindow()
 {
     queryImageList();
     emit attemptUpdateText("Please manually label images");
-    bdo::addTableToDb(configHandler->getDbInfo(), configHandler->getColumnsInfoPath(), "labels", configHandler->getTableName("label"));
+    bdo::addTableToDb(dbInfo, configHandler->getColumnsInfoPath(), "labels", labelTableName);
     QGridLayout * layout = new QGridLayout;
     layout->addWidget(label, 0, 0, 1, 2);
     layout->addWidget(image, 1, 0, 1, 2);
@@ -80,7 +82,7 @@ void Labeler::storeLabel(std::string decision)
 {
     std::string filePath = record["file_path"].c_str();
     std::string fileName = filePath.substr(filePath.find_last_of("/") + 1);
-    std::string sqlQuery = "INSERT INTO " + configHandler->getTableName("label") + "  (file_name, file_path, image_view) VALUES ('" + fileName + "', '" +
+    std::string sqlQuery = "INSERT INTO " + labelTableName + "  (file_name, file_path, image_view) VALUES ('" + fileName + "', '" +
             filePath + "', '" + decision + "');";
     std::cout << sqlQuery << std::endl;
 
@@ -105,7 +107,7 @@ void Labeler::queryImageList()
     try
     {
         // Connect to the database
-        connection = bdo::openConnection(configHandler->getDbInfo());
+        connection = bdo::openConnection(dbInfo);
 
         // Start a transaction
         pqxx::work imageListTransaction(*connection);

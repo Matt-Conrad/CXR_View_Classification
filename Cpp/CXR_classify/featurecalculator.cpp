@@ -4,6 +4,8 @@ FeatureCalculator::FeatureCalculator(ConfigHandler * configHandler) : QObject()
 {
     FeatureCalculator::configHandler = configHandler;
 
+    FeatureCalculator::dbInfo = configHandler->getDbInfo();
+    FeatureCalculator::featTableName = configHandler->getTableName("features");
     FeatureCalculator::expected_num_files = expected_num_files_in_dataset.at(configHandler->getTgzFilename());
 }
 
@@ -12,13 +14,13 @@ void FeatureCalculator::calculateFeatures()
     emit attemptUpdateText("Calculating features");
     emit attemptUpdateProBarBounds(0, expected_num_files);
 
-    bdo::addTableToDb(configHandler->getDbInfo(), configHandler->getColumnsInfoPath(), "features_list", configHandler->getTableName("features"));
+    bdo::addTableToDb(dbInfo, configHandler->getColumnsInfoPath(), "features_list", featTableName);
 
     emit attemptUpdateProBarValue(0);
     try
     {
         // Connect to the database
-        pqxx::connection * connection = bdo::openConnection(configHandler->getDbInfo());
+        pqxx::connection * connection = bdo::openConnection(dbInfo);
 
         // Start a transaction
         pqxx::work w(*connection);
@@ -108,7 +110,7 @@ void FeatureCalculator::calculateFeatures()
         std::cerr << e.what() << std::endl;
     }
     emit attemptUpdateText("Done calculating features");
-    emit attemptUpdateProBarValue(bdo::countRecords(configHandler->getDbInfo(), configHandler->getTableName("features")));
+    emit attemptUpdateProBarValue(bdo::countRecords(dbInfo, featTableName));
 
     emit finished();
 }
@@ -118,7 +120,7 @@ void FeatureCalculator::store(std::string filePath, cv::Mat horProfile, cv::Mat 
     try
     {
         // Connect to the database
-        pqxx::connection * connection = bdo::openConnection(configHandler->getDbInfo());
+        pqxx::connection * connection = bdo::openConnection(dbInfo);
 
         // Create SQL query
         std::vector<float> horVec(horProfile.begin<float>(), horProfile.end<float>());
@@ -142,7 +144,7 @@ void FeatureCalculator::store(std::string filePath, cv::Mat horProfile, cv::Mat 
 //        std::cout << "Vert profile: " << vertProfile << std::endl;
 //        std::this_thread::sleep_for(std::chrono::seconds(100));
 
-        std::string sqlQuery = "INSERT INTO " + configHandler->getTableName("features") + " (file_name, file_path, hor_profile, vert_profile) VALUES ('" +
+        std::string sqlQuery = "INSERT INTO " + featTableName + " (file_name, file_path, hor_profile, vert_profile) VALUES ('" +
                 filePath.substr(filePath.find_last_of("/") + 1) + "', '" + filePath + "', '{" + boost::algorithm::join(horVecString, ", ") +
                 "}', '{" + boost::algorithm::join(vertVecString, ", ") + "}');";
 

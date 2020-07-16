@@ -5,6 +5,7 @@ Unpacker::Unpacker(ConfigHandler * configHandler) : QObject()
     Unpacker::configHandler = configHandler;
 
     Unpacker::expected_num_files = expected_num_files_in_dataset.at(configHandler->getTgzFilename());
+    Unpacker::folderRelPath = "./" + configHandler->getDatasetName();
 }
 
 int Unpacker::copy_data(struct archive * ar, struct archive * aw)
@@ -90,18 +91,17 @@ int Unpacker::extract(const char * filename, std::string destination)
 
 void Unpacker::unpack()
 {
-    std::string filename_fullpath = configHandler->getParentFolder() + "/" + configHandler->getTgzFilename();
-    std::string folder_full_path = configHandler->getParentFolder() + "/" + configHandler->getDatasetName();
+    std::string filenameRelPath = "./" + configHandler->getTgzFilename();
 
     emit attemptUpdateText("Unpacking images");
     emit attemptUpdateProBarBounds(0, expected_num_files);
     emit attemptUpdateProBarValue(0);
     if (configHandler->getDatasetType() == "full_set") {
-        std::filesystem::create_directory(folder_full_path);
-        extract(filename_fullpath.c_str(), folder_full_path);
+        std::filesystem::create_directory(folderRelPath);
+        extract(filenameRelPath.c_str(), folderRelPath);
         emit attemptUpdateProBarValue(countDcms());
     } else {
-        extract(filename_fullpath.c_str(), configHandler->getParentFolder());
+        extract(filenameRelPath.c_str(), "./");
     }
     emit attemptUpdateProBarValue(countDcms());
     emit attemptUpdateText("Images unpacked");
@@ -110,10 +110,8 @@ void Unpacker::unpack()
 
 quint64 Unpacker::countDcms()
 {
-    std::string folder_full_path = configHandler->getParentFolder() + "/" + configHandler->getDatasetName();
-
     quint64 count = 0;
-    for (auto & p : std::filesystem::recursive_directory_iterator(folder_full_path)) {
+    for (auto & p : std::filesystem::recursive_directory_iterator(folderRelPath)) {
         if (p.path().extension() == ".dcm") {
             count++;
         }

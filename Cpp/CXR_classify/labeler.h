@@ -30,6 +30,10 @@ private:
     ConfigHandler * configHandler;
     unsigned count = 0;
 
+    boost::property_tree::ptree dbInfo;
+
+    std::string labelTableName;
+
     pqxx::result imageList;
     pqxx::result::const_iterator record;
     pqxx::connection * connection;

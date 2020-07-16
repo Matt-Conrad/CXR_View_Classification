@@ -27,6 +27,9 @@ private:
 
     ConfigHandler * configHandler;
 
+    std::string filenameRelPath;
+    std::string datasetType;
+
     int download();
 
     quint64 getTgzMax();
