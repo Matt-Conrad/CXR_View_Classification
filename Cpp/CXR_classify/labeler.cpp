@@ -84,8 +84,6 @@ void Labeler::storeLabel(std::string decision)
     std::string fileName = filePath.substr(filePath.find_last_of("/") + 1);
     std::string sqlQuery = "INSERT INTO " + labelTableName + "  (file_name, file_path, image_view) VALUES ('" + fileName + "', '" +
             filePath + "', '" + decision + "');";
-    std::cout << sqlQuery << std::endl;
-
     try
     {
         // Start a transaction
@@ -120,7 +118,7 @@ void Labeler::queryImageList()
     }
     catch (std::exception const &e)
     {
-        std::cout << "error" << std::endl;
+        // log "error"
     }
 }
 

@@ -13,7 +13,7 @@ void Downloader::getDataset()
 {
     if (std::filesystem::exists(filenameRelPath) && !std::filesystem::is_directory(filenameRelPath)) {
         if (std::filesystem::file_size(filenameRelPath) == 88320855) { // replace hard code with expected size
-            std::cout << "File  was downloaded properly" << std::endl;
+            // log "File  was downloaded properly"
         } else {
             std::filesystem::remove(filenameRelPath);
             Downloader::downloadDataset();
@@ -39,7 +39,7 @@ int Downloader::download()
     QNetworkAccessManager nam;
     QFile file(filenameRelPath.c_str());
     if(!file.open(QIODevice::ReadWrite)) {
-        std::cout << "Can't open write file" << std::endl;
+        // log "Can't open write file"
     }
     QNetworkRequest request(QUrl(configHandler->getUrl().c_str()));
     QNetworkReply* reply = nam.get(request);

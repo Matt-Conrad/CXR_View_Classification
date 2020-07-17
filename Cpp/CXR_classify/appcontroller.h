@@ -1,12 +1,9 @@
 #ifndef APPCONTROLLER_H
 #define APPCONTROLLER_H
 
-#include <boost/dll/runtime_symbol_info.hpp>
 #include <string>
 #include <filesystem>
 #include <QObject>
-#include <QThread>
-#include <boost/property_tree/ptree.hpp>
 #include "mainwindow.h"
 #include "downloader.h"
 #include "confighandlers.h"
@@ -17,11 +14,7 @@
 #include "labelimporter.h"
 #include "trainer.h"
 #include "basicDbOps.h"
-
-const std::unordered_map<std::string, std::string> c_sourceUrl = {
-        {"subset", "https://raw.githubusercontent.com/Matt-Conrad/CXR_View_Classification/master/datasets/NLMCXR_subset_dataset.tgz"},
-        {"full_set", "https://openi.nlm.nih.gov/imgs/collections/NLMCXR_dcm.tgz"}
-    };
+#include "expectedsizes.h"
 
 class AppController : public QObject
 {

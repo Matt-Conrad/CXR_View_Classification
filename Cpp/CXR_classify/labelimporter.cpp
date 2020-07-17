@@ -46,7 +46,7 @@ void LabelImporter::importLabels()
     }
     catch (std::exception const &e)
     {
-        std::cout << e.what() << std::endl;
+        // log e.what()
     }
     emit attemptUpdateText("Finished importing image labels");
     emit finished();

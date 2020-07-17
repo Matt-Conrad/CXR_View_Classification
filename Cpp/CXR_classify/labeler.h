@@ -5,17 +5,9 @@
 #include <QPushButton>
 #include <QGridLayout>
 #include <QLabel>
-#include <iostream>
 #include <pqxx/pqxx>
 #include <dcmtk/dcmimgle/dcmimage.h>
 #include <dcmtk/dcmdata/dcfilefo.h>
-#include <dcmtk/dcmdata/dcdeftag.h>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
-#include <boost/algorithm/string/join.hpp>
-#include "opencv2/opencv.hpp"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/core/types_c.h"
 #include "opencv2/imgproc.hpp"
 #include "confighandlers.h"
 #include "basicDbOps.h"

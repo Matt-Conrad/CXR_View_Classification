@@ -1,12 +1,10 @@
 #ifndef POSTGRES_H
 #define POSTGRES_H
 
-#include <iostream>
 #include <pqxx/pqxx>
 #include <string>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include <boost/algorithm/string/join.hpp>
 #include "confighandlers.h"
 
 class DatabaseHandler

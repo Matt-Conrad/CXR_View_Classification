@@ -4,14 +4,9 @@
 #include <QObject>
 #include <string>
 #include <filesystem>
-#include <iostream>
 #include <QtNetwork>
+#include "expectedsizes.h"
 #include "confighandlers.h"
-
-const std::unordered_map<std::string, uint64_t> expected_sizes = {
-        {"NLMCXR_subset_dataset.tgz", 88320855},
-        {"NLMCXR_dcm.tgz", 80694582486}
-    };
 
 class Downloader : public QObject
 {

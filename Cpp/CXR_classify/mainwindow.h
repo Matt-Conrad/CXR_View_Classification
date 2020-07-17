@@ -4,13 +4,9 @@
 #include <QMainWindow>
 #include <QWidget>
 #include <QPushButton>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
 #include <QGridLayout>
 #include <QLabel>
 #include <QProgressBar>
-#include <filesystem>
-#include <pqxx/pqxx>
 
 class AppController;
 

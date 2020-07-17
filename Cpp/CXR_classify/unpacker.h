@@ -6,18 +6,8 @@
 #include <filesystem>
 #include <archive.h>
 #include <archive_entry.h>
-#include <unordered_map>
-#include <fstream>
-#include <iostream>
-#include <boost/iostreams/filtering_streambuf.hpp>
-#include <boost/iostreams/copy.hpp>
-#include <boost/iostreams/filter/gzip.hpp>
+#include "expectedsizes.h"
 #include "confighandlers.h"
-
-const std::unordered_map<std::string, uint16_t> expected_num_files_in_dataset = {
-        {"NLMCXR_subset_dataset.tgz", 10},
-        {"NLMCXR_dcm.tgz", 7470}
-    };
 
 class Unpacker : public QObject
 {

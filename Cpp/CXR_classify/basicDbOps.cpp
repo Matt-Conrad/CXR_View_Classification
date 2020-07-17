@@ -35,7 +35,7 @@ bool DatabaseHandler::dbExists()
     }
     catch (std::exception const &e)
     {
-      std::cerr << e.what() << std::endl;
+        // log e.what()
     }
 }
 
@@ -57,7 +57,7 @@ void DatabaseHandler::createNewDb()
     }
     catch (std::exception const &e)
     {
-      std::cerr << e.what() << std::endl;
+        // log e.what()
     }
 }
 
@@ -116,7 +116,7 @@ void DatabaseHandler::addTableToDb(std::string columnsInfo, std::string section,
     }
     catch (std::exception const &e)
     {
-      std::cerr << e.what() << std::endl;
+        // log e.what()
     }
 }
 
@@ -139,7 +139,7 @@ int DatabaseHandler::countRecords(std::string tableName) {
     }
     catch (std::exception const &e)
     {
-        std::cerr << e.what() << std::endl;
+        // log e.what()
     }
 }
 

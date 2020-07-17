@@ -43,6 +43,7 @@ HEADERS += \
     basicDbOps.h \
     confighandlers.h \
     downloader.h \
+    expectedsizes.h \
     featurecalculator.h \
     labeler.h \
     labelimporter.h \
@@ -51,7 +52,7 @@ HEADERS += \
     trainer.h \
     unpacker.h \
 
-LIBS += -ldl -lboost_system -lboost_filesystem -lstdc++fs -lz -lbz2  -larchive -lpqxx -lpq -pthread -ldcmimgle -ldcmdata -loflog -lofstd -lz -liconv -lcharset -lopencv_core -lopencv_imgproc -lopencv_imgcodecs -lopencv_highgui -fopenmp -larmadillo -lmlpack -lboost_serialization -lboost_iostreams
+LIBS += -ldl -lboost_system -lstdc++fs -lz -lbz2 -larchive -lpqxx -lpq -pthread -ldcmimgle -ldcmdata -loflog -lofstd -lopencv_core -lopencv_imgproc -fopenmp -larmadillo -lmlpack
 
 DISTFILES += \
     columns_info.json \

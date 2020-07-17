@@ -100,7 +100,7 @@ void Trainer::trainClassifier()
     }
     catch (std::exception const &e)
     {
-        std::cout << e.what() << std::endl;
+        // log e.what()
     }
     emit finished();
 }

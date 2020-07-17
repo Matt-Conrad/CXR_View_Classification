@@ -1,6 +1,5 @@
 #include "appcontroller.h"
 
-
 AppController::AppController()
 {
     std::string url = c_sourceUrl.at(configHandler->getDatasetType());
