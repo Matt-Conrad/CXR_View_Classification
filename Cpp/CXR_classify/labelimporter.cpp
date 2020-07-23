@@ -1,4 +1,5 @@
 #include "labelimporter.h"
+#include <iostream>
 
 LabelImporter::LabelImporter(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : QObject()
 {
@@ -8,7 +9,7 @@ LabelImporter::LabelImporter(ConfigHandler * configHandler, DatabaseHandler * db
 
 void LabelImporter::importLabels()
 {
-    std::string elementsJson = "./" + configHandler->getColumnsInfoPath();
+    std::string elementsJson = configHandler->getColumnsInfoPath();
     std::string labelTableName = configHandler->getTableName("label");
 
     emit attemptUpdateText("Attempting to import image labels");
@@ -26,7 +27,7 @@ void LabelImporter::importLabels()
             sqlQuery += (column.first + ",");
         }
     }
-    sqlQuery = sqlQuery.substr(0, sqlQuery.length() - 1) + ") FROM '" + "./" + configHandler->getCsvPath() + "' DELIMITER ',' CSV HEADER;";
+    sqlQuery = sqlQuery.substr(0, sqlQuery.length() - 1) + ") FROM '" + configHandler->getParentFolder() + "/" + configHandler->getCsvPath() + "' DELIMITER ',' CSV HEADER;";
 
     try
     {
@@ -46,6 +47,7 @@ void LabelImporter::importLabels()
     }
     catch (std::exception const &e)
     {
+        std::cout << e.what() << std::endl;
         // log e.what()
     }
     emit attemptUpdateText("Finished importing image labels");

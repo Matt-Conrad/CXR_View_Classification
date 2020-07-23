@@ -72,5 +72,9 @@ std::string ConfigHandler::getDatasetType()
     return getSetting("dataset_info", "dataset");
 }
 
+std::string ConfigHandler::getParentFolder()
+{
+    return getSetting("misc", "parent_folder");
+}
 
 

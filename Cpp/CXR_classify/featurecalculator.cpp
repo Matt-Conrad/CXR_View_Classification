@@ -28,12 +28,14 @@ void FeatureCalculator::calculateFeatures()
         // Execute query
         pqxx::result r = w.exec("SELECT * FROM " + configHandler->getTableName("metadata") + ";");
 
-        quint64 count = 0;
+        int count = 0;
         for (int rownum=0; rownum < r.size(); ++rownum)
         {
             const pqxx::row row = r[rownum];
             const char * filePath = row["file_path"].c_str();
             count++;
+
+            std::cout << "Image " << count << " " << filePath << std::endl;
 
             DicomImage * dcmImage = new DicomImage(filePath);
             uint16_t * pixelData = (uint16_t *) (dcmImage->getOutputData(16)); // This scales the pixel values so that the intensity range is 0 - 2^16 instead of 0 - 2^bits_stored
@@ -69,13 +71,13 @@ void FeatureCalculator::calculateFeatures()
             }
 
             cv::Mat rawIntensityImageInt;
-            rawIntensityImage.convertTo(rawIntensityImageInt, CV_16U);//, 1, -0.5); // This rounding might cause inconsistencies
+            rawIntensityImage.convertTo(rawIntensityImageInt, CV_16U, 1, -0.5); // This rounding might cause inconsistencies
 
             DcmTagKey photometricKey(40, 4); // photometric interpretation
             OFString photometricValue;
             file_format.getDataset()->findAndGetOFString(photometricKey, photometricValue);
 
-            cv::Mat preprocessedImage = preprocessing(rawIntensityImage, photometricValue.c_str(), atoi(bitsStoredValue.c_str()));
+            cv::Mat preprocessedImage = preprocessing(rawIntensityImageInt, photometricValue.c_str(), atoi(bitsStoredValue.c_str()));
 
             cv::Mat horProfile = calcHorProf(preprocessedImage, 200, 200);
             cv::Mat vertProfile = calcVertProf(preprocessedImage, 200, 200);
@@ -173,7 +175,6 @@ cv::Mat FeatureCalculator::preprocessing(cv::Mat image, std::string photometric,
     cv::Mat imageNorm(image.rows, image.cols, CV_64F);
     imageNorm = imageDouble / highestPossibleIntensity;
 
-
     // Invert the image if it's monochrome 1
 //    if (photometric == "MONOCHROME1") {
 //        imageNorm = 1.0 - imageNorm;
@@ -193,17 +194,21 @@ cv::Mat FeatureCalculator::preprocessing(cv::Mat image, std::string photometric,
 
     cv::Mat enhancedImage(imageNorm.rows, imageNorm.cols, CV_64F);
     // Contrast stretch
-    for (auto j = 0; j < imageNorm.rows; j++) {
-        for (auto i = 0; i < imageNorm.cols; i++) {
-//            double intensity = imageNorm.at<double>(j,i);
-            if (imageNorm.at<double>(j,i) < firstPercentile) {
-                enhancedImage.at<double>(j,i) = 0.0;
-            } else if (imageNorm.at<double>(j,i) > nineninePercentile) {
-                enhancedImage.at<double>(j,i) = 1.0;
-            } else {
-                enhancedImage.at<double>(j,i) = (imageNorm.at<double>(j,i) - firstPercentile) / (nineninePercentile - firstPercentile) * 1.0;
+    if (nineninePercentile > firstPercentile) {
+        for (auto j = 0; j < imageNorm.rows; j++) {
+            for (auto i = 0; i < imageNorm.cols; i++) {
+                double intensity = imageNorm.at<double>(j,i);
+                if (intensity < firstPercentile) {
+                    enhancedImage.at<double>(j,i) = 0.0;
+                } else if (intensity > nineninePercentile) {
+                    enhancedImage.at<double>(j,i) = 1.0;
+                } else {
+                    enhancedImage.at<double>(j,i) = (intensity - firstPercentile) / (nineninePercentile - firstPercentile) * 1.0;
+                }
             }
         }
+    } else {
+        enhancedImage = imageNorm;
     }
 
     cv::Mat enhancedImageFloat(image.rows, image.cols, CV_32F);
@@ -223,7 +228,12 @@ cv::Mat FeatureCalculator::preprocessing(cv::Mat image, std::string photometric,
     cv::findNonZero(imageBinarized, points);
     cv::Rect bb = cv::boundingRect(points);
 
-    cv::Mat imageCropped = enhancedImageFloat(bb);
+    cv::Mat imageCropped;
+    if (!points.empty()) {
+        imageCropped = enhancedImageFloat(bb);
+    } else {
+        imageCropped = enhancedImageFloat;
+    }
 
     float scalePercent = 0.5;
     unsigned width = imageCropped.cols * scalePercent;

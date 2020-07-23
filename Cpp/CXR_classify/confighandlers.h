@@ -22,6 +22,7 @@ public:
     std::string getColumnsInfoPath();
     std::string getCsvPath();
     std::string getDatasetType();
+    std::string getParentFolder();
 
 private:
     std::string configFilename;

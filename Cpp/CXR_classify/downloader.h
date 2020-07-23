@@ -15,7 +15,6 @@ friend class AppController;
 
 public:
     Downloader(ConfigHandler *);
-    void downloadDataset();
 
 private:
     quint64 expected_size;

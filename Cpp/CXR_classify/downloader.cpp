@@ -16,19 +16,14 @@ void Downloader::getDataset()
             // log "File  was downloaded properly"
         } else {
             std::filesystem::remove(filenameRelPath);
-            Downloader::downloadDataset();
+            Downloader::download();
         }
     } else {
-        Downloader::downloadDataset();
+        Downloader::download();
     }
     emit attemptUpdateProBarValue(getTgzSize());
     emit attemptUpdateText("Image download complete");
     emit finished();
-}
-
-void Downloader::downloadDataset()
-{
-    download();
 }
 
 int Downloader::download()
