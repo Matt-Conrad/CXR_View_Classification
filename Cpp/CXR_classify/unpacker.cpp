@@ -1,10 +1,7 @@
 #include "unpacker.h"
 
-Unpacker::Unpacker(ConfigHandler * configHandler) : QObject()
+Unpacker::Unpacker(ConfigHandler * configHandler) : Stage(configHandler)
 {
-    Unpacker::configHandler = configHandler;
-
-    Unpacker::expected_num_files = expected_num_files_in_dataset.at(configHandler->getTgzFilename());
     Unpacker::folderRelPath = "./" + configHandler->getDatasetName();
 }
 

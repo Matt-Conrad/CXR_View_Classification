@@ -7,23 +7,20 @@
 #include <pqxx/pqxx>
 #include "confighandlers.h"
 #include "basicDbOps.h"
+#include "stage.h"
 
-class LabelImporter : public QObject
+class LabelImporter : public Stage
 {
     Q_OBJECT
 public:
     LabelImporter(ConfigHandler *, DatabaseHandler *);
 
 private:
-    ConfigHandler * configHandler;
     DatabaseHandler * dbHandler;
 
 public slots:
     void importLabels();
 
-signals:
-    void finished();
-    void attemptUpdateText(QString);
 };
 
 #endif // LABELIMPORTER_H

@@ -1,10 +1,8 @@
 #include "storer.h"
 
-Storer::Storer(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : QObject()
+Storer::Storer(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Stage(configHandler)
 {
-    Storer::configHandler = configHandler;
     Storer::dbHandler = dbHandler;
-    Storer::expected_num_files = expected_num_files_in_dataset.at(configHandler->getTgzFilename());
 }
 
 void Storer::dicomToDb()

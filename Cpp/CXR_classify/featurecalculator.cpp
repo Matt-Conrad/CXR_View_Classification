@@ -1,12 +1,10 @@
 ﻿#include "featurecalculator.h"
 
-FeatureCalculator::FeatureCalculator(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : QObject()
+FeatureCalculator::FeatureCalculator(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Stage(configHandler)
 {
-    FeatureCalculator::configHandler = configHandler;
     FeatureCalculator::dbHandler = dbHandler;
 
     FeatureCalculator::featTableName = configHandler->getTableName("features");
-    FeatureCalculator::expected_num_files = expected_num_files_in_dataset.at(configHandler->getTgzFilename());
 }
 
 void FeatureCalculator::calculateFeatures()

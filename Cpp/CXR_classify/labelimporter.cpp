@@ -1,9 +1,8 @@
 #include "labelimporter.h"
 #include <iostream>
 
-LabelImporter::LabelImporter(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : QObject()
+LabelImporter::LabelImporter(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Stage(configHandler)
 {
-    LabelImporter::configHandler = configHandler;
     LabelImporter::dbHandler = dbHandler;
 }
 

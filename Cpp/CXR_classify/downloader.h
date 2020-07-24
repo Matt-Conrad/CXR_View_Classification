@@ -5,22 +5,19 @@
 #include <string>
 #include <filesystem>
 #include <QtNetwork>
-#include "expectedsizes.h"
 #include "confighandlers.h"
+#include "stage.h"
 
-class Downloader : public QObject
+class Downloader : public Stage
 {
     Q_OBJECT
+
 friend class AppController;
 
 public:
     Downloader(ConfigHandler *);
 
 private:
-    quint64 expected_size;
-
-    ConfigHandler * configHandler;
-
     std::string filenameRelPath;
     std::string datasetType;
 
@@ -31,12 +28,6 @@ private:
 
 public slots:
     void getDataset();
-
-signals:
-    void finished();
-    void attemptUpdateProBarValue(quint64);
-    void attemptUpdateProBarBounds(quint64, quint64);
-    void attemptUpdateText(QString);
 };
 
 #endif // DATASETDOWNLOADER_H

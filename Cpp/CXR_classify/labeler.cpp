@@ -26,7 +26,6 @@ void Labeler::fillWindow()
     emit attemptUpdateText("Please manually label images");
     dbHandler->addTableToDb(configHandler->getColumnsInfoPath(), "labels", labelTableName);
     QGridLayout * layout = new QGridLayout;
-    layout->addWidget(label, 0, 0, 1, 2);
     layout->addWidget(image, 1, 0, 1, 2);
     layout->addWidget(frontalButton, 2, 0);
     layout->addWidget(lateralButton, 2, 1);
@@ -41,14 +40,12 @@ void Labeler::fillWindow()
 
 void Labeler::frontal()
 {
-    label->setText("Frontal");
     storeLabel("F");
     displayNextImage();
 }
 
 void Labeler::lateral()
 {
-    label->setText("Lateral");
     storeLabel("L");
     displayNextImage();
 }

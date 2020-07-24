@@ -15,6 +15,7 @@
 class Labeler : public QWidget
 {
     Q_OBJECT
+
 public:
     Labeler(ConfigHandler *, DatabaseHandler *);
 
@@ -30,7 +31,6 @@ private:
     pqxx::result::const_iterator record;
     pqxx::connection * connection;
 
-    QLabel * label = new QLabel(this);
     QLabel * image = new QLabel(this);
     QPushButton * frontalButton = new QPushButton("Frontal", this);
     QPushButton * lateralButton = new QPushButton("Lateral", this);

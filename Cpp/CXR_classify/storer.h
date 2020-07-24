@@ -13,11 +13,12 @@
 #include <dcmtk/dcmdata/dctagkey.h>
 #include "confighandlers.h"
 #include "basicDbOps.h"
-#include "expectedsizes.h"
+#include "stage.h"
 
-class Storer : public QObject
+class Storer : public Stage
 {
     Q_OBJECT
+
 public:
     Storer(ConfigHandler *, DatabaseHandler *);
 
@@ -25,18 +26,9 @@ public slots:
     void dicomToDb();
 
 private:
-    quint64 expected_num_files;
-
-    ConfigHandler * configHandler;
     DatabaseHandler * dbHandler;
 
     std::string createSqlQuery(std::string, boost::property_tree::ptree, std::string);
-
-signals:
-    void finished();
-    void attemptUpdateProBarValue(quint64);
-    void attemptUpdateProBarBounds(quint64, quint64);
-    void attemptUpdateText(QString);
 };
 
 #endif // STORER_H

@@ -1,11 +1,9 @@
 #include "trainer.h"
 #include <iostream>
 
-Trainer::Trainer(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : QObject()
+Trainer::Trainer(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Stage(configHandler)
 {
-    Trainer::configHandler = configHandler;
     Trainer::dbHandler = dbHandler;
-    Trainer::expected_num_files = expected_num_files_in_dataset.at(configHandler->getTgzFilename());
 }
 
 void Trainer::trainClassifier()

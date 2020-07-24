@@ -14,6 +14,7 @@ public:
 
     void setUrl(std::string);
 
+
     boost::property_tree::ptree getDbInfo();
     std::string getTableName(std::string);
     std::string getUrl();

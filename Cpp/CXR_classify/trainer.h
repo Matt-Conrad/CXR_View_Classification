@@ -10,9 +10,9 @@
 #include "mlpack/core/cv/metrics/accuracy.hpp"
 #include "confighandlers.h"
 #include "basicDbOps.h"
-#include "expectedsizes.h"
+#include "stage.h"
 
-class Trainer : public QObject
+class Trainer : public Stage
 {
     Q_OBJECT
 public:
@@ -22,13 +22,7 @@ public slots:
     void trainClassifier();
 
 private:
-    quint64 expected_num_files;
-    ConfigHandler * configHandler;
     DatabaseHandler * dbHandler;
-
-signals:
-    void finished();
-    void attemptUpdateText(QString);
 };
 
 #endif // TRAINER_H

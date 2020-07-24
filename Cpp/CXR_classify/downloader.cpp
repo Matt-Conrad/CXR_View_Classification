@@ -1,18 +1,15 @@
 #include "downloader.h"
 
-Downloader::Downloader(ConfigHandler * configHandler) : QObject()
+Downloader::Downloader(ConfigHandler * configHandler) : Stage(configHandler)
 {
-    Downloader::configHandler = configHandler;
-
     Downloader::filenameRelPath = "./" + configHandler->getTgzFilename();
     Downloader::datasetType = configHandler->getDatasetType();
-    Downloader::expected_size = expected_sizes.at(configHandler->getTgzFilename());
 }
 
 void Downloader::getDataset()
 {
     if (std::filesystem::exists(filenameRelPath) && !std::filesystem::is_directory(filenameRelPath)) {
-        if (std::filesystem::file_size(filenameRelPath) == 88320855) { // replace hard code with expected size
+        if (std::filesystem::file_size(filenameRelPath) == expected_size) { // replace hard code with expected size
             // log "File  was downloaded properly"
         } else {
             std::filesystem::remove(filenameRelPath);

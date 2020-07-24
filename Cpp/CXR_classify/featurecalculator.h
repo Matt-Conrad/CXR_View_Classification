@@ -10,9 +10,9 @@
 #include "opencv2/imgproc.hpp"
 #include "confighandlers.h"
 #include "basicDbOps.h"
-#include "expectedsizes.h"
+#include "stage.h"
 
-class FeatureCalculator : public QObject
+class FeatureCalculator : public Stage
 {
     Q_OBJECT
 public:
@@ -22,9 +22,6 @@ public slots:
     void calculateFeatures();
 
 private:
-    quint64 expected_num_files;
-
-    ConfigHandler * configHandler;
     DatabaseHandler * dbHandler;
 
     std::string featTableName;
@@ -33,12 +30,6 @@ private:
     cv::Mat calcHorProf(cv::Mat, unsigned, unsigned);
     cv::Mat calcVertProf(cv::Mat, unsigned, unsigned);
     void store(std::string, cv::Mat, cv::Mat);
-
-signals:
-    void finished();
-    void attemptUpdateProBarValue(quint64);
-    void attemptUpdateProBarBounds(quint64, quint64);
-    void attemptUpdateText(QString);
 };
 
 #endif // FEATURECALCULATOR_H
