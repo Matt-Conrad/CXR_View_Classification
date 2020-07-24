@@ -9,8 +9,8 @@
 #include <dcmtk/dcmimgle/dcmimage.h>
 #include <dcmtk/dcmdata/dcfilefo.h>
 #include "opencv2/imgproc.hpp"
-#include "confighandlers.h"
-#include "basicDbOps.h"
+#include "confighandler.h"
+#include "databasehandler.h"
 
 class Labeler : public QWidget
 {

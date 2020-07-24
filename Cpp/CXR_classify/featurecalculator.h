@@ -8,8 +8,8 @@
 #include <dcmtk/dcmdata/dcfilefo.h>
 #include <vector>
 #include "opencv2/imgproc.hpp"
-#include "confighandlers.h"
-#include "basicDbOps.h"
+#include "confighandler.h"
+#include "databasehandler.h"
 #include "stage.h"
 
 class FeatureCalculator : public Stage
@@ -22,8 +22,6 @@ public slots:
     void calculateFeatures();
 
 private:
-    DatabaseHandler * dbHandler;
-
     std::string featTableName;
 
     cv::Mat preprocessing(cv::Mat, std::string, uint8_t);

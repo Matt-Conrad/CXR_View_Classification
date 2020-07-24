@@ -1,8 +1,8 @@
 #include "storer.h"
 
-Storer::Storer(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Stage(configHandler)
+Storer::Storer(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Stage(configHandler, dbHandler)
 {
-    Storer::dbHandler = dbHandler;
+
 }
 
 void Storer::dicomToDb()

@@ -1,4 +1,4 @@
-#include "confighandlers.h"
+#include "confighandler.h"
 
 ConfigHandler::ConfigHandler(std::string configFilename)
 {

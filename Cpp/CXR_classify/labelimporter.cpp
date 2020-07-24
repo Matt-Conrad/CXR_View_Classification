@@ -1,9 +1,8 @@
 #include "labelimporter.h"
-#include <iostream>
 
-LabelImporter::LabelImporter(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Stage(configHandler)
+LabelImporter::LabelImporter(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Stage(configHandler, dbHandler)
 {
-    LabelImporter::dbHandler = dbHandler;
+
 }
 
 void LabelImporter::importLabels()
@@ -46,7 +45,6 @@ void LabelImporter::importLabels()
     }
     catch (std::exception const &e)
     {
-        std::cout << e.what() << std::endl;
         // log e.what()
     }
     emit attemptUpdateText("Finished importing image labels");

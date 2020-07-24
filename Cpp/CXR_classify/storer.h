@@ -11,8 +11,8 @@
 #include <vector>
 #include <dcmtk/dcmdata/dcfilefo.h>
 #include <dcmtk/dcmdata/dctagkey.h>
-#include "confighandlers.h"
-#include "basicDbOps.h"
+#include "confighandler.h"
+#include "databasehandler.h"
 #include "stage.h"
 
 class Storer : public Stage
@@ -26,8 +26,6 @@ public slots:
     void dicomToDb();
 
 private:
-    DatabaseHandler * dbHandler;
-
     std::string createSqlQuery(std::string, boost::property_tree::ptree, std::string);
 };
 

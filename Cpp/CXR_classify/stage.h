@@ -3,17 +3,19 @@
 
 #include <QObject>
 #include "expectedsizes.h"
-#include "confighandlers.h"
+#include "confighandler.h"
+#include "databasehandler.h"
 
 class Stage : public QObject
 {
     Q_OBJECT
 
 public:
-    Stage(ConfigHandler *);
+    Stage(ConfigHandler *, DatabaseHandler * = nullptr);
 
 protected:
     ConfigHandler * configHandler;
+    DatabaseHandler * dbHandler;
     quint64 expected_size;
     quint64 expected_num_files;
 

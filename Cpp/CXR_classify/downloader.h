@@ -5,7 +5,7 @@
 #include <string>
 #include <filesystem>
 #include <QtNetwork>
-#include "confighandlers.h"
+#include "confighandler.h"
 #include "stage.h"
 
 class Downloader : public Stage

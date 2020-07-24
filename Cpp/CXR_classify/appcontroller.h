@@ -6,14 +6,14 @@
 #include <QObject>
 #include "mainwindow.h"
 #include "downloader.h"
-#include "confighandlers.h"
+#include "confighandler.h"
 #include "unpacker.h"
 #include "storer.h"
 #include "featurecalculator.h"
 #include "labeler.h"
 #include "labelimporter.h"
 #include "trainer.h"
-#include "basicDbOps.h"
+#include "databasehandler.h"
 #include "expectedsizes.h"
 
 class AppController : public QObject

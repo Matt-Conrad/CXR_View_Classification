@@ -6,7 +6,7 @@
 #include <filesystem>
 #include <archive.h>
 #include <archive_entry.h>
-#include "confighandlers.h"
+#include "confighandler.h"
 #include "stage.h"
 
 class Unpacker : public Stage

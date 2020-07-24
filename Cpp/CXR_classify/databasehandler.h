@@ -5,7 +5,7 @@
 #include <string>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include "confighandlers.h"
+#include "confighandler.h"
 
 class DatabaseHandler
 {

@@ -1,9 +1,8 @@
 #include "trainer.h"
-#include <iostream>
 
-Trainer::Trainer(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Stage(configHandler)
+Trainer::Trainer(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Stage(configHandler, dbHandler)
 {
-    Trainer::dbHandler = dbHandler;
+
 }
 
 void Trainer::trainClassifier()

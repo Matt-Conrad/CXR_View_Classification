@@ -1,9 +1,7 @@
 ﻿#include "featurecalculator.h"
 
-FeatureCalculator::FeatureCalculator(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Stage(configHandler)
+FeatureCalculator::FeatureCalculator(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Stage(configHandler, dbHandler)
 {
-    FeatureCalculator::dbHandler = dbHandler;
-
     FeatureCalculator::featTableName = configHandler->getTableName("features");
 }
 
