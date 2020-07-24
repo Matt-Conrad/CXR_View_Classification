@@ -63,26 +63,30 @@ void DatabaseHandler::createNewDb()
 
 bool DatabaseHandler::tableExists(std::string tableName)
 {
-    try
-    {
-        // Connect to the database
-        pqxx::connection c("host=" + host + " port=" + port + " dbname=" + database + " user=" + user + " password=" + password);
+    if (dbExists()) {
+        try
+        {
+            // Connect to the database
+            pqxx::connection c("host=" + host + " port=" + port + " dbname=" + database + " user=" + user + " password=" + password);
 
-        // Start a transaction
-        pqxx::work w(c);
+            // Start a transaction
+            pqxx::work w(c);
 
-        // Execute query
-        pqxx::result r = w.exec("SELECT * FROM information_schema.tables WHERE table_name=\'" + tableName + "\';");
+            // Execute query
+            pqxx::result r = w.exec("SELECT * FROM information_schema.tables WHERE table_name=\'" + tableName + "\';");
 
-        // Return based on result
-        if (r.size() == 0) {
-            return false;
-        } else {
-            return true;
+            // Return based on result
+            if (r.size() == 0) {
+                return false;
+            } else {
+                return true;
+            }
         }
-    }
-    catch (std::exception const &e)
-    {
+        catch (std::exception const &e)
+        {
+            return false;
+        }
+    } else {
         return false;
     }
 }
