@@ -11,6 +11,7 @@ class DatabaseHandler
 {
 public:
     DatabaseHandler(ConfigHandler *);
+    ~DatabaseHandler();
 
     bool dbExists();
     void createNewDb();
@@ -20,8 +21,12 @@ public:
     pqxx::connection * openConnection();
     void deleteConnection(pqxx::connection * &);
 
+    pqxx::connection * getConnection();
+
 private:
     ConfigHandler * configHandler;
+
+    pqxx::connection * connection;
 
     std::string host;
     std::string port;

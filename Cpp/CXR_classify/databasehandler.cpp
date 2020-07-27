@@ -10,6 +10,18 @@ DatabaseHandler::DatabaseHandler(ConfigHandler * configHandler)
     DatabaseHandler::database = dbInfo.get<std::string>("database");
     DatabaseHandler::user = dbInfo.get<std::string>("user");
     DatabaseHandler::password = dbInfo.get<std::string>("password");
+
+    // Create the database if it isn't already there
+    if (!dbExists()){
+        createNewDb();
+    }
+
+    DatabaseHandler::connection = openConnection();
+}
+
+DatabaseHandler::~DatabaseHandler()
+{
+    deleteConnection(connection);
 }
 
 bool DatabaseHandler::dbExists()
@@ -155,6 +167,10 @@ pqxx::connection * DatabaseHandler::openConnection() {
 
 void DatabaseHandler::deleteConnection(pqxx::connection * & connection) {
     delete connection;
+}
+
+pqxx::connection * DatabaseHandler::getConnection() {
+    return connection;
 }
 
 

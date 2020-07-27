@@ -1,4 +1,5 @@
 #include "storer.h"
+#include <chrono>
 
 Storer::Storer(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Stage(configHandler, dbHandler)
 {
@@ -7,13 +8,9 @@ Storer::Storer(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Sta
 
 void Storer::dicomToDb()
 {
+    auto start = std::chrono::high_resolution_clock::now();
     emit attemptUpdateText("Storing metadata");
     emit attemptUpdateProBarBounds(0, expected_num_files);
-
-    // Create the database if it isn't already there
-    if (!dbHandler->dbExists()){
-        dbHandler->createNewDb();
-    }
 
     std::string metadataTableName = configHandler->getTableName("metadata");
     std::string columnsInfoPath = configHandler->getColumnsInfoPath();
@@ -35,21 +32,16 @@ void Storer::dicomToDb()
         if (p.path().extension() == ".dcm") {
             try
             {
-                // Connect to the database
-                pqxx::connection * connection = dbHandler->openConnection();
-
                 // Create SQL query
                 std::string sqlQuery = createSqlQuery(metadataTableName, elements, p.path().string());
 
                 // Start a transaction
-                pqxx::work w(*connection);
+                pqxx::work w(*(dbHandler->getConnection()));
 
                 // Execute query
                 pqxx::result r = w.exec(sqlQuery);
 
                 w.commit();
-
-                dbHandler->deleteConnection(connection);
 
                 storeCount++;
                 emit attemptUpdateProBarValue(storeCount);
@@ -62,6 +54,9 @@ void Storer::dicomToDb()
     }
     emit attemptUpdateText("Done storing metadata");
     emit finished();
+    auto finish = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = finish - start;
+    std::cout << "Elapsed time: " << elapsed.count() << " s\n";
 }
 
 std::string Storer::createSqlQuery(std::string tableName, boost::property_tree::ptree elements, std::string filePath)

@@ -207,7 +207,6 @@ void MainWindow::stage5_ui()
         connect(controller->labelImporter, SIGNAL (finished()), this, SLOT(stage6_ui()));
         connect(controller->labelImporter, SIGNAL (finished()), controller->labeler, SLOT (deleteLater()));
     }
-
 }
 
 void MainWindow::stage6_ui()

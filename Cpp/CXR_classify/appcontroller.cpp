@@ -26,7 +26,6 @@ void AppController::initGuiState()
     connect(this, SIGNAL (initStage5()), &mainWindow, SLOT (stage5_ui()));
     connect(this, SIGNAL (initStage6()), &mainWindow, SLOT (stage6_ui()));
 
-
     if (dbHandler->tableExists(configHandler->getTableName("label"))) {
         emit initStage6();
     } else if (dbHandler->tableExists(configHandler->getTableName("features"))) {
