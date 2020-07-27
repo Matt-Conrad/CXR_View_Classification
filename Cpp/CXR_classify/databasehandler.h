@@ -21,12 +21,14 @@ public:
     pqxx::connection * openConnection();
     void deleteConnection(pqxx::connection * &);
 
-    pqxx::connection * getConnection();
+    pqxx::connection * getInputConnection();
+    pqxx::connection * getOutputConnection();
 
 private:
     ConfigHandler * configHandler;
 
-    pqxx::connection * connection;
+    pqxx::connection * inputConnection;
+    pqxx::connection * outputConnection;
 
     std::string host;
     std::string port;

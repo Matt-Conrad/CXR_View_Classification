@@ -36,7 +36,7 @@ void Storer::dicomToDb()
                 std::string sqlQuery = createSqlQuery(metadataTableName, elements, p.path().string());
 
                 // Start a transaction
-                pqxx::work w(*(dbHandler->getConnection()));
+                pqxx::work w(*(dbHandler->getInputConnection()));
 
                 // Execute query
                 pqxx::result r = w.exec(sqlQuery);

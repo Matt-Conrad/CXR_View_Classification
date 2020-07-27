@@ -1,4 +1,5 @@
 ﻿#include "featurecalculator.h"
+#include <chrono>
 
 FeatureCalculator::FeatureCalculator(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Stage(configHandler, dbHandler)
 {
@@ -7,6 +8,9 @@ FeatureCalculator::FeatureCalculator(ConfigHandler * configHandler, DatabaseHand
 
 void FeatureCalculator::calculateFeatures()
 {
+    auto start = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed;
+
     emit attemptUpdateText("Calculating features");
     emit attemptUpdateProBarBounds(0, expected_num_files);
 
@@ -15,18 +19,16 @@ void FeatureCalculator::calculateFeatures()
     emit attemptUpdateProBarValue(0);
     try
     {
-        // Connect to the database
-        pqxx::connection * connection = dbHandler->openConnection();
-
         // Start a transaction
-        pqxx::work w(*connection);
+        pqxx::work w(*(dbHandler->getOutputConnection()));
 
         // Execute query
         pqxx::result r = w.exec("SELECT * FROM " + configHandler->getTableName("metadata") + ";");
 
         int count = 0;
-        for (int rownum=0; rownum < r.size(); ++rownum)
+        for (int rownum=0; rownum < 100; ++rownum)//r.size(); ++rownum)
         {
+            // Read in the image
             const pqxx::row row = r[rownum];
             const char * filePath = row["file_path"].c_str();
             count++;
@@ -36,15 +38,15 @@ void FeatureCalculator::calculateFeatures()
             DicomImage * dcmImage = new DicomImage(filePath);
             uint16_t * pixelData = (uint16_t *) (dcmImage->getOutputData(16)); // This scales the pixel values so that the intensity range is 0 - 2^16 instead of 0 - 2^bits_stored
 
+            // Convert the image from uint16 to double
             uint64_t height = dcmImage->getHeight();
             uint64_t width = dcmImage->getWidth();
 
-            // Need to divide this by 16 for some reason. Probably because the bits stored is 12 but the values that are read are scaled to 16 bits?
-            cv::Mat originalImage(height, width, CV_16U, pixelData);
-            cv::Mat originalImageDouble;
-            originalImage.convertTo(originalImageDouble, CV_64F);
+            cv::Mat imageUnsigned(height, width, CV_16U, pixelData);
+            cv::Mat imageDouble;
+            imageUnsigned.convertTo(imageDouble, CV_64F);
 
-            //DEBUGGING
+            // Get the bits_stored for scaling intensities back down from 16 bits to their bits_stored value
             DcmFileFormat file_format;
             file_format.loadFile(filePath);
 
@@ -52,28 +54,21 @@ void FeatureCalculator::calculateFeatures()
             OFString bitsStoredValue;
             file_format.getDataset()->findAndGetOFString(bitsStoredKey, bitsStoredValue);
 
-            cv::Mat rawIntensityImage(originalImage.rows, originalImage.cols, CV_64F);
-            // We must scale the intensities back down from 16 bits to either 12 or 15
             if (bitsStoredValue == "12") {
-                rawIntensityImage = originalImageDouble / 16.0; // 16 - 12 = 4 bits = 2^4 = 16
+                imageDouble = imageDouble / 16.0; // 16 - 12 = 4 bits = 2^4 = 16
             } else if (bitsStoredValue == "15") {
-                rawIntensityImage = originalImageDouble / 2.0; // 16 - 15 = 1 bit = 2^1 = 2
+                imageDouble = imageDouble / 2.0; // 16 - 15 = 1 bit = 2^1 = 2
             } else if (bitsStoredValue == "10") {
-                rawIntensityImage = originalImageDouble / 64.0; // 16 - 10 = 6 bits = 2^6 = 64
+                imageDouble = imageDouble / 64.0; // 16 - 10 = 6 bits = 2^6 = 64
             } else if (bitsStoredValue == "14") {
-                rawIntensityImage = originalImageDouble / 2.0; // 16 - 14 = 2 bits = 2^2 = 4
+                imageDouble = imageDouble / 2.0; // 16 - 14 = 2 bits = 2^2 = 4
             } else {
                 // log "BITS STORED NOT EXPECTED"
             }
 
-            cv::Mat rawIntensityImageInt;
-            rawIntensityImage.convertTo(rawIntensityImageInt, CV_16U, 1, -0.5); // This rounding might cause inconsistencies
+            imageDouble.convertTo(imageUnsigned, CV_16U, 1, -0.5); // This rounding might cause inconsistencies
 
-            DcmTagKey photometricKey(40, 4); // photometric interpretation
-            OFString photometricValue;
-            file_format.getDataset()->findAndGetOFString(photometricKey, photometricValue);
-
-            cv::Mat preprocessedImage = preprocessing(rawIntensityImageInt, photometricValue.c_str(), atoi(bitsStoredValue.c_str()));
+            cv::Mat preprocessedImage = preprocessing(imageUnsigned, atoi(bitsStoredValue.c_str()));
 
             cv::Mat horProfile = calcHorProf(preprocessedImage, 200, 200);
             cv::Mat vertProfile = calcVertProf(preprocessedImage, 200, 200);
@@ -86,25 +81,25 @@ void FeatureCalculator::calculateFeatures()
         }
 
         w.commit();
-        dbHandler->deleteConnection(connection);
     }
     catch (std::exception const &e)
     {
         std::cerr << e.what() << std::endl;
     }
+
     emit attemptUpdateText("Done calculating features");
     emit attemptUpdateProBarValue(dbHandler->countRecords(featTableName));
-
     emit finished();
+
+    auto finish = std::chrono::high_resolution_clock::now();
+    elapsed = finish - start;
+    std::cout << "Elapsed time: " << elapsed.count() << " s\n";
 }
 
 void FeatureCalculator::store(std::string filePath, cv::Mat horProfile, cv::Mat vertProfile)
 {
     try
     {
-        // Connect to the database
-        pqxx::connection * connection = dbHandler->openConnection();
-
         // Create SQL query
         std::vector<float> horVec(horProfile.begin<float>(), horProfile.end<float>());
         std::vector<float> vertVec(vertProfile.begin<float>(), vertProfile.end<float>());
@@ -126,13 +121,12 @@ void FeatureCalculator::store(std::string filePath, cv::Mat horProfile, cv::Mat 
                 "}', '{" + boost::algorithm::join(vertVecString, ", ") + "}');";
 
         // Start a transaction
-        pqxx::work w(*connection);
+        pqxx::work w(*(dbHandler->getInputConnection()));
 
         // Execute query
         pqxx::result r = w.exec(sqlQuery);
 
         w.commit();
-        dbHandler->deleteConnection(connection);
     }
     catch (std::exception const &e)
     {
@@ -162,21 +156,15 @@ cv::Mat FeatureCalculator::calcVertProf(cv::Mat image, unsigned width, unsigned 
     return vertProfile;
 }
 
-cv::Mat FeatureCalculator::preprocessing(cv::Mat image, std::string photometric, uint8_t bitsStored)
+cv::Mat FeatureCalculator::preprocessing(cv::Mat image, uint8_t bitsStored)
 {
     // Normalize image by dividing the intensities by the highest possible intensity so that it's dynamic range is between 1.0
     double highestPossibleIntensity = pow(2, bitsStored) - 1;
     cv::Mat imageDouble(image.rows, image.cols, CV_64F);
     image.convertTo(imageDouble, CV_64F);
-    cv::Mat imageNorm(image.rows, image.cols, CV_64F);
-    imageNorm = imageDouble / highestPossibleIntensity;
+    imageDouble = imageDouble / highestPossibleIntensity;
 
-    // Invert the image if it's monochrome 1
-//    if (photometric == "MONOCHROME1") {
-//        imageNorm = 1.0 - imageNorm;
-//    }
-
-    cv::Mat imageNormFlat = imageNorm.reshape(1, 1);
+    cv::Mat imageNormFlat = imageDouble.reshape(1, 1);
     cv::Mat imageNormSorted;
     cv::sort(imageNormFlat, imageNormSorted, cv::SORT_ASCENDING);
 
@@ -188,24 +176,9 @@ cv::Mat FeatureCalculator::preprocessing(cv::Mat image, std::string photometric,
     double firstPercentile = imageNormSorted.at<double>(firstIndex);
     double nineninePercentile = imageNormSorted.at<double>(ninenineIndex);
 
-    cv::Mat enhancedImage(imageNorm.rows, imageNorm.cols, CV_64F);
-    // Contrast stretch
-    if (nineninePercentile > firstPercentile) {
-        for (auto j = 0; j < imageNorm.rows; j++) {
-            for (auto i = 0; i < imageNorm.cols; i++) {
-                double intensity = imageNorm.at<double>(j,i);
-                if (intensity < firstPercentile) {
-                    enhancedImage.at<double>(j,i) = 0.0;
-                } else if (intensity > nineninePercentile) {
-                    enhancedImage.at<double>(j,i) = 1.0;
-                } else {
-                    enhancedImage.at<double>(j,i) = (intensity - firstPercentile) / (nineninePercentile - firstPercentile) * 1.0;
-                }
-            }
-        }
-    } else {
-        enhancedImage = imageNorm;
-    }
+    cv::Mat enhancedImage = (imageDouble - firstPercentile) / (nineninePercentile - firstPercentile) * 1.0;
+    enhancedImage.setTo(0.0, imageDouble < firstPercentile);
+    enhancedImage.setTo(1.0, imageDouble > nineninePercentile);
 
     cv::Mat enhancedImageFloat(image.rows, image.cols, CV_32F);
     enhancedImage.convertTo(enhancedImageFloat, CV_32F);
@@ -238,10 +211,6 @@ cv::Mat FeatureCalculator::preprocessing(cv::Mat image, std::string photometric,
     cv::Mat imageDownsize(height, width, CV_32F);
 
     cv::resize(imageCropped, imageDownsize, cv::Size(width, height), 0.5, 0.5, cv::INTER_AREA);
-
-//    cv::namedWindow("image", cv::WINDOW_NORMAL);
-//    cv::imshow("image", imageDownsize);
-//    cv::waitKey(0);
 
     return imageDownsize;
 }

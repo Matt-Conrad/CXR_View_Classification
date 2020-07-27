@@ -24,7 +24,7 @@ public slots:
 private:
     std::string featTableName;
 
-    cv::Mat preprocessing(cv::Mat, std::string, uint8_t);
+    cv::Mat preprocessing(cv::Mat, uint8_t);
     cv::Mat calcHorProf(cv::Mat, unsigned, unsigned);
     cv::Mat calcVertProf(cv::Mat, unsigned, unsigned);
     void store(std::string, cv::Mat, cv::Mat);

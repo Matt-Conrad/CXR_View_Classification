@@ -16,12 +16,14 @@ DatabaseHandler::DatabaseHandler(ConfigHandler * configHandler)
         createNewDb();
     }
 
-    DatabaseHandler::connection = openConnection();
+    DatabaseHandler::inputConnection = openConnection();
+    DatabaseHandler::outputConnection = openConnection();
 }
 
 DatabaseHandler::~DatabaseHandler()
 {
-    deleteConnection(connection);
+    deleteConnection(inputConnection);
+    deleteConnection(outputConnection);
 }
 
 bool DatabaseHandler::dbExists()
@@ -169,8 +171,11 @@ void DatabaseHandler::deleteConnection(pqxx::connection * & connection) {
     delete connection;
 }
 
-pqxx::connection * DatabaseHandler::getConnection() {
-    return connection;
+pqxx::connection * DatabaseHandler::getInputConnection() {
+    return inputConnection;
 }
 
+pqxx::connection * DatabaseHandler::getOutputConnection() {
+    return outputConnection;
+}
 
