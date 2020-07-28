@@ -42,8 +42,7 @@ void FeatureCalculator::calculateFeatures()
             uint64_t height = dcmImage->getHeight();
             uint64_t width = dcmImage->getWidth();
 
-            cv::Mat imageUnsigned(height, width, CV_16U, pixelData);
-            cv::Mat imageDouble;
+            imageUnsigned = cv::Mat(height, width, CV_16U, pixelData);
             imageUnsigned.convertTo(imageDouble, CV_64F);
 
             // Get the bits_stored for scaling intensities back down from 16 bits to their bits_stored value
@@ -68,10 +67,12 @@ void FeatureCalculator::calculateFeatures()
 
             imageDouble.convertTo(imageUnsigned, CV_16U, 1, -0.5); // This rounding might cause inconsistencies
 
-            cv::Mat preprocessedImage = preprocessing(imageUnsigned, atoi(bitsStoredValue.c_str()));
+            imageFloat = preprocessing(imageUnsigned, atoi(bitsStoredValue.c_str()));
 
-            cv::Mat horProfile = calcHorProf(preprocessedImage, 200, 200);
-            cv::Mat vertProfile = calcVertProf(preprocessedImage, 200, 200);
+            cv::resize(imageFloat, imageResize, cv::Size(200, 200), 0, 0, cv::INTER_AREA);
+
+            horProfile = calcHorProf();
+            vertProfile = calcVertProf();
 
             store(filePath, horProfile, vertProfile);
 
@@ -134,38 +135,32 @@ void FeatureCalculator::store(std::string filePath, cv::Mat horProfile, cv::Mat 
     }
 }
 
-cv::Mat FeatureCalculator::calcHorProf(cv::Mat image, unsigned width, unsigned height)
+cv::Mat FeatureCalculator::calcHorProf()
 {
-    cv::Mat imageSquare(height, width, CV_32F);
-    cv::resize(image, imageSquare, cv::Size(width, height), 0, 0, cv::INTER_AREA);
-
-    cv::Mat horProfile(1, width, CV_32F);
-    cv::reduce(imageSquare, horProfile, 0, cv::REDUCE_AVG, CV_32F);
+    cv::Mat horProfile(1, 200, CV_32F);
+    cv::reduce(imageResize, horProfile, 0, cv::REDUCE_AVG, CV_32F);
 
     return horProfile;
 }
 
-cv::Mat FeatureCalculator::calcVertProf(cv::Mat image, unsigned width, unsigned height)
+cv::Mat FeatureCalculator::calcVertProf()
 {
-    cv::Mat imageSquare(height, width, CV_32F);
-    cv::resize(image, imageSquare, cv::Size(width, height), 0, 0, cv::INTER_AREA);
-
-    cv::Mat vertProfile(height, 1, CV_32F);
-    cv::reduce(imageSquare, vertProfile, 1, cv::REDUCE_AVG, CV_32F);
+    cv::Mat vertProfile(200, 1, CV_32F);
+    cv::reduce(imageResize, vertProfile, 1, cv::REDUCE_AVG, CV_32F);
 
     return vertProfile;
 }
 
 cv::Mat FeatureCalculator::preprocessing(cv::Mat image, uint8_t bitsStored)
 {
-    // Normalize image by dividing the intensities by the highest possible intensity so that it's dynamic range is between 1.0
+    // Normalize image by dividing the intensities by the highest possible intensity so that it's dynamic range is between 0.0 and 1.0
     double highestPossibleIntensity = pow(2, bitsStored) - 1;
-    cv::Mat imageDouble(image.rows, image.cols, CV_64F);
     image.convertTo(imageDouble, CV_64F);
     imageDouble = imageDouble / highestPossibleIntensity;
 
-    cv::Mat imageNormFlat = imageDouble.reshape(1, 1);
-    cv::Mat imageNormSorted;
+    // Calculate the 1st and 99th percentile
+    imageNormFlat = imageDouble.reshape(1, 1);
+    cv::Mat imageNormSorted(imageNormFlat.size(), CV_64F);
     cv::sort(imageNormFlat, imageNormSorted, cv::SORT_ASCENDING);
 
     uint64_t nPixels = image.rows * image.cols;
@@ -176,34 +171,38 @@ cv::Mat FeatureCalculator::preprocessing(cv::Mat image, uint8_t bitsStored)
     double firstPercentile = imageNormSorted.at<double>(firstIndex);
     double nineninePercentile = imageNormSorted.at<double>(ninenineIndex);
 
+    // Perform the contrast stretch
     cv::Mat enhancedImage = (imageDouble - firstPercentile) / (nineninePercentile - firstPercentile) * 1.0;
     enhancedImage.setTo(0.0, imageDouble < firstPercentile);
     enhancedImage.setTo(1.0, imageDouble > nineninePercentile);
 
-    cv::Mat enhancedImageFloat(image.rows, image.cols, CV_32F);
-    enhancedImage.convertTo(enhancedImageFloat, CV_32F);
+    // Calculate the median
+    enhancedImage.convertTo(imageFloat, CV_32F);
 
-    cv::Mat enhancedImageFlat = enhancedImageFloat.reshape(1, 1);
+    cv::Mat enhancedImageFlat = imageFloat.reshape(1, 1);
     cv::Mat enhancedImageSorted;
     cv::sort(enhancedImageFlat, enhancedImageSorted, cv::SORT_ASCENDING);
 
+    // Threshold the image at median
     uint64_t medianIndex = 0.50 * nPixels;
     float median = enhancedImageSorted.at<float>(medianIndex);
 
     cv::Mat imageBinarized(image.rows, image.cols, CV_32F);
-    cv::threshold(enhancedImageFloat, imageBinarized, median, 1.0, cv::THRESH_BINARY);
+    cv::threshold(imageFloat, imageBinarized, median, 1.0, cv::THRESH_BINARY);
 
+    // Crop image
     cv::Mat points;
     cv::findNonZero(imageBinarized, points);
     cv::Rect bb = cv::boundingRect(points);
 
     cv::Mat imageCropped;
     if (!points.empty()) {
-        imageCropped = enhancedImageFloat(bb);
+        imageCropped = imageFloat(bb);
     } else {
-        imageCropped = enhancedImageFloat;
+        imageCropped = imageFloat;
     }
 
+    // Scale image
     float scalePercent = 0.5;
     unsigned width = imageCropped.cols * scalePercent;
     unsigned height = imageCropped.rows * scalePercent;
