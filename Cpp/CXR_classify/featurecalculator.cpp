@@ -1,5 +1,8 @@
 ﻿#include "featurecalculator.h"
 #include <chrono>
+#include <vector>
+#include <algorithm>
+#include <functional>
 
 FeatureCalculator::FeatureCalculator(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Stage(configHandler, dbHandler)
 {
@@ -43,7 +46,7 @@ void FeatureCalculator::calculateFeatures()
             uint64_t width = dcmImage->getWidth();
 
             imageUnsigned = cv::Mat(height, width, CV_16U, pixelData);
-            imageUnsigned.convertTo(imageDouble, CV_64F);
+            imageUnsigned.convertTo(imageFloat, CV_64F);
 
             // Get the bits_stored for scaling intensities back down from 16 bits to their bits_stored value
             DcmFileFormat file_format;
@@ -54,20 +57,20 @@ void FeatureCalculator::calculateFeatures()
             file_format.getDataset()->findAndGetOFString(bitsStoredKey, bitsStoredValue);
 
             if (bitsStoredValue == "12") {
-                imageDouble = imageDouble / 16.0; // 16 - 12 = 4 bits = 2^4 = 16
+                imageFloat = imageFloat / 16.0; // 16 - 12 = 4 bits = 2^4 = 16
             } else if (bitsStoredValue == "15") {
-                imageDouble = imageDouble / 2.0; // 16 - 15 = 1 bit = 2^1 = 2
+                imageFloat = imageFloat / 2.0; // 16 - 15 = 1 bit = 2^1 = 2
             } else if (bitsStoredValue == "10") {
-                imageDouble = imageDouble / 64.0; // 16 - 10 = 6 bits = 2^6 = 64
+                imageFloat = imageFloat / 64.0; // 16 - 10 = 6 bits = 2^6 = 64
             } else if (bitsStoredValue == "14") {
-                imageDouble = imageDouble / 2.0; // 16 - 14 = 2 bits = 2^2 = 4
+                imageFloat = imageFloat / 2.0; // 16 - 14 = 2 bits = 2^2 = 4
             } else {
                 // log "BITS STORED NOT EXPECTED"
             }
 
-            imageDouble.convertTo(imageUnsigned, CV_16U, 1, -0.5); // This rounding might cause inconsistencies
+            imageFloat.convertTo(imageUnsigned, CV_16U, 1, -0.5); // This rounding might cause inconsistencies
 
-            imageFloat = preprocessing(imageUnsigned, atoi(bitsStoredValue.c_str()));
+            imageFloat = preprocessing(atoi(bitsStoredValue.c_str()));
 
             cv::resize(imageFloat, imageResize, cv::Size(200, 200), 0, 0, cv::INTER_AREA);
 
@@ -106,16 +109,10 @@ void FeatureCalculator::store(std::string filePath, cv::Mat horProfile, cv::Mat 
         std::vector<float> vertVec(vertProfile.begin<float>(), vertProfile.end<float>());
 
         std::vector<std::string> horVecString(horVec.size());
-        std::transform(horVec.begin(), horVec.end(), horVecString.begin(), [](const float& val)
-        {
-            return std::to_string(val);
-        });
+        std::transform(horVec.begin(), horVec.end(), horVecString.begin(), [](const float& val){return std::to_string(val);});
 
         std::vector<std::string> vertVecString(vertVec.size());
-        std::transform(vertVec.begin(), vertVec.end(), vertVecString.begin(), [](const float& val)
-        {
-            return std::to_string(val);
-        });
+        std::transform(vertVec.begin(), vertVec.end(), vertVecString.begin(), [](const float& val){return std::to_string(val);});
 
         std::string sqlQuery = "INSERT INTO " + featTableName + " (file_name, file_path, hor_profile, vert_profile) VALUES ('" +
                 filePath.substr(filePath.find_last_of("/") + 1) + "', '" + filePath + "', '{" + boost::algorithm::join(horVecString, ", ") +
@@ -151,43 +148,41 @@ cv::Mat FeatureCalculator::calcVertProf()
     return vertProfile;
 }
 
-cv::Mat FeatureCalculator::preprocessing(cv::Mat image, uint8_t bitsStored)
+cv::Mat FeatureCalculator::preprocessing(uint8_t bitsStored)
 {
     // Normalize image by dividing the intensities by the highest possible intensity so that it's dynamic range is between 0.0 and 1.0
-    double highestPossibleIntensity = pow(2, bitsStored) - 1;
-    image.convertTo(imageDouble, CV_64F);
-    imageDouble = imageDouble / highestPossibleIntensity;
+    float highestPossibleIntensity = pow(2, bitsStored) - 1;
+    imageUnsigned.convertTo(imageFloat, CV_32F);
+    imageFloat = imageFloat / highestPossibleIntensity;
 
     // Calculate the 1st and 99th percentile
-    imageNormFlat = imageDouble.reshape(1, 1);
-    cv::Mat imageNormSorted(imageNormFlat.size(), CV_64F);
-    cv::sort(imageNormFlat, imageNormSorted, cv::SORT_ASCENDING);
+    imageFloatFlat = imageFloat.reshape(1, 1);
+    cv::Mat imageNormSorted(imageFloatFlat.size(), CV_32F);
+    cv::sort(imageFloatFlat, imageNormSorted, cv::SORT_ASCENDING);
 
-    uint64_t nPixels = image.rows * image.cols;
+    uint64_t nPixels = imageUnsigned.rows * imageUnsigned.cols;
 
     uint64_t firstIndex = 0.01 * nPixels;
     uint64_t ninenineIndex = 0.99 * nPixels;
 
-    double firstPercentile = imageNormSorted.at<double>(firstIndex);
-    double nineninePercentile = imageNormSorted.at<double>(ninenineIndex);
+    float firstPercentile = imageNormSorted.at<float>(firstIndex);
+    float nineninePercentile = imageNormSorted.at<float>(ninenineIndex);
 
     // Perform the contrast stretch
-    cv::Mat enhancedImage = (imageDouble - firstPercentile) / (nineninePercentile - firstPercentile) * 1.0;
-    enhancedImage.setTo(0.0, imageDouble < firstPercentile);
-    enhancedImage.setTo(1.0, imageDouble > nineninePercentile);
+    cv::Mat enhancedImage = (imageFloat - firstPercentile) / (nineninePercentile - firstPercentile) * 1.0;
+    enhancedImage.setTo(0.0, imageFloat < firstPercentile);
+    enhancedImage.setTo(1.0, imageFloat > nineninePercentile);
 
     // Calculate the median
-    enhancedImage.convertTo(imageFloat, CV_32F);
-
-    cv::Mat enhancedImageFlat = imageFloat.reshape(1, 1);
-    cv::Mat enhancedImageSorted;
-    cv::sort(enhancedImageFlat, enhancedImageSorted, cv::SORT_ASCENDING);
+    imageFloatFlat = enhancedImage.reshape(1, 1);
+    std::vector<float> vecFromMat;
+    imageFloatFlat.copyTo(vecFromMat);
+    std::nth_element(vecFromMat.begin(), vecFromMat.begin() + vecFromMat.size() * 0.5, vecFromMat.end());
+    float median = vecFromMat[vecFromMat.size() / 2];
 
     // Threshold the image at median
-    uint64_t medianIndex = 0.50 * nPixels;
-    float median = enhancedImageSorted.at<float>(medianIndex);
-
-    cv::Mat imageBinarized(image.rows, image.cols, CV_32F);
+    enhancedImage.convertTo(imageFloat, CV_32F);
+    cv::Mat imageBinarized(imageUnsigned.rows, imageUnsigned.cols, CV_32F);
     cv::threshold(imageFloat, imageBinarized, median, 1.0, cv::THRESH_BINARY);
 
     // Crop image
