@@ -54,7 +54,7 @@ HEADERS += \
     trainer.h \
     unpacker.h \
 
-LIBS += -ldl -lboost_system -lstdc++fs -lz -lbz2 -larchive -lpqxx -lpq -pthread -ldcmimgle -ldcmdata -loflog -lofstd -lopencv_core -lopencv_imgproc -fopenmp -larmadillo -lmlpack
+LIBS += -ldl -lboost_system -lstdc++fs -lz -lbz2 -larchive -lpqxx -lpq -pthread -ldcmimgle -ldcmdata -loflog -lofstd -lopencv_cudaarithm -lopencv_core -lopencv_imgproc -fopenmp -larmadillo -lmlpack
 
 DISTFILES += \
     columns_info.json \

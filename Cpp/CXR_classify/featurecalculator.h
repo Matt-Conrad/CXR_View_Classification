@@ -8,6 +8,7 @@
 #include <dcmtk/dcmdata/dcfilefo.h>
 #include <vector>
 #include "opencv2/imgproc.hpp"
+#include <opencv2/cudaarithm.hpp>
 #include "confighandler.h"
 #include "databasehandler.h"
 #include "stage.h"
