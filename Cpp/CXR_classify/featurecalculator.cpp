@@ -105,14 +105,14 @@ void FeatureCalculator::store(std::string filePath, cv::Mat horProfile, cv::Mat 
     try
     {
         // Create SQL query
-        std::vector<float> horVec(horProfile.begin<float>(), horProfile.end<float>());
-        std::vector<float> vertVec(vertProfile.begin<float>(), vertProfile.end<float>());
+        std::vector<double> horVec(horProfile.begin<double>(), horProfile.end<double>());
+        std::vector<double> vertVec(vertProfile.begin<double>(), vertProfile.end<double>());
 
         std::vector<std::string> horVecString(horVec.size());
-        std::transform(horVec.begin(), horVec.end(), horVecString.begin(), [](const float& val){return std::to_string(val);});
+        std::transform(horVec.begin(), horVec.end(), horVecString.begin(), [](const double& val){return std::to_string(val);});
 
         std::vector<std::string> vertVecString(vertVec.size());
-        std::transform(vertVec.begin(), vertVec.end(), vertVecString.begin(), [](const float& val){return std::to_string(val);});
+        std::transform(vertVec.begin(), vertVec.end(), vertVecString.begin(), [](const double& val){return std::to_string(val);});
 
         std::string sqlQuery = "INSERT INTO " + featTableName + " (file_name, file_path, hor_profile, vert_profile) VALUES ('" +
                 filePath.substr(filePath.find_last_of("/") + 1) + "', '" + filePath + "', '{" + boost::algorithm::join(horVecString, ", ") +
@@ -134,16 +134,16 @@ void FeatureCalculator::store(std::string filePath, cv::Mat horProfile, cv::Mat 
 
 cv::Mat FeatureCalculator::calcHorProf()
 {
-    cv::Mat horProfile(1, 200, CV_32F);
-    cv::cuda::reduce(imageResize, horProfile, 0, cv::REDUCE_AVG, CV_32F);
+    cv::Mat horProfile(1, 200, CV_64F);
+    cv::cuda::reduce(imageResize, horProfile, 0, cv::REDUCE_AVG, CV_64F);
 
     return horProfile;
 }
 
 cv::Mat FeatureCalculator::calcVertProf()
 {
-    cv::Mat vertProfile(200, 1, CV_32F);
-    cv::cuda::reduce(imageResize, vertProfile, 1, cv::REDUCE_AVG, CV_32F);
+    cv::Mat vertProfile(200, 1, CV_64F);
+    cv::cuda::reduce(imageResize, vertProfile, 1, cv::REDUCE_AVG, CV_64F);
 
     return vertProfile;
 }
@@ -152,12 +152,12 @@ cv::Mat FeatureCalculator::preprocessing(uint8_t bitsStored)
 {
     // Normalize image by dividing the intensities by the highest possible intensity so that it's dynamic range is between 0.0 and 1.0
     float highestPossibleIntensity = pow(2, bitsStored) - 1;
-    imageUnsigned.convertTo(imageFloat, CV_32F);
+    imageUnsigned.convertTo(imageFloat, CV_64F);
     imageFloat = imageFloat / highestPossibleIntensity;
 
     // Calculate the 1st and 99th percentile
     imageFloatFlat = imageFloat.reshape(1, 1);
-    cv::Mat imageNormSorted(imageFloatFlat.size(), CV_32F);
+    cv::Mat imageNormSorted(imageFloatFlat.size(), CV_64F);
     cv::sort(imageFloatFlat, imageNormSorted, cv::SORT_ASCENDING);
 
     uint64_t nPixels = imageUnsigned.rows * imageUnsigned.cols;
@@ -165,8 +165,8 @@ cv::Mat FeatureCalculator::preprocessing(uint8_t bitsStored)
     uint64_t firstIndex = 0.01 * nPixels;
     uint64_t ninenineIndex = 0.99 * nPixels;
 
-    float firstPercentile = imageNormSorted.at<float>(firstIndex);
-    float nineninePercentile = imageNormSorted.at<float>(ninenineIndex);
+    double firstPercentile = imageNormSorted.at<double>(firstIndex);
+    double nineninePercentile = imageNormSorted.at<double>(ninenineIndex);
 
     // Perform the contrast stretch
     cv::Mat enhancedImage = (imageFloat - firstPercentile) / (nineninePercentile - firstPercentile) * 1.0;
@@ -175,14 +175,14 @@ cv::Mat FeatureCalculator::preprocessing(uint8_t bitsStored)
 
     // Calculate the median
     imageFloatFlat = enhancedImage.reshape(1, 1);
-    std::vector<float> vecFromMat;
+    std::vector<double> vecFromMat;
     imageFloatFlat.copyTo(vecFromMat);
     std::nth_element(vecFromMat.begin(), vecFromMat.begin() + vecFromMat.size() * 0.5, vecFromMat.end());
-    float median = vecFromMat[vecFromMat.size() / 2];
+    double median = vecFromMat[vecFromMat.size() / 2];
 
     // Threshold the image at median
-    enhancedImage.convertTo(imageFloat, CV_32F);
-    cv::Mat imageBinarized(imageUnsigned.rows, imageUnsigned.cols, CV_32F);
+    enhancedImage.convertTo(imageFloat, CV_64F);
+    cv::Mat imageBinarized(imageUnsigned.rows, imageUnsigned.cols, CV_64F);
     cv::threshold(imageFloat, imageBinarized, median, 1.0, cv::THRESH_BINARY);
 
     // Crop image
@@ -198,11 +198,11 @@ cv::Mat FeatureCalculator::preprocessing(uint8_t bitsStored)
     }
 
     // Scale image
-    float scalePercent = 0.5;
+    double scalePercent = 0.5;
     unsigned width = imageCropped.cols * scalePercent;
     unsigned height = imageCropped.rows * scalePercent;
 
-    cv::Mat imageDownsize(height, width, CV_32F);
+    cv::Mat imageDownsize(height, width, CV_64F);
 
     cv::resize(imageCropped, imageDownsize, cv::Size(width, height), 0.5, 0.5, cv::INTER_AREA);
 
