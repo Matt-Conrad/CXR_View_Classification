@@ -1,5 +1,6 @@
 """Contains GUI code for the application."""
 import logging
+from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QProgressBar, QLabel
 from buttons import DownloadButton, UnpackButton, StoreButton, CalculateButton, LabelButton, ClassificationButton
 
@@ -67,6 +68,7 @@ class MainWindow(QMainWindow):
         """Updates the text."""
         self.msg_box.setText(text)
 
+    @pyqtSlot()
     def stage1_ui(self):
         # User in download phase
         self.download_btn.setDisabled(False)
@@ -76,6 +78,7 @@ class MainWindow(QMainWindow):
         self.label_btn.setDisabled(True)
         self.classify_btn.setDisabled(True)
 
+    @pyqtSlot()
     def stage2_ui(self):
         # User in unpack phase
         self.download_btn.setDisabled(True)
@@ -85,6 +88,7 @@ class MainWindow(QMainWindow):
         self.label_btn.setDisabled(True)
         self.classify_btn.setDisabled(True)
 
+    @pyqtSlot()
     def stage3_ui(self):
         # User in store metadata phase
         self.download_btn.setDisabled(True)
@@ -94,6 +98,7 @@ class MainWindow(QMainWindow):
         self.label_btn.setDisabled(True)
         self.classify_btn.setDisabled(True)
 
+    @pyqtSlot()
     def stage4_ui(self):
         # User in calculate features phase
         self.download_btn.setDisabled(True)
@@ -103,6 +108,7 @@ class MainWindow(QMainWindow):
         self.label_btn.setDisabled(True)
         self.classify_btn.setDisabled(True)
 
+    @pyqtSlot()
     def stage5_ui(self):
         # User in labeling phase
         self.download_btn.setDisabled(True)
@@ -112,6 +118,7 @@ class MainWindow(QMainWindow):
         self.label_btn.setDisabled(False)
         self.classify_btn.setDisabled(True)
 
+    @pyqtSlot()
     def stage6_ui(self):
         # User in classification phase
         self.download_btn.setDisabled(True)

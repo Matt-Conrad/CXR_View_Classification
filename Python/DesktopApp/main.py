@@ -2,7 +2,7 @@
 import logging
 import os
 import sys
-from PyQt5.QtCore import QThreadPool
+from PyQt5.QtCore import QThreadPool, QObject, pyqtSignal
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QIcon
 from download_dataset import DatasetController
@@ -23,10 +23,19 @@ def run_app():
     cont = Controller()
     app.exec_()
 
-class Controller():
+class Controller(QObject):
     """Controller class that controls the logic of the application."""
+    # Signals
+    initStage1 = pyqtSignal()
+    initStage2 = pyqtSignal()
+    initStage3 = pyqtSignal()
+    initStage4 = pyqtSignal()
+    initStage5 = pyqtSignal()
+    initStage6 = pyqtSignal()
+
     def __init__(self):
         logging.info('***INITIALIZING CONTROLLER***')
+        QObject.__init__(self)
 
         # String variables
         self.config_file_name = CONFIG_NAME
@@ -56,18 +65,25 @@ class Controller():
         # Set icon
         self.main_app.setWindowIcon(QIcon(self.dataset_controller.parent_folder + '/' + 'icon.jpg'))
 
-        if not os.path.exists(self.dataset_controller.filename) and not os.path.isdir(self.dataset_controller.folder_name) and not bdo.table_exists(self.config_file_name, self.db_name, self.meta_table_name): # If the TGZ hasn't been downloaded
-            self.main_app.stage1_ui()
-        elif os.path.exists(self.dataset_controller.filename) and not os.path.isdir(self.dataset_controller.folder_name) and not bdo.table_exists(self.config_file_name, self.db_name, self.meta_table_name):
-            self.main_app.stage2_ui()
-        elif os.path.exists(self.dataset_controller.filename) and os.path.isdir(self.dataset_controller.folder_name) and not bdo.table_exists(self.config_file_name, self.db_name, self.meta_table_name):
-            self.main_app.stage3_ui()
-        elif os.path.exists(self.dataset_controller.filename) and os.path.isdir(self.dataset_controller.folder_name) and bdo.table_exists(self.config_file_name, self.db_name, self.meta_table_name) and not bdo.table_exists(self.config_file_name, self.db_name, self.feat_table_name):
-            self.main_app.stage4_ui()
-        elif os.path.exists(self.dataset_controller.filename) and os.path.isdir(self.dataset_controller.folder_name) and bdo.table_exists(self.config_file_name, self.db_name, self.feat_table_name) and bdo.table_exists(self.config_file_name, self.db_name, self.feat_table_name) and not bdo.table_exists(self.config_file_name, self.db_name, self.label_table_name):
-            self.main_app.stage5_ui()
-        elif os.path.exists(self.dataset_controller.filename) and os.path.isdir(self.dataset_controller.folder_name) and bdo.table_exists(self.config_file_name, self.db_name, self.feat_table_name) and bdo.table_exists(self.config_file_name, self.db_name, self.feat_table_name) and bdo.table_exists(self.config_file_name, self.db_name, self.feat_table_name):
-            self.main_app.stage6_ui()
+        self.initStage1.connect(self.main_app.stage1_ui)
+        self.initStage2.connect(self.main_app.stage2_ui)
+        self.initStage3.connect(self.main_app.stage3_ui)
+        self.initStage4.connect(self.main_app.stage4_ui)
+        self.initStage5.connect(self.main_app.stage5_ui)
+        self.initStage6.connect(self.main_app.stage6_ui)
+
+        if bdo.table_exists(self.config_file_name, self.db_name, self.label_table_name):
+            self.initStage6.emit()
+        elif bdo.table_exists(self.config_file_name, self.db_name, self.feat_table_name):
+            self.initStage5.emit()
+        elif bdo.table_exists(self.config_file_name, self.db_name, self.meta_table_name):
+            self.initStage4.emit()
+        elif os.path.isdir(self.dataset_controller.folder_name):
+            self.initStage3.emit()
+        elif os.path.exists(self.dataset_controller.filename):
+            self.initStage2.emit()
+        else:
+            self.initStage1.emit()
 
     def log_gui_state(self, debug_level):
         """Log the state of the feedback in the GUI."""
