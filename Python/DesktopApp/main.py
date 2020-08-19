@@ -6,9 +6,13 @@ from PyQt5.QtCore import QThreadPool, QObject, pyqtSignal
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QIcon
 from download_dataset import DatasetController
+from downloader import Downloader
+from unpacker import Unpacker, UnpackUpdater
+from config_handler import ConfigHandler
 import metadata_to_db.basic_db_ops as bdo
 import metadata_to_db.config as config
 from main_window import MainWindow
+from expected_sizes import EXPECTED_NUM_FILES, EXPECTED_SIZES
 
 SOURCE_URL = {
         'subset': 'https://github.com/Matt-Conrad/CXR_View_Classification/raw/develop/datasets/NLMCXR_subset_dataset.tgz',
@@ -36,6 +40,14 @@ class Controller(QObject):
     def __init__(self):
         logging.info('***INITIALIZING CONTROLLER***')
         QObject.__init__(self)
+
+        self.configHandler = ConfigHandler("./config.ini")
+        self.expected_size = EXPECTED_SIZES[self.configHandler.getDatasetType()]
+        self.expected_num_files = EXPECTED_NUM_FILES[self.configHandler.getDatasetType()]
+
+        self.downloader = Downloader(self.configHandler)
+        self.unpacker = Unpacker(self.configHandler)
+        self.updater = UnpackUpdater(self.configHandler, self.expected_num_files)
 
         # String variables
         self.config_file_name = CONFIG_NAME

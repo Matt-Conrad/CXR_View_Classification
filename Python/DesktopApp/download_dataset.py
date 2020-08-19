@@ -66,10 +66,3 @@ class DatasetController:
                         f.write(chunk)
                     
         self.get_dataset()
-
-    def unpack(self):
-        """Unpack the dataset from the TGZ and put it in a folder."""
-        logging.info('Unpacking dataset from %s', self.filename_fullpath)
-        tf = tarfile.open(self.filename_fullpath)
-        tf.extractall(path=self.folder_full_path)
-        logging.info('Done unpacking')
