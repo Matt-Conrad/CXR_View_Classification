@@ -2,8 +2,7 @@
 import logging
 from PyQt5.QtCore import pyqtSlot, QThread
 from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QProgressBar, QLabel, QPushButton
-from buttons import CalculateButton, LabelButton, ClassificationButton
-from downloader import Downloader
+from buttons import LabelButton, ClassificationButton
 from unpacker import Unpacker, UnpackUpdater
 
 class MainWindow(QMainWindow):
@@ -44,7 +43,7 @@ class MainWindow(QMainWindow):
         self.store_btn = QPushButton("Store Metadata", self)
         upper_buttons.addWidget(self.store_btn)
 
-        self.features_btn = CalculateButton('Calculate Features', self, self.controller)
+        self.features_btn = QPushButton("Calculate Features", self)
         lower_buttons.addWidget(self.features_btn)
 
         self.label_btn = LabelButton('Label Images', self, self.controller)
@@ -159,7 +158,6 @@ class MainWindow(QMainWindow):
         self.controller.storer.finished.connect(self.stage4_ui)
         self.controller.storer.finished.connect(self.controller.storer.deleteLater)
 
-
     @pyqtSlot()
     def stage4_ui(self):
         # User in calculate features phase
@@ -169,6 +167,15 @@ class MainWindow(QMainWindow):
         self.features_btn.setDisabled(False)
         self.label_btn.setDisabled(True)
         self.classify_btn.setDisabled(True)
+
+        self.features_btn.clicked.connect(self.controller.featCalc.calculate_features)
+
+        self.controller.featCalc.attemptUpdateProBarBounds.connect(self.update_pro_bar_bounds)
+        self.controller.featCalc.attemptUpdateProBarValue.connect(self.update_pro_bar_val)
+        self.controller.featCalc.attemptUpdateText.connect(self.update_text)
+
+        self.controller.featCalc.finished.connect(self.stage5_ui)
+        self.controller.featCalc.finished.connect(self.controller.featCalc.deleteLater)
 
     @pyqtSlot()
     def stage5_ui(self):

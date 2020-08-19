@@ -173,7 +173,7 @@ class DatabaseHandler:
                 logging.debug('Database connection closed.')
         return result
 
-    def count_records(db_config_file_name, db_name, table_name):
+    def count_records(self, table_name):
         """Checks the count of records in the table in a DB in a PostgreSQL DB server.
 
         Parameters
@@ -190,13 +190,12 @@ class DatabaseHandler:
         int
             Return the count of records in the table
         """
-        logging.debug('Counting the number of records in table %s in DB %s ', table_name, db_name)
+        logging.debug('Counting the number of records in table %s in DB %s ', table_name, self.dbInfo['database'])
         conn = None
         result = None
         try:
             # read connection parameters
-            params = config(filename=db_config_file_name, section='postgresql')
-            params['database'] = db_name
+            params = self.dbInfo.copy()
 
             # connect to the PostgreSQL server
             logging.debug('Connecting to the PostgreSQL database...')
