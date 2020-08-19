@@ -7,7 +7,6 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QIcon
 from download_dataset import DatasetController
 from downloader import Downloader
-from unpacker import Unpacker, UnpackUpdater
 from config_handler import ConfigHandler
 import metadata_to_db.basic_db_ops as bdo
 import metadata_to_db.config as config
@@ -46,8 +45,6 @@ class Controller(QObject):
         self.expected_num_files = EXPECTED_NUM_FILES[self.configHandler.getDatasetType()]
 
         self.downloader = Downloader(self.configHandler)
-        self.unpacker = Unpacker(self.configHandler)
-        self.updater = UnpackUpdater(self.configHandler, self.expected_num_files)
 
         # String variables
         self.config_file_name = CONFIG_NAME

@@ -4,6 +4,7 @@ from PyQt5.QtCore import pyqtSlot, QThread
 from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QProgressBar, QLabel, QPushButton
 from buttons import StoreButton, CalculateButton, LabelButton, ClassificationButton
 from downloader import Downloader
+from unpacker import Unpacker, UnpackUpdater
 
 class MainWindow(QMainWindow):
     """Contains GUI code for the application."""
@@ -123,29 +124,32 @@ class MainWindow(QMainWindow):
         self.label_btn.setDisabled(True)
         self.classify_btn.setDisabled(True)
 
+        self.unpacker = Unpacker(self.controller.configHandler)
+        self.updater = UnpackUpdater(self.controller.configHandler, self.controller.expected_num_files)
+
         # Unpacker
         self.unpackThread = QThread()
-        self.controller.unpacker.moveToThread(self.unpackThread)
+        self.unpacker.moveToThread(self.unpackThread)
         self.unpack_btn.clicked.connect(self.unpackThread.start)
-        self.unpackThread.started.connect(self.controller.unpacker.unpack)
+        self.unpackThread.started.connect(self.unpacker.unpack)
 
-        self.controller.unpacker.finished.connect(self.unpackThread.quit)
-        self.controller.unpacker.finished.connect(self.controller.unpacker.deleteLater)
+        self.unpacker.finished.connect(self.unpackThread.quit)
+        self.unpacker.finished.connect(self.unpacker.deleteLater)
         self.unpackThread.finished.connect(self.unpackThread.deleteLater)
 
         # Unpack Updater
         self.updaterThread = QThread()
-        self.controller.updater.moveToThread(self.updaterThread)
+        self.updater.moveToThread(self.updaterThread)
         self.unpack_btn.clicked.connect(self.updaterThread.start)
-        self.updaterThread.started.connect(self.controller.updater.update)
+        self.updaterThread.started.connect(self.updater.update)
 
-        self.controller.updater.attemptUpdateProBarBounds.connect(self.update_pro_bar_bounds)
-        self.controller.updater.attemptUpdateProBarValue.connect(self.update_pro_bar_val)
-        self.controller.updater.attemptUpdateText.connect(self.update_text)
+        self.updater.attemptUpdateProBarBounds.connect(self.update_pro_bar_bounds)
+        self.updater.attemptUpdateProBarValue.connect(self.update_pro_bar_val)
+        self.updater.attemptUpdateText.connect(self.update_text)
         
-        self.controller.updater.finished.connect(self.stage3_ui)
-        self.controller.updater.finished.connect(self.updaterThread.quit)
-        self.controller.updater.finished.connect(self.controller.updater.deleteLater)
+        self.updater.finished.connect(self.stage3_ui)
+        self.updater.finished.connect(self.updaterThread.quit)
+        self.updater.finished.connect(self.updater.deleteLater)
         self.updaterThread.finished.connect(self.updaterThread.deleteLater)
 
     @pyqtSlot()
