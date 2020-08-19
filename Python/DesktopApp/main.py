@@ -7,7 +7,9 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QIcon
 from download_dataset import DatasetController
 from downloader import Downloader
+from storer import Storer
 from config_handler import ConfigHandler
+from database_handler import DatabaseHandler
 import metadata_to_db.basic_db_ops as bdo
 import metadata_to_db.config as config
 from main_window import MainWindow
@@ -41,10 +43,12 @@ class Controller(QObject):
         QObject.__init__(self)
 
         self.configHandler = ConfigHandler("./config.ini")
+        self.dbHandler = DatabaseHandler(self.configHandler)
         self.expected_size = EXPECTED_SIZES[self.configHandler.getDatasetType()]
         self.expected_num_files = EXPECTED_NUM_FILES[self.configHandler.getDatasetType()]
 
         self.downloader = Downloader(self.configHandler)
+        self.storer = Storer(self.configHandler, self.dbHandler)
 
         # String variables
         self.config_file_name = CONFIG_NAME

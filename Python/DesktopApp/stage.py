@@ -9,9 +9,10 @@ class Stage(QObject):
     attemptUpdateProBarBounds = pyqtSignal(int, int)
     attemptUpdateText = pyqtSignal(str)
 
-    def __init__(self, configHandler):
+    def __init__(self, configHandler, dbHandler=None):
         QObject.__init__(self)
         self.configHandler = configHandler
+        self.dbHandler = dbHandler
 
         self.expected_size = EXPECTED_SIZES[self.configHandler.getDatasetType()]
         self.expected_num_files = EXPECTED_NUM_FILES[self.configHandler.getDatasetType()]

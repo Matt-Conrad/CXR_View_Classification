@@ -34,3 +34,6 @@ class ConfigHandler:
 
     def getParentFolder(self):
         return config.config(filename=self.configFilename, section='misc')['parent_folder']
+
+    def getConfigFilename(self):
+        return self.configFilename

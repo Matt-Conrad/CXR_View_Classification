@@ -2,7 +2,7 @@
 import logging
 from PyQt5.QtCore import pyqtSlot, QThread
 from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QProgressBar, QLabel, QPushButton
-from buttons import StoreButton, CalculateButton, LabelButton, ClassificationButton
+from buttons import CalculateButton, LabelButton, ClassificationButton
 from downloader import Downloader
 from unpacker import Unpacker, UnpackUpdater
 
@@ -41,7 +41,7 @@ class MainWindow(QMainWindow):
         self.unpack_btn = QPushButton("Unpack", self)
         upper_buttons.addWidget(self.unpack_btn)
 
-        self.store_btn = StoreButton('Store Metadata', self, self.controller)
+        self.store_btn = QPushButton("Store Metadata", self)
         upper_buttons.addWidget(self.store_btn)
 
         self.features_btn = CalculateButton('Calculate Features', self, self.controller)
@@ -89,16 +89,6 @@ class MainWindow(QMainWindow):
         self.label_btn.setDisabled(True)
         self.classify_btn.setDisabled(True)
 
-        # logging.debug('Buttons disabled')
-        # downloadThread = QThread()
-
-        # logging.debug('Download thread started')
-        # self.controller.downloader.moveToThread(downloadThread)
-        # self.download_btn.clicked.connect(downloadThread.start)
-
-        # logging.debug('Downloader moved to thread')
-        # downloadThread.started.connect(self.controller.downloader.get_dataset)
-
         self.download_btn.clicked.connect(self.controller.downloader.get_dataset)
 
         logging.debug('Thread connected to downloader')
@@ -107,10 +97,8 @@ class MainWindow(QMainWindow):
         self.controller.downloader.attemptUpdateText.connect(self.update_text)
 
         logging.debug('Downloader signals connect to main thread')
-        # self.controller.downloader.finished.connect(downloadThread.quit)
         self.controller.downloader.finished.connect(self.stage2_ui)
         self.controller.downloader.finished.connect(self.controller.downloader.deleteLater)
-        # downloadThread.finished.connect(downloadThread.deleteLater)
 
         logging.info('***Stage 1 initialized***')
 
@@ -161,6 +149,16 @@ class MainWindow(QMainWindow):
         self.features_btn.setDisabled(True)
         self.label_btn.setDisabled(True)
         self.classify_btn.setDisabled(True)
+
+        self.store_btn.clicked.connect(self.controller.storer.dicomToDb)
+
+        self.controller.storer.attemptUpdateProBarBounds.connect(self.update_pro_bar_bounds)
+        self.controller.storer.attemptUpdateProBarValue.connect(self.update_pro_bar_val)
+        self.controller.storer.attemptUpdateText.connect(self.update_text)
+
+        self.controller.storer.finished.connect(self.stage4_ui)
+        self.controller.storer.finished.connect(self.controller.storer.deleteLater)
+
 
     @pyqtSlot()
     def stage4_ui(self):
