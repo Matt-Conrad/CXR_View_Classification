@@ -25,17 +25,11 @@ class Unpacker(Stage):
         logging.info('Done unpacking')
 
     
-class UnpackUpdater(QObject):
+class UnpackUpdater(Stage):
     """Controls logic of getting the dataset from online sources."""
-    attemptUpdateProBarValue = pyqtSignal(int)
-    attemptUpdateText = pyqtSignal(str)
-    attemptUpdateProBarBounds = pyqtSignal(int, int)
-    finished = pyqtSignal()
-
-    def __init__(self, configHandler, expected_num_files):
-        QObject.__init__(self)
+    def __init__(self, configHandler):
+        Stage.__init__(self, configHandler)
         self.folderRelPath = "./" + configHandler.getDatasetName()
-        self.expected_num_files = expected_num_files
 
     @pyqtSlot()
     def update(self):

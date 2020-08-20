@@ -1,6 +1,5 @@
 from stage import Stage
 from PyQt5.QtCore import pyqtSlot
-from LabelImages import LabelImageApplication
 import logging
 import csv
 import numpy as np

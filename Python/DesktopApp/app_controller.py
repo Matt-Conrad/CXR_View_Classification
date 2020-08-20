@@ -46,8 +46,6 @@ class Controller(QObject):
 
         self.configHandler = ConfigHandler("./config.ini")
         self.dbHandler = DatabaseHandler(self.configHandler)
-        self.expected_size = EXPECTED_SIZES[self.configHandler.getDatasetType()]
-        self.expected_num_files = EXPECTED_NUM_FILES[self.configHandler.getDatasetType()]
 
         self.downloader = Downloader(self.configHandler)
         self.storer = Storer(self.configHandler, self.dbHandler)
@@ -55,25 +53,11 @@ class Controller(QObject):
         self.labeler = Labeler(self.configHandler, self.dbHandler)
         self.trainer = Trainer(self.configHandler, self.dbHandler)
 
-        # String variables
-        self.config_file_name = CONFIG_NAME
-        self.dataset = config.config(filename=self.config_file_name, section='dataset_info')['dataset']
-        self.url = SOURCE_URL[self.dataset]
-
         # Object variables
         self.main_app = MainWindow(self)
-        self.label_app = None
-        self.classifier = None
-
-        # From config file
-        self.db_name = config.config(filename=self.config_file_name, section='postgresql')['database']
-        self.meta_table_name = config.config(filename=self.config_file_name, section='table_info')['metadata_table_name']
-        self.feat_table_name = config.config(filename=self.config_file_name, section='table_info')['features_table_name']
-        self.label_table_name = config.config(filename=self.config_file_name, section='table_info')['label_table_name']
 
         # Set up the GUI
         self.init_gui_state()
-        self.threadpool = QThreadPool()
         logging.info('***CONTROLLER INITIALIZED***')
 
     ### GUI HELPER FUNCTIONS
@@ -89,11 +73,11 @@ class Controller(QObject):
         self.initStage5.connect(self.main_app.stage5_ui)
         self.initStage6.connect(self.main_app.stage6_ui)
 
-        if bdo.table_exists(self.config_file_name, self.db_name, self.label_table_name):
+        if bdo.table_exists(self.configHandler.getConfigFilename(), self.configHandler.getDbInfo()["database"], self.configHandler.getTableName("label")):
             self.initStage6.emit()
-        elif bdo.table_exists(self.config_file_name, self.db_name, self.feat_table_name):
+        elif bdo.table_exists(self.configHandler.getConfigFilename(), self.configHandler.getDbInfo()["database"], self.configHandler.getTableName("features")):
             self.initStage5.emit()
-        elif bdo.table_exists(self.config_file_name, self.db_name, self.meta_table_name):
+        elif bdo.table_exists(self.configHandler.getConfigFilename(), self.configHandler.getDbInfo()["database"], self.configHandler.getTableName("metadata")):
             self.initStage4.emit()
         elif os.path.isdir(self.configHandler.getDatasetName()):
             self.initStage3.emit()

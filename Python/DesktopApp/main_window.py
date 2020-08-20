@@ -111,7 +111,7 @@ class MainWindow(QMainWindow):
         self.classify_btn.setDisabled(True)
 
         self.unpacker = Unpacker(self.controller.configHandler)
-        self.updater = UnpackUpdater(self.controller.configHandler, self.controller.expected_num_files)
+        self.updater = UnpackUpdater(self.controller.configHandler)
 
         # Unpacker
         self.unpackThread = QThread()
@@ -186,14 +186,22 @@ class MainWindow(QMainWindow):
         self.label_btn.setDisabled(False)
         self.classify_btn.setDisabled(True)
 
-        self.label_btn.clicked.connect(self.controller.labeler.label_images)
+        # Set the progress region
+        if self.controller.configHandler.getDatasetType() == 'subset':
+            # Open new window with the labeling app
+            self.label_btn.clicked.connect(self.controller.labeler.fill_window)
+            self.controller.labeler.attemptUpdateText.connect(self.update_text)
+            self.controller.labeler.finished.connect(self.stage6_ui)
+            self.controller.labeler.finished.connect(self.controller.labeler.deleteLater)
 
-        self.controller.labeler.attemptUpdateProBarBounds.connect(self.update_pro_bar_bounds)
-        self.controller.labeler.attemptUpdateProBarValue.connect(self.update_pro_bar_val)
-        self.controller.labeler.attemptUpdateText.connect(self.update_text)
-
-        self.controller.labeler.finished.connect(self.stage6_ui)
-        self.controller.labeler.finished.connect(self.controller.labeler.deleteLater)
+        elif self.configHandler.getDatasetType() == 'full_set':
+            bdo.import_image_label_data(self.configHandler.getTableName('label'), self.configHandler.getCsvPath(), self.configHandler.getColumnsInfoPath(), self.configHandler.getConfigFilename(), 'labels')
+            logging.info('***END LABELING PHASE***')
+            self.attemptUpdateText.emit('Done importing labels')
+            self.attemptUpdateProBarValue.emit(self.expected_num_files)
+            self.finished.emit()
+        else:
+            raise ValueError('Value must be one of the keys in SOURCE_URL')
 
     @pyqtSlot()
     def stage6_ui(self):

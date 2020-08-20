@@ -24,9 +24,6 @@ class Storer(Stage):
 
     @pyqtSlot()
     def dicomToDb(self):
-        self.dicom_to_db(self.configHandler.getColumnsInfoPath(), self.configHandler.getConfigFilename(), "elements")
-
-    def dicom_to_db(self, elements_json, config_file_name, section_name):
         """Move all desired DCM tag-values from a directory full of DCMs into a PostgreSQL DB.
 
         This function goes through all of the DCM files in the directory specified in the 'postgresql'
@@ -48,6 +45,9 @@ class Storer(Stage):
         # Create table if it isn't already there
         db_name = self.dbHandler.dbInfo['database']
         table_name = self.configHandler.getTableName('metadata')
+        elements_json = self.configHandler.getColumnsInfoPath()
+        config_file_name =  self.configHandler.getConfigFilename()
+        section_name = "elements"
 
         if not self.dbHandler.table_exists(table_name):
             self.dbHandler.add_table_to_db(table_name, elements_json, "elements")
