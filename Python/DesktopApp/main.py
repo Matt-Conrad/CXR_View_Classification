@@ -9,6 +9,7 @@ from download_dataset import DatasetController
 from downloader import Downloader
 from storer import Storer
 from labeler import Labeler
+from trainer import Trainer
 from feature_calculator import FeatureCalculator
 from config_handler import ConfigHandler
 from database_handler import DatabaseHandler
@@ -53,6 +54,7 @@ class Controller(QObject):
         self.storer = Storer(self.configHandler, self.dbHandler)
         self.featCalc = FeatureCalculator(self.configHandler, self.dbHandler)
         self.labeler = Labeler(self.configHandler, self.dbHandler)
+        self.trainer = Trainer(self.configHandler, self.dbHandler)
 
         # String variables
         self.config_file_name = CONFIG_NAME

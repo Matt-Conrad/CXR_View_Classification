@@ -2,7 +2,6 @@
 import logging
 from PyQt5.QtCore import pyqtSlot, QThread
 from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QProgressBar, QLabel, QPushButton
-from buttons import ClassificationButton
 from unpacker import Unpacker, UnpackUpdater
 
 class MainWindow(QMainWindow):
@@ -49,7 +48,7 @@ class MainWindow(QMainWindow):
         self.label_btn = QPushButton("Label Images", self)
         lower_buttons.addWidget(self.label_btn)
 
-        self.classify_btn = ClassificationButton('Train Classifier', self, self.controller)
+        self.classify_btn = QPushButton("Train Classifier", self)
         lower_buttons.addWidget(self.classify_btn)
         
         # Stack the feedback dashboard over the button array
@@ -205,3 +204,11 @@ class MainWindow(QMainWindow):
         self.features_btn.setDisabled(True)
         self.label_btn.setDisabled(True)
         self.classify_btn.setDisabled(False)
+
+        self.classify_btn.clicked.connect(self.controller.trainer.train)
+
+        self.controller.trainer.attemptUpdateProBarBounds.connect(self.update_pro_bar_bounds)
+        self.controller.trainer.attemptUpdateProBarValue.connect(self.update_pro_bar_val)
+        self.controller.trainer.attemptUpdateText.connect(self.update_text)
+
+        self.controller.trainer.finished.connect(self.controller.trainer.deleteLater)
