@@ -9,11 +9,19 @@ import cv2
 import numpy as np
 from PyQt5.QtWidgets import QWidget, QLabel, QPushButton
 from PyQt5.QtGui import QPixmap, QImage
+from PyQt5.QtCore import pyqtSignal
 from metadata_to_db.config import config
+import metadata_to_db.basic_db_ops as bdo
 
 class LabelImageApplication(QWidget):
     """Contains code for the application used to assist in labeling the data."""
-    def __init__(self, config_file_name):
+    # Signals
+    finished = pyqtSignal()
+    attemptUpdateProBarValue = pyqtSignal(int)
+    attemptUpdateProBarBounds = pyqtSignal(int, int)
+    attemptUpdateText = pyqtSignal(str)
+
+    def __init__(self, configHandler, dbHandler):
         """App constructor.
 
         Parameters
@@ -31,9 +39,10 @@ class LabelImageApplication(QWidget):
         self.conn = None
         self.cur = None # cursor to get image list
         self.cur2 = None # cursor to store labels
-        self.config_file_name = config_file_name
         self.label = QLabel(self)
         self.record = None
+        self.configHandler = configHandler
+        self.dbHandler = dbHandler
         # # DB Preparation
         self.connect()
         self.query_image_list()
@@ -53,7 +62,7 @@ class LabelImageApplication(QWidget):
         try:
             logging.info('Opening connection')
             # connect to the PostgreSQL server
-            params = config(filename=self.config_file_name, section='postgresql')
+            params = config(filename=self.configHandler.getConfigFilename(), section='postgresql')
             self.conn = psycopg2.connect(**params)
             self.cur = self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             self.cur2 = self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
@@ -108,9 +117,17 @@ class LabelImageApplication(QWidget):
         # Get the next available record from the image list query
         logging.debug('Displaying next image')
         self.record = self.cur.fetchone()
+
+        storedRecords = bdo.count_records(self.configHandler.getConfigFilename(), self.configHandler.getDbInfo()['database'], self.configHandler.getTableName('label'))
+        self.attemptUpdateProBarValue.emit(storedRecords)
+
         if self.record is None:
             logging.info('End of query, deleting labeling app')
             self.close_label_app()
+            self.finished.emit()
+            self.attemptUpdateText.emit("Done labeling images")
+            storedRecords = bdo.count_records(self.configHandler.getConfigFilename(), self.configHandler.getDbInfo()['database'], self.configHandler.getTableName('label'))
+            self.attemptUpdateProBarValue.emit(storedRecords)
         else:
             # Update the window title with the image count
             self.count += 1
@@ -153,7 +170,7 @@ class LabelImageApplication(QWidget):
     def query_image_list(self):
         """Run a query to get the list of all images in the DB."""
         logging.debug('Attempting to query records for image list')
-        metadata_table_name = config(filename=self.config_file_name, section='table_info')['metadata_table_name']
+        metadata_table_name = config(filename=self.configHandler.getConfigFilename(), section='table_info')['metadata_table_name']
         sql_query = 'SELECT file_path, bits_stored FROM ' + metadata_table_name + ' ORDER BY file_path;'
         try:
             logging.debug('Getting the image list')
@@ -171,7 +188,7 @@ class LabelImageApplication(QWidget):
             The decision of whether the label for the current image is 'L' (lateral) or 'F' (frontal)
         """
         # Create the SQL query to be used
-        label_table_name = config(filename=self.config_file_name, section='table_info')['label_table_name']
+        label_table_name = config(filename=self.configHandler.getConfigFilename(), section='table_info')['label_table_name']
         sql_query = 'INSERT INTO ' + label_table_name + ' (file_name, file_path, image_view) VALUES (\'' + self.record['file_path'].split(os.sep)[-1] + '\', \'' + self.record['file_path'] + '\', \'' + decision + '\');'
         try:
             logging.debug('Storing label')

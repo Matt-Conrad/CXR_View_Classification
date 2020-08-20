@@ -2,7 +2,7 @@
 import logging
 from PyQt5.QtCore import pyqtSlot, QThread
 from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QProgressBar, QLabel, QPushButton
-from buttons import LabelButton, ClassificationButton
+from buttons import ClassificationButton
 from unpacker import Unpacker, UnpackUpdater
 
 class MainWindow(QMainWindow):
@@ -46,7 +46,7 @@ class MainWindow(QMainWindow):
         self.features_btn = QPushButton("Calculate Features", self)
         lower_buttons.addWidget(self.features_btn)
 
-        self.label_btn = LabelButton('Label Images', self, self.controller)
+        self.label_btn = QPushButton("Label Images", self)
         lower_buttons.addWidget(self.label_btn)
 
         self.classify_btn = ClassificationButton('Train Classifier', self, self.controller)
@@ -186,6 +186,15 @@ class MainWindow(QMainWindow):
         self.features_btn.setDisabled(True)
         self.label_btn.setDisabled(False)
         self.classify_btn.setDisabled(True)
+
+        self.label_btn.clicked.connect(self.controller.labeler.label_images)
+
+        self.controller.labeler.attemptUpdateProBarBounds.connect(self.update_pro_bar_bounds)
+        self.controller.labeler.attemptUpdateProBarValue.connect(self.update_pro_bar_val)
+        self.controller.labeler.attemptUpdateText.connect(self.update_text)
+
+        self.controller.labeler.finished.connect(self.stage6_ui)
+        self.controller.labeler.finished.connect(self.controller.labeler.deleteLater)
 
     @pyqtSlot()
     def stage6_ui(self):

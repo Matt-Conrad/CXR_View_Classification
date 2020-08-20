@@ -8,6 +8,7 @@ from PyQt5.QtGui import QIcon
 from download_dataset import DatasetController
 from downloader import Downloader
 from storer import Storer
+from labeler import Labeler
 from feature_calculator import FeatureCalculator
 from config_handler import ConfigHandler
 from database_handler import DatabaseHandler
@@ -51,6 +52,7 @@ class Controller(QObject):
         self.downloader = Downloader(self.configHandler)
         self.storer = Storer(self.configHandler, self.dbHandler)
         self.featCalc = FeatureCalculator(self.configHandler, self.dbHandler)
+        self.labeler = Labeler(self.configHandler, self.dbHandler)
 
         # String variables
         self.config_file_name = CONFIG_NAME
