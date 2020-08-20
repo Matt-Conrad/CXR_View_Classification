@@ -5,7 +5,6 @@ import sys
 from PyQt5.QtCore import QThreadPool, QObject, pyqtSignal
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QIcon
-from download_dataset import DatasetController
 from downloader import Downloader
 from storer import Storer
 from labeler import Labeler
@@ -65,7 +64,6 @@ class Controller(QObject):
         self.main_app = MainWindow(self)
         self.label_app = None
         self.classifier = None
-        self.dataset_controller = DatasetController(self.url)
 
         # From config file
         self.db_name = config.config(filename=self.config_file_name, section='postgresql')['database']
@@ -82,7 +80,7 @@ class Controller(QObject):
     def init_gui_state(self):
         """Initialize the GUI in the right stage."""
         # Set icon
-        self.main_app.setWindowIcon(QIcon(self.dataset_controller.parent_folder + '/' + 'icon.jpg'))
+        self.main_app.setWindowIcon(QIcon(self.configHandler.getParentFolder() + '/' + 'icon.jpg'))
 
         self.initStage1.connect(self.main_app.stage1_ui)
         self.initStage2.connect(self.main_app.stage2_ui)
@@ -97,9 +95,9 @@ class Controller(QObject):
             self.initStage5.emit()
         elif bdo.table_exists(self.config_file_name, self.db_name, self.meta_table_name):
             self.initStage4.emit()
-        elif os.path.isdir(self.dataset_controller.folder_name):
+        elif os.path.isdir(self.configHandler.getDatasetName()):
             self.initStage3.emit()
-        elif os.path.exists(self.dataset_controller.filename):
+        elif os.path.exists(self.configHandler.getTgzFilename()):
             self.initStage2.emit()
         else:
             self.initStage1.emit()
