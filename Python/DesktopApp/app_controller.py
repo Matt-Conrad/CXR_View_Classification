@@ -2,7 +2,7 @@
 import logging
 import os
 import sys
-from PyQt5.QtCore import QThreadPool, QObject, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QIcon
 from downloader import Downloader
@@ -12,15 +12,9 @@ from trainer import Trainer
 from feature_calculator import FeatureCalculator
 from config_handler import ConfigHandler
 from database_handler import DatabaseHandler
-import metadata_to_db.basic_db_ops as bdo
 import metadata_to_db.config as config
 from main_window import MainWindow
 from expected_sizes import EXPECTED_NUM_FILES, EXPECTED_SIZES
-
-SOURCE_URL = {
-        'subset': 'https://github.com/Matt-Conrad/CXR_View_Classification/raw/develop/datasets/NLMCXR_subset_dataset.tgz',
-        'full_set': 'https://openi.nlm.nih.gov/imgs/collections/NLMCXR_dcm.tgz'
-    }
 
 CONFIG_NAME = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.ini')
 
@@ -73,11 +67,11 @@ class Controller(QObject):
         self.initStage5.connect(self.main_app.stage5_ui)
         self.initStage6.connect(self.main_app.stage6_ui)
 
-        if bdo.table_exists(self.configHandler.getConfigFilename(), self.configHandler.getDbInfo()["database"], self.configHandler.getTableName("label")):
+        if self.dbHandler.table_exists(self.configHandler.getTableName("label")):
             self.initStage6.emit()
-        elif bdo.table_exists(self.configHandler.getConfigFilename(), self.configHandler.getDbInfo()["database"], self.configHandler.getTableName("features")):
+        elif self.dbHandler.table_exists(self.configHandler.getTableName("features")):
             self.initStage5.emit()
-        elif bdo.table_exists(self.configHandler.getConfigFilename(), self.configHandler.getDbInfo()["database"], self.configHandler.getTableName("metadata")):
+        elif self.dbHandler.table_exists(self.configHandler.getTableName("metadata")):
             self.initStage4.emit()
         elif os.path.isdir(self.configHandler.getDatasetName()):
             self.initStage3.emit()

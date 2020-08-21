@@ -8,7 +8,6 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 # This line is so modules using this package as a submodule can use this.
 sys.path.append(os.path.dirname(os.path.abspath(__file__)).replace('\\', '/'))
 #
-from config import config
 
 class DatabaseHandler:
     def __init__(self, configHandler):

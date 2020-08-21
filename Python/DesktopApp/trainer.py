@@ -8,7 +8,6 @@ import psycopg2.extras
 from sklearn.model_selection import KFold, cross_val_score, train_test_split
 from sklearn import svm
 from joblib import dump
-from metadata_to_db.config import config
 
 class Trainer(Stage):
     """Controls logic of getting the dataset from online sources."""
@@ -34,11 +33,10 @@ class Trainer(Stage):
         conn = None
         try:
             # read the connection parameters
-            params = config(filename=self.configHandler.getConfigFilename(), section='postgresql')
-            table_name = config(filename=self.configHandler.getConfigFilename(), section='table_info')['features_table_name']
+            table_name = self.configHandler.getTableName("features")
 
             # connect to the PostgreSQL server
-            conn = psycopg2.connect(**params)
+            conn = psycopg2.connect(**self.configHandler.getDbInfo())
             cur = conn.cursor()
 
             # Put all horizontal profiles into feature matrix
@@ -65,7 +63,7 @@ class Trainer(Stage):
             X = np.concatenate((X1, X2), axis=1) 
 
             # Put all the labels into a list
-            label_table_name = config(filename=self.configHandler.getConfigFilename(), section='table_info')['label_table_name']
+            label_table_name = self.configHandler.getTableName("label")
             sql_query = 'SELECT image_view FROM ' + label_table_name + ' ORDER BY file_path ASC;'
             cur.execute(sql_query)
             records = cur.fetchall()

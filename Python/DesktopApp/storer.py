@@ -6,16 +6,13 @@ import requests
 from PyQt5.QtCore import pyqtSlot, pyqtSignal
 import sys
 import json
-from pathlib import Path
 from datetime import datetime
-from dateutil.relativedelta import relativedelta
 import psycopg2
+from pathlib import Path
 import pydicom as pdm
 # This line is so modules using this package as a submodule can use this.
 sys.path.append(os.path.dirname(os.path.abspath(__file__)).replace('\\', '/'))
 #
-from metadata_to_db.config import config
-import metadata_to_db.basic_db_ops as bdo
 
 class Storer(Stage):
     """Controls logic of getting the dataset from online sources."""
@@ -62,8 +59,8 @@ class Storer(Stage):
         self.attemptUpdateProBarBounds.emit(0, self.expected_num_files)
 
         # Read images one at a time
-        folder_path = config(filename=config_file_name, section='dicom_folder')['folder_path']
-        pathlist = Path(folder_path).glob('**/*.dcm')
+        folderRelPath = "./" + self.configHandler.getDatasetName()
+        pathlist = Path(folderRelPath).glob('**/*.dcm')
         for path in pathlist:
             elements = elements_original.copy()
 
@@ -73,28 +70,20 @@ class Storer(Stage):
             # Insert the DICOM metadata as a new record in the Postgres DB
             conn = None
             try:
-                # read the connection parameters
-                params = config(filename=config_file_name, section='postgresql')
                 # connect to the PostgreSQL server
-                conn = psycopg2.connect(**params)
+                conn = psycopg2.connect(**self.configHandler.getDbInfo())
                 cur = conn.cursor()
                 # Create the SQL query to be used
                 sql_query, values = self.create_sql_query(table_name, elements, file_path)
                 logging.debug('SQL Query: %s', sql_query)
                 # create table one by one
                 cur.execute(sql_query, values)
-                # close communication with the PostgreSQL database server
-                cur.close()
-                # commit the changes
-                conn.commit()
-                logging.debug('Stored')
-            except (psycopg2.DatabaseError) as error:
-                logging.debug(error)
+                # close communication with the PostgreSQL
             finally:
                 if conn is not None:
+                    conn.commit()
                     conn.close()
-                    storedRecords = bdo.count_records(config_file_name, self.configHandler.getDbInfo()['database'], self.configHandler.getTableName('metadata'))
-                    self.attemptUpdateProBarValue.emit(storedRecords)
+                    self.attemptUpdateProBarValue.emit(self.dbHandler.count_records(self.configHandler.getTableName('metadata')))
         
         self.attemptUpdateText.emit("Done storing metadata")
         self.finished.emit()

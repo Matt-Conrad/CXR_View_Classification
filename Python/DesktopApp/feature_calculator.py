@@ -8,12 +8,8 @@ import pydicom as pdm
 import psycopg2
 import psycopg2.extras
 # import matplotlib.pyplot as plt
-import cv2
 # from scipy.ndimage.measurements import label
-from skimage.feature import hog
 from metadata_to_db.config import config
-from shared_image_processing.connectedComponents import getBiggestComp
-from shared_image_processing.enhancement import contrast_stretch
 from shared_image_processing.features import calc_image_prof
 from cxr_pipeline.preprocessing import preprocessing
 from PyQt5.QtCore import pyqtSlot

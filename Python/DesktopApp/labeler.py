@@ -1,7 +1,6 @@
 """Contains the code for the app that helps the user label the data."""
 import logging
 import os
-import sys
 import psycopg2
 import psycopg2.extras
 import pydicom as pdm
@@ -10,8 +9,6 @@ import numpy as np
 from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QGridLayout
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtCore import pyqtSignal, pyqtSlot
-from metadata_to_db.config import config
-import metadata_to_db.basic_db_ops as bdo
 
 class Labeler(QWidget):
     """Contains code for the application used to assist in labeling the data."""
@@ -161,7 +158,7 @@ class Labeler(QWidget):
             The decision of whether the label for the current image is 'L' (lateral) or 'F' (frontal)
         """
         # Create the SQL query to be used
-        label_table_name = config(filename=self.configHandler.getConfigFilename(), section='table_info')['label_table_name']
+        label_table_name = self.configHandler.getTableName("label")
         sql_query = 'INSERT INTO ' + label_table_name + ' (file_name, file_path, image_view) VALUES (\'' + self.record['file_path'].split(os.sep)[-1] + '\', \'' + self.record['file_path'] + '\', \'' + decision + '\');'
         try:
             logging.debug('Storing label')
