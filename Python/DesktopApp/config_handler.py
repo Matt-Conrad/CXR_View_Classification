@@ -5,17 +5,28 @@ class ConfigHandler:
     def __init__(self, configFilename):
         self.configFilename = configFilename
 
+    # Functions for internal use
+    def getSection(self, sectionName):
+        return config.config(filename=self.configFilename, section=sectionName)
+    
+    def getSetting(self, sectionName, settingName):
+        return config.config(filename=self.configFilename, section=sectionName)[settingName]
+
+    def setSetting(self, sectionName, settingName, value):
+        config.update_config_file(self.configFilename, sectionName, settingName, value)
+
+    # Functions for external use
     def setUrl(self, url):
-        config.update_config_file(self.configFilename, "misc", "url", url)
+        self.setSetting("misc", "url", url)
 
     def getDbInfo(self):
-        return config.config(filename=self.configFilename, section='postgresql')
+        return self.getSection('postgresql')
 
     def getTableName(self, table):
-        return config.config(filename=self.configFilename, section='table_names')[table]
+        return self.getSetting('table_names', table)
 
     def getUrl(self):
-        return config.config(filename=self.configFilename, section='misc')['url']
+        return self.getSetting("misc", "url")
 
     def getTgzFilename(self):
         return self.getUrl().split("/")[-1]
@@ -24,16 +35,16 @@ class ConfigHandler:
         return self.getTgzFilename().split(".")[0]
 
     def getColumnsInfoPath(self):
-        return config.config(filename=self.configFilename, section='misc')['columns_info_relative_path']
+        return self.getSetting("misc", 'columns_info_relative_path')
 
     def getCsvPath(self):
-        return config.config(filename=self.configFilename, section='misc')['csv_relative_path']
+        return self.getSetting("misc","csv_relative_path")
 
     def getDatasetType(self):
-        return config.config(filename=self.configFilename, section='dataset_info')['dataset']
+        return self.getSetting("dataset_info", "dataset")
 
     def getParentFolder(self):
-        return config.config(filename=self.configFilename, section='misc')['parent_folder']
+        return self.getSetting('misc', "parent_folder")
 
     def getConfigFilename(self):
         return self.configFilename

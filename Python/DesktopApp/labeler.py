@@ -39,10 +39,7 @@ class Labeler(QWidget):
 
         self.count = 0
 
-        # # Variables
-        self.conn = None
-        self.cur = None # cursor to get image list
-        self.cur2 = None # cursor to store labels
+        # Variables
         self.record = None
 
         self.image = QLabel(self)
@@ -54,25 +51,11 @@ class Labeler(QWidget):
     def close_label_app(self):
         """On exit of the app close the connection."""
         logging.info('Attempting to close connection')
-        self.close_connection()
+        self.dbHandler.closeConnection()
         self.attemptUpdateText.emit("Image labeling complete")
         self.finished.emit()
         self.close()
         logging.info('Closing Labeling app')
-
-    def close_connection(self):
-        """Close the connection set up between the app and the Postgres server."""
-        try:
-            logging.info('Closing connection')
-            self.cur.close()
-            self.cur2.close()
-            self.conn.commit()
-        except (psycopg2.DatabaseError) as error:
-            logging.warning(error)
-        finally:
-            if self.conn is not None:
-                self.conn.close()
-                logging.info('Connection closed')
 
     @pyqtSlot()
     def fill_window(self):
@@ -112,10 +95,9 @@ class Labeler(QWidget):
         """Display the next image."""
         # Get the next available record from the image list query
         logging.debug('Displaying next image')
-        self.record = self.cur.fetchone()
+        self.record = self.dbHandler.retrieveCursor.fetchone()
 
-        storedRecords = bdo.count_records(self.configHandler.getConfigFilename(), self.configHandler.getDbInfo()['database'], self.configHandler.getTableName('label'))
-        self.attemptUpdateProBarValue.emit(storedRecords)
+        self.attemptUpdateProBarValue.emit(self.dbHandler.count_records(self.configHandler.getTableName('label')))
 
         if self.record is None:
             logging.info('End of query, deleting labeling app')
@@ -159,27 +141,13 @@ class Labeler(QWidget):
 
         return pixmap
 
-    def connect(self):
-        """Connect the app to the Postgres DB."""
-        try:
-            logging.info('Opening connection')
-            # connect to the PostgreSQL server
-            params = config(filename=self.configHandler.getConfigFilename(), section='postgresql')
-            self.conn = psycopg2.connect(**params)
-            self.cur = self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-            self.cur2 = self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-            logging.info('Connection opened')
-        except (psycopg2.DatabaseError) as error:
-            logging.warning(error)
-
     def query_image_list(self):
         """Run a query to get the list of all images in the DB."""
         logging.debug('Attempting to query records for image list')
         sql_query = 'SELECT file_path, bits_stored FROM ' + self.configHandler.getTableName("metadata") + ' ORDER BY file_path;'
         try:
             logging.debug('Getting the image list')
-            self.connect()
-            self.cur.execute(sql_query)
+            self.dbHandler.retrieveCursor.execute(sql_query)
             logging.debug('Done getting the image list')
         except (psycopg2.DatabaseError) as error:
             logging.warning(error)
@@ -198,7 +166,7 @@ class Labeler(QWidget):
         try:
             logging.debug('Storing label')
             # create table one by one
-            self.cur2.execute(sql_query)
+            self.dbHandler.storeCursor.execute(sql_query)
             logging.debug('Label is stored')
         except (psycopg2.DatabaseError) as error:
             logging.warning(error)

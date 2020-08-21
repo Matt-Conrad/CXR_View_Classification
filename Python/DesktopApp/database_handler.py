@@ -17,20 +17,49 @@ class DatabaseHandler:
 
         if not self.db_exists():
             self.create_new_db()
+        
+        self.connection = self.openConnection()
+        self.retrieveCursor = self.openCursor(self.connection)
+        self.storeCursor = self.openCursor(self.connection) 
 
-    def check_server_connection(db_config_file_name):
-        """Check the connection to a PostgreSQL DB server.
+    def openConnection(self):
+        return psycopg2.connect(**self.dbInfo)
 
-        Parameters
-        ----------
-        db_config_file_name : string
-            The file name of the INI file that contains the information on the DB server
-        """
+    def openCursor(self, connection):
+        return connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    def closeConnection(self):
+        try:
+            logging.info('Closing connection')
+            self.retrieveCursor.close()
+            self.storeCursor.close()
+            self.connection.commit()
+        except (psycopg2.DatabaseError) as error:
+            logging.warning(error)
+        finally:
+            if self.connection is not None:
+                self.connection.close()
+                logging.info('Connection closed')
+
+    def closeCursor(self, cursor):
+        try:
+            logging.info('Closing connection')
+            cursor.close()
+            self.conn.commit()
+        except (psycopg2.DatabaseError) as error:
+            logging.warning(error)
+        finally:
+            if self.conn is not None:
+                self.conn.close()
+                logging.info('Connection closed')
+
+    def check_server_connection(self):
+        """Check the connection to a PostgreSQL DB server."""
         logging.info('Running test for server connection')
         conn = None
         try:
             # read connection parameters
-            params = config(filename=db_config_file_name, section='postgresql')
+            params = self.dbInfo.copy()
             params['database'] = 'postgres'
 
             # connect to the PostgreSQL server
@@ -60,20 +89,7 @@ class DatabaseHandler:
                 logging.debug('Database connection closed.')
 
     def db_exists(self):
-        """Check the existence of a DB in a PostgreSQL DB server.
-
-        Parameters
-        ----------
-        db_config_file_name : string
-            The file name of the INI file that contains the information on the DB server
-        db_name : string
-            The name of the database we wish to check the existence of
-
-        Returns
-        -------
-        bool
-            Return True if the DB exists or False if the DB doesn't exist
-        """
+        """Check the existence of a DB in a PostgreSQL DB server."""
         db_name = self.dbInfo['database']
 
         logging.info('Checking for existence of DB: %s', db_name)
@@ -116,35 +132,16 @@ class DatabaseHandler:
         return result
 
     def table_exists(self, table_name):
-        """Check the existence of a table in a DB in a PostgreSQL DB server.
-
-        Parameters
-        ----------
-        db_config_file_name : string
-            The file name of the INI file that contains the information on the DB server
-        db_name : string
-            The name of the database we wish to check
-        table_name : string
-            The name of the table we wish to check the existence of
-
-        Returns
-        -------
-        bool
-            Return True if the table exists or False if the table doesn't exist
-        """
+        """Check the existence of a table in a DB in a PostgreSQL DB server."""
         db_name = self.dbInfo['database']
 
         logging.debug('Checking for existence of table %s in DB %s ', table_name, db_name)
         conn = None
         result = None
         try:
-            # read connection parameters
-            params = self.dbInfo
-            params['database'] = db_name
-
             # connect to the PostgreSQL server
             logging.debug('Connecting to the PostgreSQL database...')
-            conn = psycopg2.connect(**params)
+            conn = psycopg2.connect(**self.dbInfo)
             cur = conn.cursor()
             logging.debug('Connection established')
 
@@ -194,12 +191,9 @@ class DatabaseHandler:
         conn = None
         result = None
         try:
-            # read connection parameters
-            params = self.dbInfo.copy()
-
             # connect to the PostgreSQL server
             logging.debug('Connecting to the PostgreSQL database...')
-            conn = psycopg2.connect(**params)
+            conn = psycopg2.connect(**self.dbInfo)
             cur = conn.cursor()
             logging.debug('Connection established')
 
@@ -223,25 +217,14 @@ class DatabaseHandler:
                 logging.debug('Database connection closed.')
         return result
 
-    def drop_table(table_name, db_config_file_name):
-        """Drop a table in the desired DB.
-
-        Parameters
-        ----------
-        table_name : string
-            The name of the table in the DB specified in db_config_file_name
-        db_config_file_name : string
-            The file name of the INI file that contains the information on the DB server
-        """
+    def drop_table(table_name):
+        """Drop a table in the desired DB."""
         logging.info('Attempting to drop table')
         conn = None
         try:
-            # read the connection parameters
-            params = config(filename=db_config_file_name, section='postgresql')
-
             # connect to the PostgreSQL server
             logging.debug('Connecting to the PostgreSQL database...')
-            conn = psycopg2.connect(**params)
+            conn = psycopg2.connect(**self.dbInfo)
             cur = conn.cursor()
             logging.debug('Connection established')
 
@@ -356,7 +339,7 @@ class DatabaseHandler:
                 conn.close()
                 logging.debug('Database connection closed.')
 
-    def import_image_label_data(table_name, csv_full_path, elements_json, db_config_file_name, section_name):
+    def import_image_label_data(table_name, csv_full_path, elements_json, section_name):
         """Import data into a table in the desired DB.
 
         Parameters
@@ -376,7 +359,7 @@ class DatabaseHandler:
         logging.info('Attempting to import table to DB')
 
         # Add table
-        add_table_to_db(table_name, elements_json, db_config_file_name, section_name)
+        self.add_table_to_db(table_name, elements_json, section_name)
 
         # Open the json with the list of elements we're interested in
         with open(elements_json) as file_reader:
@@ -392,12 +375,9 @@ class DatabaseHandler:
 
         conn = None
         try:
-            # read the connection parameters
-            params = config(filename=db_config_file_name, section='postgresql')
-
             # connect to the PostgreSQL server
             logging.debug('Connecting to the PostgreSQL database...')
-            conn = psycopg2.connect(**params)
+            conn = psycopg2.connect(**self.dbInfo)
             cur = conn.cursor()
             logging.debug('Connection established')
 
