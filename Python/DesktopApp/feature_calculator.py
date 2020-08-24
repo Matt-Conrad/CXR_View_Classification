@@ -2,13 +2,10 @@
 from stage import Stage
 import logging
 import os
-# import time
 import numpy as np
 import pydicom as pdm
 import psycopg2
 import psycopg2.extras
-# import matplotlib.pyplot as plt
-# from scipy.ndimage.measurements import label
 from metadata_to_db.config import config
 from shared_image_processing.features import calc_image_prof
 from cxr_pipeline.preprocessing import preprocessing

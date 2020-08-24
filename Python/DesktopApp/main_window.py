@@ -193,15 +193,16 @@ class MainWindow(QMainWindow):
             self.controller.labeler.attemptUpdateText.connect(self.update_text)
             self.controller.labeler.finished.connect(self.stage6_ui)
             self.controller.labeler.finished.connect(self.controller.labeler.deleteLater)
-
-        elif self.configHandler.getDatasetType() == 'full_set':
-            bdo.import_image_label_data(self.configHandler.getTableName('label'), self.configHandler.getCsvPath(), self.configHandler.getColumnsInfoPath(), self.configHandler.getConfigFilename(), 'labels')
-            logging.info('***END LABELING PHASE***')
-            self.attemptUpdateText.emit('Done importing labels')
-            self.attemptUpdateProBarValue.emit(self.expected_num_files)
-            self.finished.emit()
+        elif self.controller.configHandler.getDatasetType() == 'full_set':
+            self.label_btn.clicked.connect(self.controller.label_importer.importLabels)
+            self.controller.label_importer.attemptUpdateProBarBounds.connect(self.update_pro_bar_bounds)
+            self.controller.label_importer.attemptUpdateProBarValue.connect(self.update_pro_bar_val)
+            self.controller.label_importer.attemptUpdateText.connect(self.update_text)
+            self.controller.label_importer.finished.connect(self.stage6_ui)
+            self.controller.label_importer.finished.connect(self.controller.label_importer.deleteLater)
         else:
             raise ValueError('Value must be one of the keys in SOURCE_URL')
+        logging.info('***END LABELING PHASE***')
 
     @pyqtSlot()
     def stage6_ui(self):

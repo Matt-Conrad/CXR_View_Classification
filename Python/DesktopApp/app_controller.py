@@ -8,13 +8,13 @@ from PyQt5.QtGui import QIcon
 from downloader import Downloader
 from storer import Storer
 from labeler import Labeler
+from label_importer import LabelImporter
 from trainer import Trainer
 from feature_calculator import FeatureCalculator
 from config_handler import ConfigHandler
 from database_handler import DatabaseHandler
 import metadata_to_db.config as config
 from main_window import MainWindow
-from expected_sizes import EXPECTED_NUM_FILES, EXPECTED_SIZES
 
 CONFIG_NAME = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.ini')
 
@@ -45,6 +45,7 @@ class Controller(QObject):
         self.storer = Storer(self.configHandler, self.dbHandler)
         self.featCalc = FeatureCalculator(self.configHandler, self.dbHandler)
         self.labeler = Labeler(self.configHandler, self.dbHandler)
+        self.label_importer = LabelImporter(self.configHandler, self.dbHandler)
         self.trainer = Trainer(self.configHandler, self.dbHandler)
 
         # Object variables

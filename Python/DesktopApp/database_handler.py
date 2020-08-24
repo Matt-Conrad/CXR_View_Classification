@@ -245,25 +245,12 @@ class DatabaseHandler:
                 conn.close()
                 logging.debug('Database connection closed.')
 
-    def add_table_to_db(self, table_name, elements_json, section_name):
-        """Add a table to the desired DB.
-
-        Parameters
-        ----------
-        table_name : string
-            Name of the table to be added to the DB
-        elements_json : string
-            Name of the JSON containing the list of elements. Each element name that is not
-            calculation_only will be a column in the new table
-        db_config_file_name : string
-            The file name of the INI file that contains the information on the DB server
-        section_name : string
-            Name of the section in the elements_json that has the column info for that table
-        """
+    def add_table_to_db(self, table_name, columns_info, section_name):
+        """Add a table to the desired DB."""
         logging.info('Attempting to add table to DB')
 
         # Open the json with the list of elements we're interested in
-        with open(elements_json) as file_reader:
+        with open(columns_info) as file_reader:
             elements_json = json.load(file_reader)
         elements = elements_json[section_name]
 
@@ -338,39 +325,21 @@ class DatabaseHandler:
                 conn.close()
                 logging.debug('Database connection closed.')
 
-    def import_image_label_data(table_name, csv_full_path, elements_json, section_name):
-        """Import data into a table in the desired DB.
-
-        Parameters
-        ----------
-        table_name : string
-            Name of the table to add the data to
-        csv_full_path : string
-            Name of the CSV containing the image labels
-        elements_json : string
-            Name of the JSON containing the list of elements. Each element name that is not
-            calculation_only will be a column in the new table
-        db_config_file_name : string
-            The file name of the INI file that contains the information on the DB server
-        section_name : string
-            Name of the section in the elements_json that has the column info for that table
-        """
+    def import_image_label_data(self):
+        """Import data into a table in the desired DB."""
         logging.info('Attempting to import table to DB')
 
-        # Add table
-        self.add_table_to_db(table_name, elements_json, section_name)
-
         # Open the json with the list of elements we're interested in
-        with open(elements_json) as file_reader:
+        with open(self.configHandler.getColumnsInfoPath()) as file_reader:
             elements_json = json.load(file_reader)
-        elements = elements_json[section_name]
+        elements = elements_json['labels']
 
         # Make the SQL query
-        sql_query = 'COPY ' + table_name + '(file_name, file_path, '
+        sql_query = 'COPY ' + self.configHandler.getTableName('label') + '(file_name, file_path, '
         for element_name in elements:
             if not elements[element_name]['calculation_only']:
                 sql_query = sql_query + element_name + ','
-        sql_query = sql_query[:-1] + ') FROM \'' + csv_full_path + '\' DELIMITER \',\' CSV HEADER;'
+        sql_query = sql_query[:-1] + ') FROM \'' + self.configHandler.getParentFolder() + "/" + self.configHandler.getCsvPath() + '\' DELIMITER \',\' CSV HEADER;'
 
         conn = None
         try:
