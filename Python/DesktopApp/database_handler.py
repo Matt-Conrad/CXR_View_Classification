@@ -13,16 +13,25 @@ class DatabaseHandler:
     def __init__(self, configHandler):
         self.configHandler = configHandler
         self.dbInfo = self.configHandler.getDbInfo()
-
-        if not self.db_exists():
-            self.create_new_db()
         
+        self.default_connection = self.openConnection(open_default=True)
+        self.default_connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+        self.default_cursor = self.openCursor(self.default_connection)
+
+        if not self.db_exists(self.dbInfo["database"]):
+            self.create_new_db(self.dbInfo["database"])
+
         self.connection = self.openConnection()
+        self.connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         self.retrieveCursor = self.openCursor(self.connection)
         self.storeCursor = self.openCursor(self.connection) 
+        self.countCursor = self.openCursor(self.connection)
 
-    def openConnection(self):
-        return psycopg2.connect(**self.dbInfo)
+    def openConnection(self, open_default=False):
+        params = self.dbInfo.copy()
+        if open_default:
+            params['database'] = 'postgres'
+        return psycopg2.connect(**params)
 
     def openCursor(self, connection):
         return connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
@@ -32,7 +41,6 @@ class DatabaseHandler:
             logging.info('Closing connection')
             self.retrieveCursor.close()
             self.storeCursor.close()
-            self.connection.commit()
         except (psycopg2.DatabaseError) as error:
             logging.warning(error)
         finally:
@@ -44,7 +52,6 @@ class DatabaseHandler:
         try:
             logging.info('Closing connection')
             cursor.close()
-            self.conn.commit()
         except (psycopg2.DatabaseError) as error:
             logging.warning(error)
         finally:
@@ -55,195 +62,54 @@ class DatabaseHandler:
     def check_server_connection(self):
         """Check the connection to a PostgreSQL DB server."""
         logging.info('Running test for server connection')
-        conn = None
-        try:
-            # read connection parameters
-            params = self.dbInfo.copy()
-            params['database'] = 'postgres'
+        self.executeQuery(self.default_cursor, 'SELECT version()')
+        db_version = self.default_cursor.fetchone()
+        logging.info('PostgreSQL database version: %s', db_version)
 
-            # connect to the PostgreSQL server
-            logging.debug('Connecting to the PostgreSQL database...')
-            conn = psycopg2.connect(**params)
-            cur = conn.cursor()
-            logging.debug('Connection established')
-
-            # execute a statement
-            logging.info('Checking for database version')
-            cur.execute('SELECT version()')
-            db_version = cur.fetchone()
-            logging.info('PostgreSQL database version: %s', db_version)
-
-        # close the cursor with the PostgreSQL
-            cur.close()
-
-        # If an exception is raised along the way, report it
-        except (psycopg2.DatabaseError) as error:
-            logging.warning(error)
-
-        # At the end, if the connection still exists then close it
-        finally:
-            if conn is not None:
-                logging.debug('Attempting to close connection')
-                conn.close()
-                logging.debug('Database connection closed.')
-
-    def db_exists(self):
+    def db_exists(self, db_name):
         """Check the existence of a DB in a PostgreSQL DB server."""
-        db_name = self.dbInfo['database']
-
-        logging.info('Checking for existence of DB: %s', db_name)
-        conn = None
         result = None
-        try:
-            # read connection parameters
-            params = self.dbInfo.copy()
-            params['database'] = 'postgres'
-
-            # connect to the PostgreSQL server
-            logging.debug('Connecting to the PostgreSQL database...')
-            conn = psycopg2.connect(**params)
-            cur = conn.cursor()
-            logging.debug('Connection established')
-
-            # execute a statement
-            sql_query = 'SELECT datname FROM pg_catalog.pg_database WHERE datname=\'' + db_name + '\''
-            cur.execute(sql_query)
-            if cur.fetchone() is None:
-                result = False
-            else:
-                result = True
-
-            logging.info('Database %s exists: %s', db_name, result)
-
-            # close the cursor with the PostgreSQL
-            cur.close()
-
-        # If an exception is raised along the way, report it
-        except (psycopg2.DatabaseError) as error:
-            logging.warning(error)
-
-        # At the end, if the connection still exists then close it
-        finally:
-            if conn is not None:
-                logging.debug('Attempting to close connection')
-                conn.close()
-                logging.debug('Database connection closed.')
+        sql_query = 'SELECT datname FROM pg_catalog.pg_database WHERE datname=\'' + db_name + '\''
+        self.executeQuery(self.default_cursor, sql_query)
+        if self.default_cursor.fetchone() is None:
+            result = False
+        else:
+            result = True
         return result
 
     def table_exists(self, table_name):
         """Check the existence of a table in a DB in a PostgreSQL DB server."""
-        db_name = self.dbInfo['database']
-
-        logging.debug('Checking for existence of table %s in DB %s ', table_name, db_name)
-        conn = None
         result = None
         try:
-            # connect to the PostgreSQL server
-            logging.debug('Connecting to the PostgreSQL database...')
-            conn = psycopg2.connect(**self.dbInfo)
-            cur = conn.cursor()
-            logging.debug('Connection established')
-
             # execute a statement
             sql_query = "SELECT * FROM information_schema.tables WHERE table_name=%s"
-            cur.execute(sql_query, (table_name,))
-            if cur.fetchone() is None:
+            self.retrieveCursor.execute(sql_query, (table_name,))
+            if self.retrieveCursor.fetchone() is None:
                 result = False
             else:
                 result = True
-
             logging.info('Table %s exists: %s', table_name, result)
-
-        # close the cursor with the PostgreSQL
-            cur.close()
-
-        # If an exception is raised along the way, report it
         except (psycopg2.DatabaseError) as error:
             logging.debug(str(error).rstrip())
-
-        # At the end, if the connection still exists then close it
-        finally:
-            if conn is not None:
-                logging.debug('Attempting to close connection')
-                conn.close()
-                logging.debug('Database connection closed.')
         return result
 
     def count_records(self, table_name):
-        """Checks the count of records in the table in a DB in a PostgreSQL DB server.
-
-        Parameters
-        ----------
-        db_config_file_name : string
-            The file name of the INI file that contains the information on the DB server
-        db_name : string
-            The name of the database we wish to check
-        table_name : string
-            The name of the table we wish to check the existence of
-
-        Returns
-        -------
-        int
-            Return the count of records in the table
-        """
+        """Checks the count of records in the table in a DB in a PostgreSQL DB server."""
         logging.debug('Counting the number of records in table %s in DB %s ', table_name, self.dbInfo['database'])
-        conn = None
         result = None
         try:
-            # connect to the PostgreSQL server
-            logging.debug('Connecting to the PostgreSQL database...')
-            conn = psycopg2.connect(**self.dbInfo)
-            cur = conn.cursor()
-            logging.debug('Connection established')
-
             # execute a statement
             sql_query = 'SELECT COUNT(*) FROM ' + table_name + ';'
-            cur.execute(sql_query, (table_name,))
-            result = cur.fetchone()[0]
-
-        # close the cursor with the PostgreSQL
-            cur.close()
-
-        # If an exception is raised along the way, report it
+            self.countCursor.execute(sql_query, (table_name,))
+            result = self.countCursor.fetchone()[0]
         except (psycopg2.DatabaseError) as error:
             logging.warning(error)
-
-        # At the end, if the connection still exists then close it
-        finally:
-            if conn is not None:
-                logging.debug('Attempting to close connection')
-                conn.close()
-                logging.debug('Database connection closed.')
         return result
 
     def drop_table(table_name):
         """Drop a table in the desired DB."""
         logging.info('Attempting to drop table')
-        conn = None
-        try:
-            # connect to the PostgreSQL server
-            logging.debug('Connecting to the PostgreSQL database...')
-            conn = psycopg2.connect(**self.dbInfo)
-            cur = conn.cursor()
-            logging.debug('Connection established')
-
-            # drop table
-            cur.execute('DROP TABLE ' + table_name + ';')
-
-            # close communication with the PostgreSQL database server
-            cur.close()
-
-            # commit the changes
-            conn.commit()
-
-            logging.info('Table successfully dropped')
-        except (psycopg2.DatabaseError) as error:
-            logging.warning(error)
-        finally:
-            if conn is not None:
-                logging.debug('Attempting to close connection')
-                conn.close()
-                logging.debug('Database connection closed.')
+        self.executeQuery(self.storeCursor, 'DROP TABLE ' + table_name + ';')
 
     def add_table_to_db(self, table_name, columns_info, section_name):
         """Add a table to the desired DB."""
@@ -264,66 +130,13 @@ class DatabaseHandler:
                     + ',' + os.linesep
         margin_to_remove = -1 * (len(os.linesep) + 1)
         sql_query = sql_query[:margin_to_remove] + ');'
-
-        conn = None
-        try:
-            # read the connection parameters
-            params = self.dbInfo
-
-            # connect to the PostgreSQL server
-            logging.debug('Connecting to the PostgreSQL database...')
-            conn = psycopg2.connect(**params)
-            cur = conn.cursor()
-            logging.debug('Connection established')
-
-            # create table one by one
-            cur.execute(sql_query)
-            # close communication with the PostgreSQL database server
-            cur.close()
-            # commit the changes
-            conn.commit()
-            logging.info('Table successfully added.')
-        except (psycopg2.DatabaseError) as error:
-            logging.warning(error)
-        finally:
-            if conn is not None:
-                logging.debug('Attempting to close connection')
-                conn.close()
-                logging.debug('Database connection closed.')
+        self.executeQuery(self.storeCursor, sql_query)
 
     # TODO: Rewrite this function to be more flexible
-    def create_new_db(self):
-        """Create a new DB.
-
-        Parameters
-        ----------
-        db_name : string
-            Name of the new DB
-        """
+    def create_new_db(self, db_name):
+        """Create a new DB."""
         logging.info('Attempting to create a new DB')
-        conn = None
-        db_name = self.dbInfo["database"]
-        try:
-            # connect to the PostgreSQL server
-            logging.debug('Connecting to the PostgreSQL database...')
-            conn = psycopg2.connect(dbname='postgres', user='postgres', host='localhost',
-                                    password='postgres')
-            conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-            cur = conn.cursor()
-            logging.debug('Connection established')
-
-            # Create database
-            cur.execute('CREATE DATABASE ' + db_name + ';')
-            cur.close()
-            conn.commit()
-            logging.info('Database successfully created')
-        except (psycopg2.DatabaseError) as error:
-            logging.warning(error)
-        finally:
-            if conn is not None:
-                logging.debug('Attempting to close connection')
-                conn.close()
-                logging.debug('Database connection closed.')
+        self.executeQuery(self.default_cursor, 'CREATE DATABASE ' + db_name + ';')
 
     def import_image_label_data(self):
         """Import data into a table in the desired DB."""
@@ -341,26 +154,11 @@ class DatabaseHandler:
                 sql_query = sql_query + element_name + ','
         sql_query = sql_query[:-1] + ') FROM \'' + self.configHandler.getParentFolder() + "/" + self.configHandler.getCsvPath() + '\' DELIMITER \',\' CSV HEADER;'
 
-        conn = None
+        self.executeQuery(self.storeCursor, sql_query)
+    
+    def executeQuery(self, cursor, query):
         try:
-            # connect to the PostgreSQL server
-            logging.debug('Connecting to the PostgreSQL database...')
-            conn = psycopg2.connect(**self.dbInfo)
-            cur = conn.cursor()
-            logging.debug('Connection established')
-
-            # create table one by one
-            cur.execute(sql_query)
-            # close communication with the PostgreSQL database server
-            cur.close()
-            # commit the changes
-            conn.commit()
-            logging.info('Import successful')
+            cursor.execute(query)
         except (psycopg2.DatabaseError) as error:
             logging.warning(error)
-        finally:
-            if conn is not None:
-                logging.debug('Attempting to close connection')
-                conn.close()
-                logging.debug('Database connection closed.')
 
