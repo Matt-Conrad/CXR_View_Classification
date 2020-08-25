@@ -11,12 +11,9 @@ from labeler import Labeler
 from label_importer import LabelImporter
 from trainer import Trainer
 from feature_calculator import FeatureCalculator
-from config_handler import ConfigHandler
-from database_handler import DatabaseHandler
-import metadata_to_db.config as config
+from metadata_to_db.config_handler import ConfigHandler
+from metadata_to_db.database_handler import DatabaseHandler
 from main_window import MainWindow
-
-CONFIG_NAME = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.ini')
 
 def run_app():
     """Run the application that guides the user through the process."""
@@ -35,10 +32,12 @@ class Controller(QObject):
     initStage6 = pyqtSignal()
 
     def __init__(self):
+        self.configHandler = ConfigHandler("./config.ini")
+        self.configureLogging()
+
         logging.info('***INITIALIZING CONTROLLER***')
         QObject.__init__(self)
 
-        self.configHandler = ConfigHandler("./config.ini")
         self.dbHandler = DatabaseHandler(self.configHandler)
 
         self.downloader = Downloader(self.configHandler)
@@ -81,6 +80,22 @@ class Controller(QObject):
         else:
             self.initStage1.emit()
 
+    def configureLogging(self):
+        # Get log level from config file
+        log_level = self.configHandler.getSetting(sectionName='logging', settingName='level')
+        if log_level == 'debug':
+            log_level_obj = logging.DEBUG
+        elif log_level == 'info':
+            log_level_obj = logging.INFO
+        
+        # Remove any log handlers to make way for our logger
+        for handler in logging.root.handlers[:]:
+            logging.root.removeHandler(handler)
+        
+        # Set the logging
+        logging.basicConfig(filename='CXR_Classification.log', level=log_level_obj,
+                            format='%(asctime)s %(levelname)-8s: %(message)s', datefmt='%Y-%m-%d|%H:%M:%S')
+
     def log_gui_state(self, debug_level):
         """Log the state of the feedback in the GUI."""
         if debug_level == 'debug':
@@ -88,20 +103,5 @@ class Controller(QObject):
             logging.debug('Progress bar value: ' + str(self.main_app.pro_bar.value()))
 
 if __name__ == "__main__":
-    # Get log level from config file
-    log_level = config.config(filename=CONFIG_NAME, section='logging')['level']
-    if log_level == 'debug':
-        log_level_obj = logging.DEBUG
-    elif log_level == 'info':
-        log_level_obj = logging.INFO
-    
-    # Remove any log handlers to make way for our logger
-    for handler in logging.root.handlers[:]:
-        logging.root.removeHandler(handler)
-    
-    # Set the logging
-    logging.basicConfig(filename='CXR_Classification.log', level=log_level_obj,
-                        format='%(asctime)s %(levelname)-8s: %(message)s', datefmt='%Y-%m-%d|%H:%M:%S')
-
     # Run the application
     run_app()
