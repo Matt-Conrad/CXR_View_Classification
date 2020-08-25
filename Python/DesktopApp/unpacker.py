@@ -1,5 +1,5 @@
 from stage import Stage
-from PyQt5.QtCore import pyqtSlot, pyqtSignal, QThread, QObject
+from PyQt5.QtCore import pyqtSlot
 import tarfile
 import logging
 import os
@@ -19,8 +19,6 @@ class Unpacker(Stage):
 
         tf = tarfile.open(filenameRelPath)
         tf.extractall(path=self.folderRelPath)
-        
-        self.finished.emit()
 
         logging.info('Done unpacking')
 

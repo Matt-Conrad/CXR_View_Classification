@@ -3,6 +3,7 @@ import logging
 from PyQt5.QtCore import pyqtSlot, QThread
 from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QProgressBar, QLabel, QPushButton
 from unpacker import Unpacker, UnpackUpdater
+from storer import Storer, StoreUpdater
 
 class MainWindow(QMainWindow):
     """Contains GUI code for the application."""
@@ -90,9 +91,7 @@ class MainWindow(QMainWindow):
         self.download_btn.clicked.connect(self.controller.downloader.get_dataset)
 
         logging.debug('Thread connected to downloader')
-        self.controller.downloader.attemptUpdateProBarBounds.connect(self.update_pro_bar_bounds)
-        self.controller.downloader.attemptUpdateProBarValue.connect(self.update_pro_bar_val)
-        self.controller.downloader.attemptUpdateText.connect(self.update_text)
+        self.connectToDashboard(self.controller.downloader)
 
         logging.debug('Downloader signals connect to main thread')
         self.controller.downloader.finished.connect(self.stage2_ui)
@@ -111,7 +110,7 @@ class MainWindow(QMainWindow):
         self.classify_btn.setDisabled(True)
 
         self.unpacker = Unpacker(self.controller.configHandler)
-        self.updater = UnpackUpdater(self.controller.configHandler)
+        self.unpackUpdater = UnpackUpdater(self.controller.configHandler)
 
         # Unpacker
         self.unpackThread = QThread()
@@ -119,25 +118,22 @@ class MainWindow(QMainWindow):
         self.unpack_btn.clicked.connect(self.unpackThread.start)
         self.unpackThread.started.connect(self.unpacker.unpack)
 
-        self.unpacker.finished.connect(self.unpackThread.quit)
-        self.unpacker.finished.connect(self.unpacker.deleteLater)
-        self.unpackThread.finished.connect(self.unpackThread.deleteLater)
-
         # Unpack Updater
-        self.updaterThread = QThread()
-        self.updater.moveToThread(self.updaterThread)
-        self.unpack_btn.clicked.connect(self.updaterThread.start)
-        self.updaterThread.started.connect(self.updater.update)
+        self.unpackUpdaterThread = QThread()
+        self.unpackUpdater.moveToThread(self.unpackUpdaterThread)
+        self.unpack_btn.clicked.connect(self.unpackUpdaterThread.start)
+        self.unpackUpdaterThread.started.connect(self.unpackUpdater.update)
 
-        self.updater.attemptUpdateProBarBounds.connect(self.update_pro_bar_bounds)
-        self.updater.attemptUpdateProBarValue.connect(self.update_pro_bar_val)
-        self.updater.attemptUpdateText.connect(self.update_text)
+        self.connectToDashboard(self.unpackUpdater)
         
-        self.updater.finished.connect(self.stage3_ui)
-        self.updater.finished.connect(self.updaterThread.quit)
-        self.updater.finished.connect(self.updater.deleteLater)
-        self.updaterThread.finished.connect(self.updaterThread.deleteLater)
+        self.unpacker.finished.connect(self.unpackThread.quit)
+        self.unpackUpdater.finished.connect(self.unpackUpdaterThread.quit)
 
+        self.unpackThread.finished.connect(self.unpackThread.deleteLater)
+        self.unpackUpdaterThread.finished.connect(self.unpackUpdaterThread.deleteLater)
+
+        self.unpackUpdater.finished.connect(self.stage3_ui)
+        
     @pyqtSlot()
     def stage3_ui(self):
         # User in store metadata phase
@@ -148,14 +144,30 @@ class MainWindow(QMainWindow):
         self.label_btn.setDisabled(True)
         self.classify_btn.setDisabled(True)
 
-        self.store_btn.clicked.connect(self.controller.storer.dicomToDb)
+        self.storer = Storer(self.controller.configHandler, self.controller.dbHandler)
+        self.storeUpdater = StoreUpdater(self.controller.configHandler, self.controller.dbHandler)
 
-        self.controller.storer.attemptUpdateProBarBounds.connect(self.update_pro_bar_bounds)
-        self.controller.storer.attemptUpdateProBarValue.connect(self.update_pro_bar_val)
-        self.controller.storer.attemptUpdateText.connect(self.update_text)
+        # Storer
+        self.storeThread = QThread()
+        self.storer.moveToThread(self.storeThread)
+        self.store_btn.clicked.connect(self.storeThread.start)
+        self.storeThread.started.connect(self.storer.store)
 
-        self.controller.storer.finished.connect(self.stage4_ui)
-        self.controller.storer.finished.connect(self.controller.storer.deleteLater)
+        # Store Updater
+        self.storeUpdaterThread = QThread()
+        self.storeUpdater.moveToThread(self.storeUpdaterThread)
+        self.store_btn.clicked.connect(self.storeUpdaterThread.start)
+        self.storeUpdaterThread.started.connect(self.storeUpdater.update)
+
+        self.connectToDashboard(self.storeUpdater)
+
+        self.storer.finished.connect(self.storeThread.quit)
+        self.storeUpdater.finished.connect(self.storeUpdaterThread.quit)
+
+        self.storeThread.finished.connect(self.storeThread.deleteLater)
+        self.storeUpdaterThread.finished.connect(self.storeUpdaterThread.deleteLater)
+
+        self.storeUpdater.finished.connect(self.stage4_ui)
 
     @pyqtSlot()
     def stage4_ui(self):
@@ -169,9 +181,7 @@ class MainWindow(QMainWindow):
 
         self.features_btn.clicked.connect(self.controller.featCalc.calculate_features)
 
-        self.controller.featCalc.attemptUpdateProBarBounds.connect(self.update_pro_bar_bounds)
-        self.controller.featCalc.attemptUpdateProBarValue.connect(self.update_pro_bar_val)
-        self.controller.featCalc.attemptUpdateText.connect(self.update_text)
+        self.connectToDashboard(self.controller.featCalc)
 
         self.controller.featCalc.finished.connect(self.stage5_ui)
         self.controller.featCalc.finished.connect(self.controller.featCalc.deleteLater)
@@ -195,9 +205,9 @@ class MainWindow(QMainWindow):
             self.controller.labeler.finished.connect(self.controller.labeler.deleteLater)
         elif self.controller.configHandler.getDatasetType() == 'full_set':
             self.label_btn.clicked.connect(self.controller.label_importer.importLabels)
-            self.controller.label_importer.attemptUpdateProBarBounds.connect(self.update_pro_bar_bounds)
-            self.controller.label_importer.attemptUpdateProBarValue.connect(self.update_pro_bar_val)
-            self.controller.label_importer.attemptUpdateText.connect(self.update_text)
+            
+            self.connectToDashboard(self.controller.label_importer)
+            
             self.controller.label_importer.finished.connect(self.stage6_ui)
             self.controller.label_importer.finished.connect(self.controller.label_importer.deleteLater)
         else:
@@ -216,8 +226,11 @@ class MainWindow(QMainWindow):
 
         self.classify_btn.clicked.connect(self.controller.trainer.train)
 
-        self.controller.trainer.attemptUpdateProBarBounds.connect(self.update_pro_bar_bounds)
-        self.controller.trainer.attemptUpdateProBarValue.connect(self.update_pro_bar_val)
-        self.controller.trainer.attemptUpdateText.connect(self.update_text)
+        self.connectToDashboard(self.controller.trainer)
 
         self.controller.trainer.finished.connect(self.controller.trainer.deleteLater)
+
+    def connectToDashboard(self, stage):
+        stage.attemptUpdateProBarBounds.connect(self.update_pro_bar_bounds)
+        stage.attemptUpdateProBarValue.connect(self.update_pro_bar_val)
+        stage.attemptUpdateText.connect(self.update_text)
