@@ -10,7 +10,7 @@ from labeler import Labeler
 from label_importer import LabelImporter
 from trainer import Trainer
 from feature_calculator import FeatureCalculator
-from metadata_to_db.config_handler import ConfigHandler
+from cxr_config_handler import CxrConfigHandler
 from metadata_to_db.database_handler import DatabaseHandler
 from main_window import MainWindow
 
@@ -31,7 +31,7 @@ class Controller(QObject):
     initStage6 = pyqtSignal()
 
     def __init__(self):
-        self.configHandler = ConfigHandler("./config.ini")
+        self.configHandler = CxrConfigHandler("./config.ini")
         self.configureLogging()
 
         logging.info('***INITIALIZING CONTROLLER***')
