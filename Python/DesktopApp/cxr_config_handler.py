@@ -2,10 +2,11 @@
 from PyQt5.QtCore import pyqtSlot
 from metadata_to_db.config_handler import ConfigHandler
 from expected_sizes import SOURCE_URL
+import os
 
 class CxrConfigHandler(ConfigHandler):
     def __init__(self, configFilename):
-        Stage.__init__(self, configHandler, dbHandler)
+        ConfigHandler.__init__(self, configFilename)
         self.prepConfigIni()
 
     def prepConfigIni(self):
@@ -43,9 +44,6 @@ class CxrConfigHandler(ConfigHandler):
 
     def getDatasetType(self):
         return self.getSetting("dataset_info", "dataset")
-
-    def getConfigFilename(self):
-        return self.configFilename
 
     # Setters
     def setUrl(self, url):

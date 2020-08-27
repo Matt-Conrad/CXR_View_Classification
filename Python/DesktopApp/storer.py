@@ -11,7 +11,7 @@ class Storer(Stage):
 
     @pyqtSlot()
     def store(self):
-        self.dicomToDatabase.dicomToDb()
+        self.dicomToDatabase.dicomToDb(self.dbHandler.dbInfo['database'], self.configHandler.getTableName('metadata'), self.configHandler.getColumnsInfoPath())
 
 class StoreUpdater(Stage):
     """Controls logic of getting the dataset from online sources."""

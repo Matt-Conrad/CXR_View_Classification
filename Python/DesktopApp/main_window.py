@@ -205,9 +205,7 @@ class MainWindow(QMainWindow):
             self.controller.labeler.finished.connect(self.controller.labeler.deleteLater)
         elif self.controller.configHandler.getDatasetType() == 'full_set':
             self.label_btn.clicked.connect(self.controller.label_importer.importLabels)
-            
             self.connectToDashboard(self.controller.label_importer)
-            
             self.controller.label_importer.finished.connect(self.stage6_ui)
             self.controller.label_importer.finished.connect(self.controller.label_importer.deleteLater)
         else:

@@ -92,7 +92,7 @@ class Labeler(QWidget):
         """Display the next image."""
         # Get the next available record from the image list query
         logging.debug('Displaying next image')
-        self.record = self.dbHandler.retrieveCursor.fetchone()
+        self.record = self.queryCursor.fetchone()
 
         self.attemptUpdateProBarValue.emit(self.dbHandler.count_records(self.configHandler.getTableName('label')))
 
@@ -142,9 +142,10 @@ class Labeler(QWidget):
         """Run a query to get the list of all images in the DB."""
         logging.debug('Attempting to query records for image list')
         sql_query = 'SELECT file_path, bits_stored FROM ' + self.configHandler.getTableName("metadata") + ' ORDER BY file_path;'
+        self.queryCursor = self.dbHandler.openCursor(self.dbHandler.connection)
         try:
             logging.debug('Getting the image list')
-            self.dbHandler.retrieveCursor.execute(sql_query)
+            self.queryCursor.execute(sql_query)
             logging.debug('Done getting the image list')
         except (psycopg2.DatabaseError) as error:
             logging.warning(error)
