@@ -4,42 +4,25 @@ import logging
 import csv
 import numpy as np
 import psycopg2
-import psycopg2.extras
 from sklearn.model_selection import KFold, cross_val_score, train_test_split
 from sklearn import svm
 from joblib import dump
 
 class Trainer(Stage):
-    """Controls logic of getting the dataset from online sources."""
+    """Class that trains a SVM using the feature vectors and labels, then calculates the accuracy using the test set."""
     def __init__(self, configHandler, dbHandler):
         Stage.__init__(self, configHandler, dbHandler)
 
     @pyqtSlot()
     def train(self):
-        """Train a SVM using the feature vectors and labels, then calculate the accuracy using the test set.
-        
-        Parameters
-        ----------
-        config_file_name : string
-            File name of the INI file with DB and folder config information
-        
-        Returns
-        -------
-        (sklearn classifier, float)
-            The trained classifier and the corresponding accuracy
-        """
-        logging.info('***BEGIN CLASSIFICATION PHASE***')
-        logging.info('Running classification')
+        logging.info('Training SVM')
         conn = None
         try:
-            # read the connection parameters
             table_name = self.configHandler.getTableName("features")
 
-            # connect to the PostgreSQL server
             conn = psycopg2.connect(**self.configHandler.getDbInfo())
             cur = conn.cursor()
 
-            # Put all horizontal profiles into feature matrix
             sql_query = 'SELECT file_name FROM ' + table_name + ' ORDER BY file_path ASC;'
             cur.execute(sql_query)
             records = cur.fetchall()
@@ -59,7 +42,6 @@ class Trainer(Stage):
             X2 = [record[0] for record in records]
             X2 = np.array(X2, dtype=np.float)
 
-            # Combine the 2 matrices, making feature vectors twice as long
             X = np.concatenate((X1, X2), axis=1) 
 
             # Put all the labels into a list
@@ -69,9 +51,7 @@ class Trainer(Stage):
             records = cur.fetchall()
             y = [record[0] for record in records]
 
-            # close communication with the PostgreSQL database server
             cur.close()
-            # commit the changes
             conn.commit()
         except (psycopg2.DatabaseError) as error:
             logging.info(error)
@@ -114,4 +94,4 @@ class Trainer(Stage):
 
         self.attemptUpdateText.emit('K-Fold Cross Validation Accuracy: ' + str(accuracy))
         self.finished.emit()
-        logging.info('***END CLASSIFICATION PHASE***')
+        logging.info('Done training SVM. K-Fold Cross Validation Accuracy: %s', str(accuracy))

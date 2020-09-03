@@ -1,9 +1,6 @@
-"""Contains the software coordinating the logic of the application."""
 import logging
 import os
-import sys
 from PyQt5.QtCore import QObject, pyqtSignal
-from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QIcon
 from downloader import Downloader
 from labeler import Labeler
@@ -13,12 +10,6 @@ from feature_calculator import FeatureCalculator
 from cxr_config_handler import CxrConfigHandler
 from metadata_to_db.database_handler import DatabaseHandler
 from main_window import MainWindow
-
-def run_app():
-    """Run the application that guides the user through the process."""
-    app = QApplication(sys.argv)
-    cont = Controller()
-    app.exec_()
 
 class Controller(QObject):
     """Controller class that controls the logic of the application."""
@@ -45,17 +36,12 @@ class Controller(QObject):
         self.label_importer = LabelImporter(self.configHandler, self.dbHandler)
         self.trainer = Trainer(self.configHandler, self.dbHandler)
 
-        # Object variables
         self.main_app = MainWindow(self)
 
-        # Set up the GUI
         self.init_gui_state()
         logging.info('***CONTROLLER INITIALIZED***')
 
-    ### GUI HELPER FUNCTIONS
     def init_gui_state(self):
-        """Initialize the GUI in the right stage."""
-        # Set icon
         self.main_app.setWindowIcon(QIcon(self.configHandler.getParentFolder() + '/' + 'icon.jpg'))
 
         self.initStage1.connect(self.main_app.stage1_ui)
@@ -65,6 +51,7 @@ class Controller(QObject):
         self.initStage5.connect(self.main_app.stage5_ui)
         self.initStage6.connect(self.main_app.stage6_ui)
 
+        # Initialize in right stage
         if self.dbHandler.table_exists(self.configHandler.getTableName("label")):
             self.initStage6.emit()
         elif self.dbHandler.table_exists(self.configHandler.getTableName("features")):
@@ -93,13 +80,3 @@ class Controller(QObject):
         # Set the logging
         logging.basicConfig(filename='CXR_Classification.log', level=log_level_obj,
                             format='%(asctime)s %(levelname)-8s: %(message)s', datefmt='%Y-%m-%d|%H:%M:%S')
-
-    def log_gui_state(self, debug_level):
-        """Log the state of the feedback in the GUI."""
-        if debug_level == 'debug':
-            logging.debug('Text: ' + self.main_app.msg_box.text())
-            logging.debug('Progress bar value: ' + str(self.main_app.pro_bar.value()))
-
-if __name__ == "__main__":
-    # Run the application
-    run_app()

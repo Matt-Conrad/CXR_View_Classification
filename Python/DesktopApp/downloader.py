@@ -2,19 +2,17 @@ from stage import Stage
 import os
 import logging
 import requests
-from PyQt5.QtCore import pyqtSlot, pyqtSignal
+from PyQt5.QtCore import pyqtSlot
 
 class Downloader(Stage):
-    """Controls logic of getting the dataset from online sources."""
-
+    """Downloads datasets from online sources."""
     def __init__(self, configHandler):
         Stage.__init__(self, configHandler)
         self.filenameRelPath = "./" + configHandler.getTgzFilename()
         self.datasetType = configHandler.getDatasetType()
 
     @pyqtSlot()
-    def get_dataset(self):
-        """Attempt to get the dataset TGZ as many times as it takes. This one gets called by main.py"""
+    def checkDatasetStatus(self):
         logging.info('Checking if %s already exists', self.filenameRelPath)
         if os.path.isfile(self.filenameRelPath):
             logging.info('%s already exists', self.filenameRelPath)
@@ -27,21 +25,16 @@ class Downloader(Stage):
                 logging.info('Removing %s', self.filenameRelPath)
                 os.remove(self.filenameRelPath)
                 logging.info('Successfully removed %s', self.filenameRelPath)
-                self.download()
+                self.downloadDataset()
         else:
             logging.info('%s does not exist', self.filenameRelPath)
-            self.download()
+            self.downloadDataset()
 
         self.attemptUpdateProBarValue.emit(self.getTgzSize())
         self.attemptUpdateText.emit("Image download complete")
         self.finished.emit()
 
-    def download(self):
-        """Download the dataset, invoke the checks in get_dataset after.
-        
-        This runs after get_dataset figures out the current state of the downloading.
-        """
-        # Start download
+    def downloadDataset(self):
         logging.info('Downloading dataset from %s', self.configHandler.getUrl())
 
         self.attemptUpdateText.emit("Downloading images")
@@ -56,10 +49,10 @@ class Downloader(Stage):
                         self.attemptUpdateProBarValue.emit(self.getTgzSize())
                         f.write(chunk)
                     
-        self.get_dataset()
+        self.checkDatasetStatus()
 
     def getTgzSize(self):
-        """Calculates the size of the TGZ file for the purpose of setting the progress bar value."""
+        """Calculates the size of the TGZ file."""
         if self.datasetType == 'full_set':
             # Dividing by 100 because the expected size of this TGZ is larger than QProgressBar accepts
             return int(os.path.getsize(self.filenameRelPath) / 100)
@@ -69,7 +62,7 @@ class Downloader(Stage):
             raise ValueError('Value must be one of the keys in SOURCE_URL')
 
     def getTgzMax(self):
-        """Calculates the size of the TGZ file max for the purpose of setting the progress bar max."""
+        """Calculates the size of the TGZ file max."""
         if self.datasetType == 'full_set':
             # Dividing by 100 because the expected size of this TGZ is larger than QProgressBar accepts
             return int(self.expected_size / 100)

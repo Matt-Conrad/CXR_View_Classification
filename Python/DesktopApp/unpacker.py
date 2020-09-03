@@ -12,7 +12,6 @@ class Unpacker(Stage):
 
     @pyqtSlot()
     def unpack(self):
-        """Unpack the dataset from the TGZ and put it in a folder."""
         filenameRelPath = "./" + self.configHandler.getTgzFilename()
 
         logging.info('Unpacking dataset from %s', filenameRelPath)

@@ -4,14 +4,14 @@ import logging
 from PyQt5.QtCore import pyqtSlot
 
 class LabelImporter(Stage):
-    """Contains code for the application used to assist in labeling the data."""
+    """Class for importing image labels from CSV."""
 
     def __init__(self, configHandler, dbHandler):
-        """"""
         Stage.__init__(self, configHandler, dbHandler)
     
     @pyqtSlot()
     def importLabels(self):
+        logging.info("Importing label data from CSV")
         self.attemptUpdateProBarBounds.emit(0,1)
         self.attemptUpdateProBarValue.emit(0)
         self.attemptUpdateText.emit("Importing label data")
@@ -22,10 +22,9 @@ class LabelImporter(Stage):
         self.attemptUpdateProBarValue.emit(1)
         self.attemptUpdateText.emit("Done importing")
         self.finished.emit()
+        logging.info("Done importing label data")
 
     def import_image_label_data(self):
-        logging.info('Attempting to import CSV into table in DB')
-
         with open(self.configHandler.getColumnsInfoPath()) as file_reader:
             elements_json = json.load(file_reader)
         elements = elements_json['labels']

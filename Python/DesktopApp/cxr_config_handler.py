@@ -1,10 +1,10 @@
-"""Contains script that moves all DCM tag-values from a directory of DCMs into a PostgreSQL DB."""
 from PyQt5.QtCore import pyqtSlot
 from metadata_to_db.config_handler import ConfigHandler
 from expected_sizes import SOURCE_URL
 import os
 
 class CxrConfigHandler(ConfigHandler):
+    """Config handler specifically for CXR project."""
     def __init__(self, configFilename):
         ConfigHandler.__init__(self, configFilename)
         self.prepConfigIni()
@@ -14,8 +14,6 @@ class CxrConfigHandler(ConfigHandler):
         self.setParentFolder()
         self.setCsvPath()
         self.setColumnsInfoPath()
-
-    ## Functions for external use ##
 
     # Getters 
     def getUrl(self):

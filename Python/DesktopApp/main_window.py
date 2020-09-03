@@ -1,4 +1,3 @@
-"""Contains GUI code for the application."""
 import logging
 from PyQt5.QtCore import pyqtSlot, QThread
 from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QProgressBar, QLabel, QPushButton
@@ -11,8 +10,7 @@ class MainWindow(QMainWindow):
         logging.info('Constructing Main app')
         QMainWindow.__init__(self)
         self.controller = controller
-        
-        # Set up GUI
+
         self.fill_window()
         self.show()
         
@@ -20,10 +18,8 @@ class MainWindow(QMainWindow):
 
     def fill_window(self):
         """Fills the window with buttons."""
-        # Create the central widget
         centralWidget = QWidget()
 
-        # "Feedback dashboard" displays progress to the user
         self.feedback_dashboard = QVBoxLayout()
         self.msg_box = QLabel('Welcome to the CXR Classification Application')
         self.pro_bar = QProgressBar(self)
@@ -63,24 +59,20 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(int)
     def update_pro_bar_val(self, value):
-        """Updates the progress bar."""
         self.pro_bar.setValue(value)
 
     @pyqtSlot(int, int)
     def update_pro_bar_bounds(self, proBarMin, proBarMax):
-        """Updates the progress bar."""
         self.pro_bar.setMinimum(proBarMin)
         self.pro_bar.setMaximum(proBarMax)
 
     @pyqtSlot(str)
     def update_text(self, text):
-        """Updates the text."""
         self.msg_box.setText(text)
 
     @pyqtSlot()
     def stage1_ui(self):
-        # User in download phase
-        logging.info('Window initializing in stage 1')
+        logging.info('Window initializing in Download phase')
         self.download_btn.setDisabled(False)
         self.unpack_btn.setDisabled(True)
         self.store_btn.setDisabled(True)
@@ -88,20 +80,18 @@ class MainWindow(QMainWindow):
         self.label_btn.setDisabled(True)
         self.classify_btn.setDisabled(True)
 
-        self.download_btn.clicked.connect(self.controller.downloader.get_dataset)
+        self.download_btn.clicked.connect(self.controller.downloader.checkDatasetStatus)
 
-        logging.debug('Thread connected to downloader')
         self.connectToDashboard(self.controller.downloader)
 
-        logging.debug('Downloader signals connect to main thread')
         self.controller.downloader.finished.connect(self.stage2_ui)
         self.controller.downloader.finished.connect(self.controller.downloader.deleteLater)
 
-        logging.info('***Stage 1 initialized***')
+        logging.info('***Download phase initialized***')
 
     @pyqtSlot()
     def stage2_ui(self):
-        # User in unpack phase
+        logging.info('Window initializing in Unpack phase')
         self.download_btn.setDisabled(True)
         self.unpack_btn.setDisabled(False)
         self.store_btn.setDisabled(True)
@@ -133,10 +123,11 @@ class MainWindow(QMainWindow):
         self.unpackUpdaterThread.finished.connect(self.unpackUpdaterThread.deleteLater)
 
         self.unpackUpdater.finished.connect(self.stage3_ui)
+        logging.info('***Unpack phase initialized***')
         
     @pyqtSlot()
     def stage3_ui(self):
-        # User in store metadata phase
+        logging.info('Window initializing in Store phase')
         self.download_btn.setDisabled(True)
         self.unpack_btn.setDisabled(True)
         self.store_btn.setDisabled(False)
@@ -168,10 +159,11 @@ class MainWindow(QMainWindow):
         self.storeUpdaterThread.finished.connect(self.storeUpdaterThread.deleteLater)
 
         self.storeUpdater.finished.connect(self.stage4_ui)
+        logging.info('***Store phase initialized***')
 
     @pyqtSlot()
     def stage4_ui(self):
-        # User in calculate features phase
+        logging.info('Window initializing in Feature Calculation phase')
         self.download_btn.setDisabled(True)
         self.unpack_btn.setDisabled(True)
         self.store_btn.setDisabled(True)
@@ -185,10 +177,11 @@ class MainWindow(QMainWindow):
 
         self.controller.featCalc.finished.connect(self.stage5_ui)
         self.controller.featCalc.finished.connect(self.controller.featCalc.deleteLater)
+        logging.info('***Feature Calculation phase initialized***')
 
     @pyqtSlot()
     def stage5_ui(self):
-        # User in labeling phase
+        logging.info('Window initializing in Labeling phase')
         self.download_btn.setDisabled(True)
         self.unpack_btn.setDisabled(True)
         self.store_btn.setDisabled(True)
@@ -210,11 +203,11 @@ class MainWindow(QMainWindow):
             self.controller.label_importer.finished.connect(self.controller.label_importer.deleteLater)
         else:
             raise ValueError('Value must be one of the keys in SOURCE_URL')
-        logging.info('***END LABELING PHASE***')
+        logging.info('***Labeling phase initialized***')
 
     @pyqtSlot()
     def stage6_ui(self):
-        # User in classification phase
+        logging.info('Window initializing in Training phase')
         self.download_btn.setDisabled(True)
         self.unpack_btn.setDisabled(True)
         self.store_btn.setDisabled(True)
@@ -227,6 +220,7 @@ class MainWindow(QMainWindow):
         self.connectToDashboard(self.controller.trainer)
 
         self.controller.trainer.finished.connect(self.controller.trainer.deleteLater)
+        logging.info('***Training phase initialized***')
 
     def connectToDashboard(self, stage):
         stage.attemptUpdateProBarBounds.connect(self.update_pro_bar_bounds)

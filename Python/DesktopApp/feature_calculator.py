@@ -1,8 +1,6 @@
-"""Contains script that moves all DCM tag-values from a directory of DCMs into a PostgreSQL DB."""
 from stage import Stage
 import logging
 import os
-import numpy as np
 import pydicom as pdm
 import psycopg2
 import psycopg2.extras
@@ -11,59 +9,46 @@ from cxr_pipeline.preprocessing import preprocessing
 from PyQt5.QtCore import pyqtSlot
 
 class FeatureCalculator(Stage):
-    """Controls logic of getting the dataset from online sources."""
+    """Calculates the feature vectors for each image."""
     def __init__(self, configHandler, dbHandler):
         Stage.__init__(self, configHandler, dbHandler)
         self.featTableName = self.configHandler.getTableName("features")
 
     @pyqtSlot()
     def calculate_features(self):
-        """Cycles through the table and pulls one image at a time."""
         logging.info('Calculating features from images')
         conn = None
         try:
-            # read the connection parameters
             table_name = self.configHandler.getTableName("metadata")
-            # connect to the PostgreSQL server
             logging.debug('Connecting to the PostgreSQL database...')
             conn = psycopg2.connect(**self.configHandler.getDbInfo())
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             logging.debug('Connection established')
-            # Create the SQL query to be used
             sql_query = 'SELECT * FROM ' + table_name + ';'
-            # create table one by one
             cur.execute(sql_query)
             count = 0
 
-            # Add table to DB
             self.dbHandler.add_table_to_db(self.featTableName, self.configHandler.getColumnsInfoPath(), 'features_list')
             
-            # Set the progress region
             self.attemptUpdateText.emit('Calculating features')
             self.attemptUpdateProBarBounds.emit(0, self.expected_num_files)
             self.attemptUpdateProBarValue.emit(self.dbHandler.count_records(self.featTableName))
 
             for record in cur:
-                # Read the image data
                 file_path = record['file_path']
                 count += 1
                 logging.info('Calculating for image number: %s File: %s', str(count), file_path)
                 image = pdm.dcmread(file_path).pixel_array
                 
-                # Preprocess the image
                 image = preprocessing(image, record['bits_stored'], record['photometric_interpretation'])
 
-                # Calculate the various features
                 (hor_profile, vert_profile) = calc_image_prof(image)
 
-                # Store the data to the DB
                 self.store(self.configHandler.getConfigFilename(), file_path, hor_profile, vert_profile)
 
                 self.attemptUpdateProBarValue.emit(self.dbHandler.count_records(self.featTableName))
 
-            # close communication with the PostgreSQL database server
             cur.close()
-            # commit the changes
             conn.commit()
         except (psycopg2.DatabaseError) as error:
             logging.warning(error)
@@ -75,23 +60,17 @@ class FeatureCalculator(Stage):
                 logging.info('Done calculating features from images')
 
     def store(self, config_file_name, file_path, hor_profile, vert_profile):
-        """Stores the calculated features into the database."""
         logging.debug('Storing the calculated features into the database.')
         conn = None
         try:
-            # read the connection parameters
             out_table_name = self.configHandler.getTableName("features")
-            # connect to the PostgreSQL server
             conn = psycopg2.connect(**self.configHandler.getDbInfo())
             cur = conn.cursor()
-            # Create the SQL query to be used
             sql_query = 'INSERT INTO ' + out_table_name + ' (file_name, file_path, hor_profile, vert_profile) VALUES (%s, %s, %s, %s);'
             values = (file_path.split(os.sep)[-1], file_path, hor_profile.tolist(), vert_profile.tolist())
-            # create table one by one
             cur.execute(sql_query, values)
 
             cur.close()
-            # commit the changes
             conn.commit()
         except (psycopg2.DatabaseError) as error:
             logging.warning(error)

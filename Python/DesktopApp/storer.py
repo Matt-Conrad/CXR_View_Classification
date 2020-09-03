@@ -1,10 +1,9 @@
-"""Contains script that moves all DCM tag-values from a directory of DCMs into a PostgreSQL DB."""
 from PyQt5.QtCore import pyqtSlot
 from stage import Stage
 from metadata_to_db.dicom_to_db import DicomToDatabase
 
 class Storer(Stage):
-    """Controls logic of getting the dataset from online sources."""
+    """Class for moving all DCM tag-values from a directory of DCMs into a PostgreSQL DB."""
     def __init__(self, configHandler, dbHandler):
         Stage.__init__(self, configHandler, dbHandler)
         self.dicomToDatabase = DicomToDatabase(configHandler, dbHandler)
@@ -14,7 +13,7 @@ class Storer(Stage):
         self.dicomToDatabase.dicomToDb(self.dbHandler.dbInfo['database'], self.configHandler.getTableName('metadata'), self.configHandler.getColumnsInfoPath())
 
 class StoreUpdater(Stage):
-    """Controls logic of getting the dataset from online sources."""
+    """Updates dashboard for the storer class."""
     def __init__(self, configHandler, dbHandler):
         Stage.__init__(self, configHandler, dbHandler)
         self.folderRelPath = "./" + configHandler.getDatasetName()
@@ -29,5 +28,5 @@ class StoreUpdater(Stage):
             self.attemptUpdateProBarValue.emit(self.dbHandler.count_records(self.configHandler.getTableName('metadata')))
             
         self.attemptUpdateProBarValue.emit(self.dbHandler.count_records(self.configHandler.getTableName('metadata')))
-        self.attemptUpdateText.emit("Done storing metadata")
         self.finished.emit()
+        self.attemptUpdateText.emit("Done storing metadata")

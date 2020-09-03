@@ -2,7 +2,7 @@ from PyQt5.QtCore import QObject, pyqtSignal
 from expected_sizes import EXPECTED_NUM_FILES, EXPECTED_SIZES
 
 class Stage(QObject):
-    """Contains GUI code for the application."""
+    """Code for stage of the CXR training process."""
     # Signals
     finished = pyqtSignal()
     attemptUpdateProBarValue = pyqtSignal(int)
