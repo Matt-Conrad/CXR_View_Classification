@@ -112,7 +112,7 @@ class Labeler(QWidget):
 
         return pixmap
 
-    def query_image_list(self)
+    def query_image_list(self):
         logging.debug('Attempting to query records for image list')
         sql_query = 'SELECT file_path, bits_stored FROM ' + self.configHandler.getTableName("metadata") + ' ORDER BY file_path;'
         self.queryCursor = self.dbHandler.openCursor(self.dbHandler.connection)
@@ -124,10 +124,7 @@ class Labeler(QWidget):
             logging.warning(error)
 
     def store_label(self, decision):
+        logging.debug('Storing label')
         sql_query = 'INSERT INTO ' + self.configHandler.getTableName("label") + ' (file_name, file_path, image_view) VALUES (\'' + self.record['file_path'].split(os.sep)[-1] + '\', \'' + self.record['file_path'] + '\', \'' + decision + '\');'
-        try:
-            logging.debug('Storing label')
-            self.dbHandler.storeCursor.execute(sql_query)
-            logging.debug('Label is stored')
-        except (psycopg2.DatabaseError) as error:
-            logging.warning(error)
+        self.dbHandler.executeQuery(self.dbHandler.storeCursor, sql_query)
+        logging.debug('Label is stored')

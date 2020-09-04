@@ -3,7 +3,6 @@ from PyQt5.QtCore import pyqtSlot
 import logging
 import csv
 import numpy as np
-import psycopg2
 from sklearn.model_selection import KFold, cross_val_score, train_test_split
 from sklearn import svm
 from joblib import dump
@@ -16,48 +15,35 @@ class Trainer(Stage):
     @pyqtSlot()
     def train(self):
         logging.info('Training SVM')
-        conn = None
-        try:
-            table_name = self.configHandler.getTableName("features")
 
-            conn = psycopg2.connect(**self.configHandler.getDbInfo())
-            cur = conn.cursor()
+        # Get all file names of dataset
+        feat_table_name = self.configHandler.getTableName("features")
+        sql_query = 'SELECT file_name FROM ' + feat_table_name + ' ORDER BY file_path ASC;'
+        self.dbHandler.executeQuery(self.dbHandler.retrieveCursor, sql_query)
+        records = self.dbHandler.retrieveCursor.fetchall()
+        file_names = [record[0] for record in records]
 
-            sql_query = 'SELECT file_name FROM ' + table_name + ' ORDER BY file_path ASC;'
-            cur.execute(sql_query)
-            records = cur.fetchall()
-            file_names = [record[0] for record in records]
+        # Put all horizontal profiles into feature matrix
+        sql_query = 'SELECT hor_profile FROM ' + feat_table_name + ' ORDER BY file_path ASC;'
+        self.dbHandler.executeQuery(self.dbHandler.retrieveCursor, sql_query)
+        records = self.dbHandler.retrieveCursor.fetchall()
+        X1 = [record[0] for record in records]
+        X1 = np.array(X1, dtype=np.float)
 
-            # Put all horizontal profiles into feature matrix
-            sql_query = 'SELECT hor_profile FROM ' + table_name + ' ORDER BY file_path ASC;'
-            cur.execute(sql_query)
-            records = cur.fetchall()
-            X1 = [record[0] for record in records]
-            X1 = np.array(X1, dtype=np.float)
+        # Put all vertical profiles into feature matrix
+        sql_query = 'SELECT vert_profile FROM ' + feat_table_name + ' ORDER BY file_path ASC;'
+        self.dbHandler.executeQuery(self.dbHandler.retrieveCursor, sql_query)
+        records = self.dbHandler.retrieveCursor.fetchall()
+        X2 = [record[0] for record in records]
+        X2 = np.array(X2, dtype=np.float)
 
-            # Put all vertical profiles into feature matrix
-            sql_query = 'SELECT vert_profile FROM ' + table_name + ' ORDER BY file_path ASC;'
-            cur.execute(sql_query)
-            records = cur.fetchall()
-            X2 = [record[0] for record in records]
-            X2 = np.array(X2, dtype=np.float)
+        X = np.concatenate((X1, X2), axis=1) 
 
-            X = np.concatenate((X1, X2), axis=1) 
-
-            # Put all the labels into a list
-            label_table_name = self.configHandler.getTableName("label")
-            sql_query = 'SELECT image_view FROM ' + label_table_name + ' ORDER BY file_path ASC;'
-            cur.execute(sql_query)
-            records = cur.fetchall()
-            y = [record[0] for record in records]
-
-            cur.close()
-            conn.commit()
-        except (psycopg2.DatabaseError) as error:
-            logging.info(error)
-        finally:
-            if conn is not None:
-                conn.close()
+        # Put all the labels into a list
+        sql_query = 'SELECT image_view FROM ' + self.configHandler.getTableName("label") + ' ORDER BY file_path ASC;'
+        self.dbHandler.executeQuery(self.dbHandler.retrieveCursor, sql_query)
+        records = self.dbHandler.retrieveCursor.fetchall()
+        y = [record[0] for record in records]
         
         # Split the dataset into 2/3 training 1/3 testing
         X_train, X_test, y_train, y_test, file_names_train, file_names_test = train_test_split(X, y, file_names, test_size=1/3, shuffle=True)
