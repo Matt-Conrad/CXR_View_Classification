@@ -34,7 +34,6 @@ class Labeler(QWidget):
         logging.info('Done constructing Labeling app')
         
     def close_label_app(self):
-        """On exit of the app close the connection."""
         logging.info('Attempting to close connection')
         self.dbHandler.closeConnection()
         self.attemptUpdateText.emit("Image labeling complete")
@@ -65,19 +64,16 @@ class Labeler(QWidget):
         logging.debug('Done filling window')
 
     def frontal(self):
-        """Callback function for the frontal button."""
         logging.debug('Front')
         self.store_label('F')
         self.display_next_image()
 
     def lateral(self):
-        """Callback function for the lateral button."""
         logging.debug('Lateral')
         self.store_label('L')
         self.display_next_image()
 
     def display_next_image(self):
-        """Display the next image."""
         logging.debug('Displaying next image')
         self.record = self.queryCursor.fetchone()
 
@@ -87,11 +83,11 @@ class Labeler(QWidget):
             logging.info('End of query, deleting labeling app')
             self.close_label_app()
         else:
-            # Update the window title with the image count
+            # Update the window title and image
             self.count += 1
             logging.debug('Image Count: ' + str(self.count))
             self.setWindowTitle('Image Count: ' + str(self.count))
-            # Read image and update it in the QLabel
+
             image = pdm.dcmread(self.record['file_path']).pixel_array
             bits_stored = self.record['bits_stored']
             pixmap = self.arr_into_pixmap(image, bits_stored)
@@ -127,4 +123,3 @@ class Labeler(QWidget):
         logging.debug('Storing label')
         sql_query = 'INSERT INTO ' + self.configHandler.getTableName("label") + ' (file_name, file_path, image_view) VALUES (\'' + self.record['file_path'].split(os.sep)[-1] + '\', \'' + self.record['file_path'] + '\', \'' + decision + '\');'
         self.dbHandler.executeQuery(self.dbHandler.storeCursor, sql_query)
-        logging.debug('Label is stored')

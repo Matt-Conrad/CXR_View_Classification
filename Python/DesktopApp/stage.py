@@ -3,7 +3,6 @@ from expected_sizes import EXPECTED_NUM_FILES, EXPECTED_SIZES
 
 class Stage(QObject):
     """Code for stage of the CXR training process."""
-    # Signals
     finished = pyqtSignal()
     attemptUpdateProBarValue = pyqtSignal(int)
     attemptUpdateProBarBounds = pyqtSignal(int, int)

@@ -2,8 +2,6 @@ from stage import Stage
 import logging
 import os
 import pydicom as pdm
-import psycopg2
-import psycopg2.extras
 from shared_image_processing.features import calc_image_prof
 from cxr_pipeline.preprocessing import preprocessing
 from PyQt5.QtCore import pyqtSlot
@@ -30,7 +28,7 @@ class FeatureCalculator(Stage):
         for record in self.dbHandler.retrieveCursor:
             file_path = record['file_path']
             count += 1
-            logging.info('Calculating for image number: %s File: %s', str(count), file_path)
+            logging.debug('Calculating for image number: %s File: %s', str(count), file_path)
             image = pdm.dcmread(file_path).pixel_array
             
             image = preprocessing(image, record['bits_stored'], record['photometric_interpretation'])
