@@ -14,12 +14,12 @@ from main_window import MainWindow
 class Controller(QObject):
     """Controller class that controls the logic of the application."""
     # Signals
-    initStage1 = pyqtSignal()
-    initStage2 = pyqtSignal()
-    initStage3 = pyqtSignal()
-    initStage4 = pyqtSignal()
-    initStage5 = pyqtSignal()
-    initStage6 = pyqtSignal()
+    initDownloadStage = pyqtSignal()
+    initUnpackStage = pyqtSignal()
+    initStoreStage = pyqtSignal()
+    initCalcFeatStage = pyqtSignal()
+    initLabelStage = pyqtSignal()
+    initTrainStage = pyqtSignal()
 
     def __init__(self):
         self.configHandler = CxrConfigHandler("./config.ini")
@@ -44,26 +44,26 @@ class Controller(QObject):
     def init_gui_state(self):
         self.main_app.setWindowIcon(QIcon(self.configHandler.getParentFolder() + '/' + 'icon.jpg'))
 
-        self.initStage1.connect(self.main_app.stage1_ui)
-        self.initStage2.connect(self.main_app.stage2_ui)
-        self.initStage3.connect(self.main_app.stage3_ui)
-        self.initStage4.connect(self.main_app.stage4_ui)
-        self.initStage5.connect(self.main_app.stage5_ui)
-        self.initStage6.connect(self.main_app.stage6_ui)
+        self.initDownloadStage.connect(self.main_app.downloadStageUi)
+        self.initUnpackStage.connect(self.main_app.unpackStageUi)
+        self.initStoreStage.connect(self.main_app.storeStageUi)
+        self.initCalcFeatStage.connect(self.main_app.calcFeatStageUi)
+        self.initLabelStage.connect(self.main_app.labelStageUi)
+        self.initTrainStage.connect(self.main_app.trainStageUi)
 
         # Initialize in right stage
         if self.dbHandler.table_exists(self.configHandler.getTableName("label")):
-            self.initStage6.emit()
+            self.initTrainStage.emit()
         elif self.dbHandler.table_exists(self.configHandler.getTableName("features")):
-            self.initStage5.emit()
+            self.initLabelStage.emit()
         elif self.dbHandler.table_exists(self.configHandler.getTableName("metadata")):
-            self.initStage4.emit()
+            self.initCalcFeatStage.emit()
         elif os.path.isdir(self.configHandler.getDatasetName()):
-            self.initStage3.emit()
+            self.initStoreStage.emit()
         elif os.path.exists(self.configHandler.getTgzFilename()):
-            self.initStage2.emit()
+            self.initUnpackStage.emit()
         else:
-            self.initStage1.emit()
+            self.initDownloadStage.emit()
 
     def configureLogging(self):
         # Get log level from config file

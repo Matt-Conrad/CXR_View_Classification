@@ -15,6 +15,8 @@ class MainWindow(QMainWindow):
         QMainWindow.__init__(self)
         self.controller = controller
 
+        self.buttons_list = ["download_btn", "unpack_btn", "store_btn", "features_btn", "label_btn", "classify_btn"]
+
         self.fill_window()
         self.show()
         
@@ -60,7 +62,7 @@ class MainWindow(QMainWindow):
         # Create widget for the labeler
         labelWidget = QWidget()
 
-        labelerMsgBox = QLabel()
+        labelerMsgBox = QLabel(self)
         labelerProBar = QProgressBar(self)
         image = QLabel(self)
         image.setAlignment(Qt.AlignCenter)
@@ -111,36 +113,28 @@ class MainWindow(QMainWindow):
         image = pdm.dcmread(record['file_path']).pixel_array
         bits_stored = record['bits_stored']
         pixmap = self.arr_into_pixmap(image, bits_stored)
-        self.widgetStack.widget(1).findChild(QLabel, "image").setPixmap(pixmap)
+        self.widgetStack.currentWidget().findChild(QLabel, "image").setPixmap(pixmap)
 
     @pyqtSlot()
-    def stage1_ui(self):
+    def downloadStageUi(self):
         logging.info('Window initializing in Download phase')
-        self.widgetStack.widget(0).findChild(QPushButton, "download_btn").setDisabled(False)
-        self.widgetStack.widget(0).findChild(QPushButton, "unpack_btn").setDisabled(True)
-        self.widgetStack.widget(0).findChild(QPushButton, "store_btn").setDisabled(True)
-        self.widgetStack.widget(0).findChild(QPushButton, "features_btn").setDisabled(True)
-        self.widgetStack.widget(0).findChild(QPushButton, "label_btn").setDisabled(True)
-        self.widgetStack.widget(0).findChild(QPushButton, "classify_btn").setDisabled(True)
+        self.disableAllStageButtons()
+        self.enableStageButton(0)
 
-        self.widgetStack.widget(0).findChild(QPushButton, "download_btn").clicked.connect(self.controller.downloader.checkDatasetStatus)
+        self.widgetStack.currentWidget().findChild(QPushButton, "download_btn").clicked.connect(self.controller.downloader.checkDatasetStatus)
 
         self.connectToDashboard(self.controller.downloader)
 
-        self.controller.downloader.finished.connect(self.stage2_ui)
+        self.controller.downloader.finished.connect(self.unpackStageUi)
         self.controller.downloader.finished.connect(self.controller.downloader.deleteLater)
 
         logging.info('***Download phase initialized***')
 
     @pyqtSlot()
-    def stage2_ui(self):
+    def unpackStageUi(self):
         logging.info('Window initializing in Unpack phase')
-        self.widgetStack.widget(0).findChild(QPushButton, "download_btn").setDisabled(True)
-        self.widgetStack.widget(0).findChild(QPushButton, "unpack_btn").setDisabled(False)
-        self.widgetStack.widget(0).findChild(QPushButton, "store_btn").setDisabled(True)
-        self.widgetStack.widget(0).findChild(QPushButton, "features_btn").setDisabled(True)
-        self.widgetStack.widget(0).findChild(QPushButton, "label_btn").setDisabled(True)
-        self.widgetStack.widget(0).findChild(QPushButton, "classify_btn").setDisabled(True)
+        self.disableAllStageButtons()
+        self.enableStageButton(1)
 
         self.unpacker = Unpacker(self.controller.configHandler)
         self.unpackUpdater = UnpackUpdater(self.controller.configHandler)
@@ -148,13 +142,13 @@ class MainWindow(QMainWindow):
         # Unpacker
         self.unpackThread = QThread()
         self.unpacker.moveToThread(self.unpackThread)
-        self.widgetStack.widget(0).findChild(QPushButton, "unpack_btn").clicked.connect(self.unpackThread.start)
+        self.widgetStack.currentWidget().findChild(QPushButton, "unpack_btn").clicked.connect(self.unpackThread.start)
         self.unpackThread.started.connect(self.unpacker.unpack)
 
         # Unpack Updater
         self.unpackUpdaterThread = QThread()
         self.unpackUpdater.moveToThread(self.unpackUpdaterThread)
-        self.widgetStack.widget(0).findChild(QPushButton, "unpack_btn").clicked.connect(self.unpackUpdaterThread.start)
+        self.widgetStack.currentWidget().findChild(QPushButton, "unpack_btn").clicked.connect(self.unpackUpdaterThread.start)
         self.unpackUpdaterThread.started.connect(self.unpackUpdater.update)
 
         self.connectToDashboard(self.unpackUpdater)
@@ -165,18 +159,14 @@ class MainWindow(QMainWindow):
         self.unpackThread.finished.connect(self.unpackThread.deleteLater)
         self.unpackUpdaterThread.finished.connect(self.unpackUpdaterThread.deleteLater)
 
-        self.unpackUpdater.finished.connect(self.stage3_ui)
+        self.unpackUpdater.finished.connect(self.storeStageUi)
         logging.info('***Unpack phase initialized***')
         
     @pyqtSlot()
-    def stage3_ui(self):
+    def storeStageUi(self):
         logging.info('Window initializing in Store phase')
-        self.widgetStack.widget(0).findChild(QPushButton, "download_btn").setDisabled(True)
-        self.widgetStack.widget(0).findChild(QPushButton, "unpack_btn").setDisabled(True)
-        self.widgetStack.widget(0).findChild(QPushButton, "store_btn").setDisabled(False)
-        self.widgetStack.widget(0).findChild(QPushButton, "features_btn").setDisabled(True)
-        self.widgetStack.widget(0).findChild(QPushButton, "label_btn").setDisabled(True)
-        self.widgetStack.widget(0).findChild(QPushButton, "classify_btn").setDisabled(True)
+        self.disableAllStageButtons()
+        self.enableStageButton(2)
 
         self.storer = Storer(self.controller.configHandler, self.controller.dbHandler)
         self.storeUpdater = StoreUpdater(self.controller.configHandler, self.controller.dbHandler)
@@ -184,14 +174,14 @@ class MainWindow(QMainWindow):
         # Storer
         self.storeThread = QThread()
         self.storer.moveToThread(self.storeThread)
-        self.widgetStack.widget(0).findChild(QPushButton, "store_btn").clicked.connect(self.storeThread.start)
+        self.widgetStack.currentWidget().findChild(QPushButton, "store_btn").clicked.connect(self.storeThread.start)
         self.storeThread.started.connect(self.storer.store)
 
         # Store Updater
         self.storeUpdaterThread = QThread()
         self.storeUpdater.moveToThread(self.storeUpdaterThread)
-        self.widgetStack.widget(0).findChild(QPushButton, "store_btn").clicked.connect(self.storeUpdaterThread.start)
-        self.storeUpdaterThread.started.connect(self.storeUpdater.update)
+        self.widgetStack.currentWidget().findChild(QPushButton, "store_btn").clicked.connect(self.storeUpdaterThread.start)
+        self.storer.startUpdating.connect(self.storeUpdater.update)
 
         self.connectToDashboard(self.storeUpdater)
 
@@ -201,72 +191,63 @@ class MainWindow(QMainWindow):
         self.storeThread.finished.connect(self.storeThread.deleteLater)
         self.storeUpdaterThread.finished.connect(self.storeUpdaterThread.deleteLater)
 
-        self.storeUpdater.finished.connect(self.stage4_ui)
+        self.storeUpdater.finished.connect(self.calcFeatStageUi)
         logging.info('***Store phase initialized***')
 
     @pyqtSlot()
-    def stage4_ui(self):
+    def calcFeatStageUi(self):
         logging.info('Window initializing in Feature Calculation phase')
-        self.widgetStack.widget(0).findChild(QPushButton, "download_btn").setDisabled(True)
-        self.widgetStack.widget(0).findChild(QPushButton, "unpack_btn").setDisabled(True)
-        self.widgetStack.widget(0).findChild(QPushButton, "store_btn").setDisabled(True)
-        self.widgetStack.widget(0).findChild(QPushButton, "features_btn").setDisabled(False)
-        self.widgetStack.widget(0).findChild(QPushButton, "label_btn").setDisabled(True)
-        self.widgetStack.widget(0).findChild(QPushButton, "classify_btn").setDisabled(True)
+        self.disableAllStageButtons()
+        self.enableStageButton(3)
 
-        self.widgetStack.widget(0).findChild(QPushButton, "features_btn").clicked.connect(self.controller.featCalc.calculate_features)
+        self.widgetStack.currentWidget().findChild(QPushButton, "features_btn").clicked.connect(self.controller.featCalc.calculate_features)
 
         self.connectToDashboard(self.controller.featCalc)
 
-        self.controller.featCalc.finished.connect(self.stage5_ui)
+        self.controller.featCalc.finished.connect(self.labelStageUi)
         self.controller.featCalc.finished.connect(self.controller.featCalc.deleteLater)
         logging.info('***Feature Calculation phase initialized***')
 
     @pyqtSlot()
-    def stage5_ui(self):
+    def labelStageUi(self):
         logging.info('Window initializing in Labeling phase')
-        self.widgetStack.widget(0).findChild(QPushButton, "download_btn").setDisabled(True)
-        self.widgetStack.widget(0).findChild(QPushButton, "unpack_btn").setDisabled(True)
-        self.widgetStack.widget(0).findChild(QPushButton, "store_btn").setDisabled(True)
-        self.widgetStack.widget(0).findChild(QPushButton, "features_btn").setDisabled(True)
-        self.widgetStack.widget(0).findChild(QPushButton, "label_btn").setDisabled(False)
-        self.widgetStack.widget(0).findChild(QPushButton, "classify_btn").setDisabled(True)
+        self.disableAllStageButtons()
+        self.enableStageButton(4)
 
         if self.controller.configHandler.getDatasetType() == 'subset':
-            self.widgetStack.widget(0).findChild(QPushButton, "label_btn").clicked.connect(lambda: self.centralWidget().setCurrentIndex(1))
-            self.widgetStack.widget(0).findChild(QPushButton, "label_btn").clicked.connect(self.controller.labeler.startLabeler)
+            currentWidgetIndex = self.widgetStack.currentIndex()
+            nextWidgetIndex = self.widgetStack.currentIndex() + 1
 
-            self.widgetStack.widget(1).findChild(QPushButton, "frontal_btn").clicked.connect(self.controller.labeler.frontal)
-            self.widgetStack.widget(1).findChild(QPushButton, "lateral_btn").clicked.connect(self.controller.labeler.lateral)
+            self.widgetStack.currentWidget().findChild(QPushButton, "label_btn").clicked.connect(lambda: self.centralWidget().setCurrentIndex(nextWidgetIndex))
+            self.widgetStack.currentWidget().findChild(QPushButton, "label_btn").clicked.connect(self.controller.labeler.startLabeler)
+
+            self.widgetStack.widget(nextWidgetIndex).findChild(QPushButton, "frontal_btn").clicked.connect(self.controller.labeler.frontal)
+            self.widgetStack.widget(nextWidgetIndex).findChild(QPushButton, "lateral_btn").clicked.connect(self.controller.labeler.lateral)
             self.controller.labeler.attemptUpdateImage.connect(self.updateImage)
 
             self.connectToDashboard(self.controller.labeler)
-            self.controller.labeler.finished.connect(lambda: self.centralWidget().setCurrentIndex(0))
-            self.controller.labeler.finished.connect(self.stage6_ui)
+            self.controller.labeler.finished.connect(lambda: self.centralWidget().setCurrentIndex(currentWidgetIndex))
+            self.controller.labeler.finished.connect(self.trainStageUi)
             self.controller.labeler.finished.connect(self.controller.labeler.deleteLater)
 
         elif self.controller.configHandler.getDatasetType() == 'full_set':
-            self.widgetStack.widget(0).findChild(QPushButton, "label_btn").clicked.connect(self.controller.label_importer.importLabels)
+            self.widgetStack.currentWidget().findChild(QPushButton, "label_btn").clicked.connect(self.controller.label_importer.importLabels)
             self.connectToDashboard(self.controller.label_importer)
-            self.controller.label_importer.finished.connect(self.stage6_ui)
+            self.controller.label_importer.finished.connect(self.trainStageUi)
             self.controller.label_importer.finished.connect(self.controller.label_importer.deleteLater)
         else:
             raise ValueError('Value must be one of the keys in SOURCE_URL')
         logging.info('***Labeling phase initialized***')
 
     @pyqtSlot()
-    def stage6_ui(self):
+    def trainStageUi(self):
         logging.info('Window initializing in Training phase')
         self.setFixedSize(self.centralWidget().currentWidget().layout().sizeHint())
 
-        self.widgetStack.widget(0).findChild(QPushButton, "download_btn").setDisabled(True)
-        self.widgetStack.widget(0).findChild(QPushButton, "unpack_btn").setDisabled(True)
-        self.widgetStack.widget(0).findChild(QPushButton, "store_btn").setDisabled(True)
-        self.widgetStack.widget(0).findChild(QPushButton, "features_btn").setDisabled(True)
-        self.widgetStack.widget(0).findChild(QPushButton, "label_btn").setDisabled(True)
-        self.widgetStack.widget(0).findChild(QPushButton, "classify_btn").setDisabled(False)
+        self.disableAllStageButtons()
+        self.enableStageButton(5)
 
-        self.widgetStack.widget(0).findChild(QPushButton, "classify_btn").clicked.connect(self.controller.trainer.train)
+        self.widgetStack.currentWidget().findChild(QPushButton, "classify_btn").clicked.connect(self.controller.trainer.train)
 
         self.connectToDashboard(self.controller.trainer)
 
@@ -277,6 +258,13 @@ class MainWindow(QMainWindow):
         stage.attemptUpdateProBarBounds.connect(self.update_pro_bar_bounds)
         stage.attemptUpdateProBarValue.connect(self.update_pro_bar_val)
         stage.attemptUpdateText.connect(self.update_text)
+
+    def disableAllStageButtons(self):
+        for button in self.buttons_list:
+            self.widgetStack.currentWidget().findChild(QPushButton, button).setDisabled(True)
+
+    def enableStageButton(self, stageIndex):
+        self.widgetStack.currentWidget().findChild(QPushButton, self.buttons_list[stageIndex]).setDisabled(False)
 
     def arr_into_pixmap(self, image, bits_stored):
         """Convert the image array into a QPixmap for display."""
