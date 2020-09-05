@@ -1,67 +1,32 @@
 import logging
 import os
 import psycopg2
-import pydicom as pdm
-import cv2
-import numpy as np
-from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QGridLayout
-from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtCore import pyqtSignal, pyqtSlot
+from stage import Stage
 
-class Labeler(QWidget):
-    """Contains code for the application used to assist in labeling the data."""
-    finished = pyqtSignal()
-    attemptUpdateProBarValue = pyqtSignal(int)
-    attemptUpdateProBarBounds = pyqtSignal(int, int)
-    attemptUpdateText = pyqtSignal(str)
+class Labeler(Stage):
+    """Class used to assist in labeling the data."""
+    attemptUpdateImage = pyqtSignal(object)
 
     def __init__(self, configHandler, dbHandler):
-        logging.info('Constructing Labeling app')
-        super().__init__()
-        
-        self.configHandler = configHandler
-        self.dbHandler = dbHandler
+        Stage.__init__(self, configHandler, dbHandler)
 
         self.count = 0
-
-        # Variables
         self.record = None
 
-        self.image = QLabel(self)
-        self.frontal_btn = QPushButton('Frontal', self)
-        self.lateral_btn = QPushButton('Lateral', self)
-        
-        logging.info('Done constructing Labeling app')
-        
-    def close_label_app(self):
-        logging.info('Attempting to close connection')
-        self.dbHandler.closeConnection()
-        self.attemptUpdateText.emit("Image labeling complete")
-        self.finished.emit()
-        self.close()
-        logging.info('Closing Labeling app')
-
     @pyqtSlot()
-    def fill_window(self):
+    def startLabeler(self):
         """Displays the content into the window."""
         logging.debug('Filling window')
         self.query_image_list()
+        
         self.attemptUpdateText.emit("Please manually label images")
+        self.attemptUpdateProBarBounds.emit(0, self.expected_num_files)
+        self.attemptUpdateProBarValue.emit(0)
+
         self.dbHandler.add_table_to_db(self.configHandler.getTableName('label'), self.configHandler.getColumnsInfoPath(), 'labels')
         
-        layout = QGridLayout()
-
-        layout.addWidget(self.image, 1, 0, 1, 2)
-        layout.addWidget(self.frontal_btn, 2, 0)
-        layout.addWidget(self.lateral_btn, 2, 1)
-
-        self.setLayout(layout)
         self.display_next_image()
-        self.frontal_btn.clicked.connect(self.frontal)
-        self.lateral_btn.clicked.connect(self.lateral)
-        self.show()
-
-        logging.debug('Done filling window')
 
     def frontal(self):
         logging.debug('Front')
@@ -75,49 +40,25 @@ class Labeler(QWidget):
 
     def display_next_image(self):
         logging.debug('Displaying next image')
-        self.record = self.queryCursor.fetchone()
+        self.record = self.dbHandler.retrieveCursor.fetchone()
 
         self.attemptUpdateProBarValue.emit(self.dbHandler.count_records(self.configHandler.getTableName('label')))
 
         if self.record is None:
-            logging.info('End of query, deleting labeling app')
-            self.close_label_app()
+            logging.info('End of query')
+            self.attemptUpdateText.emit("Image labeling complete")
+            self.finished.emit()
         else:
-            # Update the window title and image
-            self.count += 1
             logging.debug('Image Count: ' + str(self.count))
-            self.setWindowTitle('Image Count: ' + str(self.count))
-
-            image = pdm.dcmread(self.record['file_path']).pixel_array
-            bits_stored = self.record['bits_stored']
-            pixmap = self.arr_into_pixmap(image, bits_stored)
-            self.image.setPixmap(pixmap)
-
-    def arr_into_pixmap(self, image, bits_stored):
-        """Convert the image array into a QPixmap for display."""
-        # Scale the pixel intensity to uint8
-        highest_possible_intensity = (np.power(2, bits_stored) - 1)
-        image = (image/highest_possible_intensity * 255).astype(np.uint8)
-
-        image = cv2.resize(image, (300,300), interpolation=cv2.INTER_AREA)
-
-        height, width = image.shape
-        bytes_per_line = width
-        q_image = QImage(image, width, height, bytes_per_line, QImage.Format_Grayscale8)
-        pixmap = QPixmap.fromImage(q_image)
-
-        return pixmap
-
+            if self.count > 0:
+                self.attemptUpdateText.emit('Image Count: ' + str(self.count))
+            self.attemptUpdateImage.emit(self.record)
+            self.count += 1
+    
     def query_image_list(self):
-        logging.debug('Attempting to query records for image list')
+        logging.debug('Getting the image list')
         sql_query = 'SELECT file_path, bits_stored FROM ' + self.configHandler.getTableName("metadata") + ' ORDER BY file_path;'
-        self.queryCursor = self.dbHandler.openCursor(self.dbHandler.connection)
-        try:
-            logging.debug('Getting the image list')
-            self.queryCursor.execute(sql_query)
-            logging.debug('Done getting the image list')
-        except (psycopg2.DatabaseError) as error:
-            logging.warning(error)
+        self.dbHandler.executeQuery(self.dbHandler.retrieveCursor, sql_query)
 
     def store_label(self, decision):
         logging.debug('Storing label')
