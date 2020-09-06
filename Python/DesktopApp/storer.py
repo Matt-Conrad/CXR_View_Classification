@@ -11,7 +11,7 @@ class Storer(Stage):
         self.dicomToDatabase = DicomToDatabase(configHandler, dbHandler)
 
     @pyqtSlot()
-    def store(self):
+    def run(self):
         metaTableName = self.configHandler.getTableName("metadata")
         columnsInfoPath = self.configHandler.getColumnsInfoPath()
 

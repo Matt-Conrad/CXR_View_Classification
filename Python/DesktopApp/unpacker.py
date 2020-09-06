@@ -11,7 +11,7 @@ class Unpacker(Stage):
         self.folderRelPath = "./" + configHandler.getDatasetName()
 
     @pyqtSlot()
-    def unpack(self):
+    def run(self):
         filenameRelPath = "./" + self.configHandler.getTgzFilename()
 
         logging.info('Unpacking dataset from %s', filenameRelPath)

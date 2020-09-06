@@ -12,7 +12,7 @@ class MainWindow(QMainWindow):
     """Contains GUI code for the application."""
     def __init__(self, controller):
         logging.info('Constructing Main app')
-        QMainWindow.__init__(self)
+        QMainWindow.__init__(self, windowTitle="CXR Classifier Training Walkthrough")
         self.controller = controller
 
         self.buttons_list = ["download_btn", "unpack_btn", "store_btn", "features_btn", "label_btn", "classify_btn"]
@@ -24,39 +24,27 @@ class MainWindow(QMainWindow):
 
     def fill_window(self):
         """Fills the window with buttons."""
-        self.setWindowTitle("CXR Classifier Training Walkthrough")
-
         # Create widget for the dashboard
         dashboardWidget = QWidget()
 
-        msg_box = QLabel('Welcome to the CXR Classification Application', self)
-        pro_bar = QProgressBar(self)
-
-        msg_box.setObjectName("msg_box")
-        pro_bar.setObjectName("pro_bar")
+        msg_box = QLabel('Welcome to the CXR Classification Application', objectName="msg_box")
+        pro_bar = QProgressBar(objectName="pro_bar")
 
         dashboardLayout = QGridLayout()
         dashboardLayout.addWidget(msg_box, 1, 0, 1, 3)
         dashboardLayout.addWidget(pro_bar, 2, 0, 1, 3)
-
+        
         dashboardWidget.setLayout(dashboardLayout)
 
         # Create widget for the stage buttons
         stagesWidget = QWidget()
 
-        download_btn = QPushButton("Download", self)
-        unpack_btn = QPushButton("Unpack", self)
-        store_btn = QPushButton("Store Metadata", self)
-        features_btn = QPushButton("Calculate Features", self)
-        label_btn = QPushButton("Label Images", self)
-        classify_btn = QPushButton("Train Classifier", self)
-        
-        download_btn.setObjectName("download_btn")
-        unpack_btn.setObjectName("unpack_btn")
-        store_btn.setObjectName("store_btn")
-        features_btn.setObjectName("features_btn")
-        label_btn.setObjectName("label_btn")
-        classify_btn.setObjectName("classify_btn")
+        download_btn = QPushButton("Download", objectName="download_btn", clicked=self.controller.downloader.checkDatasetStatus)
+        unpack_btn = QPushButton("Unpack", objectName="unpack_btn")
+        store_btn = QPushButton("Store Metadata", objectName="store_btn")
+        features_btn = QPushButton("Calculate Features", objectName="features_btn", clicked=self.controller.featCalc.calculate_features)
+        label_btn = QPushButton("Label Images", objectName="label_btn")
+        classify_btn = QPushButton("Train Classifier", objectName="classify_btn", clicked=self.controller.trainer.train)
         
         stagesLayout = QGridLayout()
         stagesLayout.addWidget(download_btn, 1, 0)
@@ -71,14 +59,10 @@ class MainWindow(QMainWindow):
         # Create widget for the labeler
         labelerWidget = QWidget()
 
-        image = QLabel(self)
+        image = QLabel(objectName="image")
         image.setAlignment(Qt.AlignCenter)
-        frontal_btn = QPushButton('Frontal', self)
-        lateral_btn = QPushButton('Lateral', self)
-
-        image.setObjectName("image")
-        frontal_btn.setObjectName("frontal_btn")
-        lateral_btn.setObjectName("lateral_btn")
+        frontal_btn = QPushButton('Frontal', objectName="frontal_btn", clicked=self.controller.labeler.frontal)
+        lateral_btn = QPushButton('Lateral', objectName="lateral_btn", clicked=self.controller.labeler.lateral)
 
         labelLayout = QGridLayout()
         labelLayout.addWidget(image, 1, 0, 1, 2)
@@ -127,12 +111,10 @@ class MainWindow(QMainWindow):
         self.disableAllStageButtons()
         self.enableStageButton(0)
 
-        self.centralWidget().findChild(QPushButton, "download_btn").clicked.connect(self.controller.downloader.checkDatasetStatus)
-
         self.connectToDashboard(self.controller.downloader)
+        self.connectForCleanup(self.controller.downloader)
 
         self.controller.downloader.finished.connect(self.unpackStageUi)
-        self.controller.downloader.finished.connect(self.controller.downloader.deleteLater)
 
         logging.info('***Download phase initialized***')
 
@@ -149,7 +131,7 @@ class MainWindow(QMainWindow):
         self.unpackThread = QThread()
         self.unpacker.moveToThread(self.unpackThread)
         self.centralWidget().findChild(QPushButton, "unpack_btn").clicked.connect(self.unpackThread.start)
-        self.unpackThread.started.connect(self.unpacker.unpack)
+        self.unpackThread.started.connect(self.unpacker.run)
 
         # Unpack Updater
         self.unpackUpdaterThread = QThread()
@@ -162,8 +144,7 @@ class MainWindow(QMainWindow):
         self.unpacker.finished.connect(self.unpackThread.quit)
         self.unpackUpdater.finished.connect(self.unpackUpdaterThread.quit)
 
-        self.unpackThread.finished.connect(self.unpackThread.deleteLater)
-        self.unpackUpdaterThread.finished.connect(self.unpackUpdaterThread.deleteLater)
+        self.connectForCleanup(self.unpacker, self.unpackUpdater)
 
         self.unpackUpdater.finished.connect(self.storeStageUi)
         logging.info('***Unpack phase initialized***')
@@ -181,7 +162,7 @@ class MainWindow(QMainWindow):
         self.storeThread = QThread()
         self.storer.moveToThread(self.storeThread)
         self.centralWidget().findChild(QPushButton, "store_btn").clicked.connect(self.storeThread.start)
-        self.storeThread.started.connect(self.storer.store)
+        self.storeThread.started.connect(self.storer.run)
 
         # Store Updater
         self.storeUpdaterThread = QThread()
@@ -194,8 +175,7 @@ class MainWindow(QMainWindow):
         self.storer.finished.connect(self.storeThread.quit)
         self.storeUpdater.finished.connect(self.storeUpdaterThread.quit)
 
-        self.storeThread.finished.connect(self.storeThread.deleteLater)
-        self.storeUpdaterThread.finished.connect(self.storeUpdaterThread.deleteLater)
+        self.connectForCleanup(self.storer, self.storeUpdater)
 
         self.storeUpdater.finished.connect(self.calcFeatStageUi)
         logging.info('***Store phase initialized***')
@@ -206,12 +186,11 @@ class MainWindow(QMainWindow):
         self.disableAllStageButtons()
         self.enableStageButton(3)
 
-        self.centralWidget().findChild(QPushButton, "features_btn").clicked.connect(self.controller.featCalc.calculate_features)
-
         self.connectToDashboard(self.controller.featCalc)
 
         self.controller.featCalc.finished.connect(self.labelStageUi)
-        self.controller.featCalc.finished.connect(self.controller.featCalc.deleteLater)
+
+        self.connectForCleanup(self.controller.featCalc)
         logging.info('***Feature Calculation phase initialized***')
 
     @pyqtSlot()
@@ -224,21 +203,18 @@ class MainWindow(QMainWindow):
             self.centralWidget().findChild(QPushButton, "label_btn").clicked.connect(lambda: self.widgetStack.setCurrentIndex(1))
             self.centralWidget().findChild(QPushButton, "label_btn").clicked.connect(self.controller.labeler.startLabeler)
 
-            self.centralWidget().findChild(QPushButton, "frontal_btn").clicked.connect(self.controller.labeler.frontal)
-            self.centralWidget().findChild(QPushButton, "lateral_btn").clicked.connect(self.controller.labeler.lateral)
             self.controller.labeler.attemptUpdateImage.connect(self.updateImage)
 
             self.connectToDashboard(self.controller.labeler)
-            test = self.centralWidget().findChild(QPushButton, "widgetStack")
             self.controller.labeler.finished.connect(lambda: self.widgetStack.setCurrentIndex(0))
             self.controller.labeler.finished.connect(self.trainStageUi)
-            self.controller.labeler.finished.connect(self.controller.labeler.deleteLater)
+            self.connectForCleanup(self.controller.labeler)
 
         elif self.controller.configHandler.getDatasetType() == 'full_set':
             self.centralWidget().findChild(QPushButton, "label_btn").clicked.connect(self.controller.label_importer.importLabels)
             self.connectToDashboard(self.controller.label_importer)
             self.controller.label_importer.finished.connect(self.trainStageUi)
-            self.controller.label_importer.finished.connect(self.controller.label_importer.deleteLater)
+            self.connectForCleanup(self.controller.label_importer)
         else:
             raise ValueError('Value must be one of the keys in SOURCE_URL')
         logging.info('***Labeling phase initialized***')
@@ -252,17 +228,20 @@ class MainWindow(QMainWindow):
         self.disableAllStageButtons()
         self.enableStageButton(5)
 
-        self.centralWidget().findChild(QPushButton, "classify_btn").clicked.connect(self.controller.trainer.train)
-
         self.connectToDashboard(self.controller.trainer)
 
-        self.controller.trainer.finished.connect(self.controller.trainer.deleteLater)
+        self.connectForCleanup(self.controller.trainer)
         logging.info('***Training phase initialized***')
 
     def connectToDashboard(self, stage):
         stage.attemptUpdateProBarBounds.connect(self.update_pro_bar_bounds)
         stage.attemptUpdateProBarValue.connect(self.update_pro_bar_val)
         stage.attemptUpdateText.connect(self.update_text)
+    
+    def connectForCleanup(self, worker, updater=None):
+        worker.finished.connect(worker.deleteLater)
+        if updater is not None:
+            updater.finished.connect(updater.deleteLater)
 
     def disableAllStageButtons(self):
         for button in self.buttons_list:
