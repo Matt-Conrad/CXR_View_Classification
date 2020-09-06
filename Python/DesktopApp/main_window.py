@@ -1,7 +1,7 @@
 import logging
 from PyQt5.QtCore import pyqtSlot, QThread, Qt
 from PyQt5.QtGui import QPixmap, QImage
-from PyQt5.QtWidgets import QMainWindow, QWidget, QProgressBar, QLabel, QPushButton, QStackedWidget, QGridLayout
+from PyQt5.QtWidgets import QMainWindow, QWidget, QProgressBar, QLabel, QPushButton, QStackedWidget, QGridLayout, QVBoxLayout
 from unpacker import Unpacker, UnpackUpdater
 from storer import Storer, StoreUpdater
 import pydicom as pdm
@@ -26,20 +26,31 @@ class MainWindow(QMainWindow):
         """Fills the window with buttons."""
         self.setWindowTitle("CXR Classifier Training Walkthrough")
 
-        # Create widget for the stage buttons
-        stagesWidget = QWidget()
+        # Create widget for the dashboard
+        dashboardWidget = QWidget()
 
         msg_box = QLabel('Welcome to the CXR Classification Application', self)
         pro_bar = QProgressBar(self)
+
+        msg_box.setObjectName("msg_box")
+        pro_bar.setObjectName("pro_bar")
+
+        dashboardLayout = QGridLayout()
+        dashboardLayout.addWidget(msg_box, 1, 0, 1, 3)
+        dashboardLayout.addWidget(pro_bar, 2, 0, 1, 3)
+
+        dashboardWidget.setLayout(dashboardLayout)
+
+        # Create widget for the stage buttons
+        stagesWidget = QWidget()
+
         download_btn = QPushButton("Download", self)
         unpack_btn = QPushButton("Unpack", self)
         store_btn = QPushButton("Store Metadata", self)
         features_btn = QPushButton("Calculate Features", self)
         label_btn = QPushButton("Label Images", self)
         classify_btn = QPushButton("Train Classifier", self)
-
-        msg_box.setObjectName("msg_box")
-        pro_bar.setObjectName("pro_bar")
+        
         download_btn.setObjectName("download_btn")
         unpack_btn.setObjectName("unpack_btn")
         store_btn.setObjectName("store_btn")
@@ -47,66 +58,61 @@ class MainWindow(QMainWindow):
         label_btn.setObjectName("label_btn")
         classify_btn.setObjectName("classify_btn")
         
-        full_layout = QGridLayout()
-        full_layout.addWidget(msg_box, 1, 0, 1, 3)
-        full_layout.addWidget(pro_bar, 2, 0, 1, 3)
-        full_layout.addWidget(download_btn, 3, 0)
-        full_layout.addWidget(unpack_btn, 3, 1)
-        full_layout.addWidget(store_btn, 3, 2)
-        full_layout.addWidget(features_btn, 4, 0)
-        full_layout.addWidget(label_btn, 4, 1)
-        full_layout.addWidget(classify_btn, 4, 2)
+        stagesLayout = QGridLayout()
+        stagesLayout.addWidget(download_btn, 1, 0)
+        stagesLayout.addWidget(unpack_btn, 1, 1)
+        stagesLayout.addWidget(store_btn, 1, 2)
+        stagesLayout.addWidget(features_btn, 2, 0)
+        stagesLayout.addWidget(label_btn, 2, 1)
+        stagesLayout.addWidget(classify_btn, 2, 2)
 
-        stagesWidget.setLayout(full_layout)
+        stagesWidget.setLayout(stagesLayout)
 
         # Create widget for the labeler
-        labelWidget = QWidget()
+        labelerWidget = QWidget()
 
-        labelerMsgBox = QLabel(self)
-        labelerProBar = QProgressBar(self)
         image = QLabel(self)
         image.setAlignment(Qt.AlignCenter)
         frontal_btn = QPushButton('Frontal', self)
         lateral_btn = QPushButton('Lateral', self)
 
-        labelerMsgBox.setObjectName("labelerMsgBox")
-        labelerProBar.setObjectName("labelerProBar")
         image.setObjectName("image")
         frontal_btn.setObjectName("frontal_btn")
         lateral_btn.setObjectName("lateral_btn")
 
         labelLayout = QGridLayout()
-        labelLayout.addWidget(labelerMsgBox, 1, 0, 1, 2)
-        labelLayout.addWidget(labelerProBar, 2, 0, 1, 2)
-        labelLayout.addWidget(image, 3, 0, 1, 2)
-        labelLayout.addWidget(frontal_btn, 4, 0)
-        labelLayout.addWidget(lateral_btn, 4, 1)
+        labelLayout.addWidget(image, 1, 0, 1, 2)
+        labelLayout.addWidget(frontal_btn, 2, 0)
+        labelLayout.addWidget(lateral_btn, 2, 1)
 
-        labelWidget.setLayout(labelLayout)
+        labelerWidget.setLayout(labelLayout)
         
         # Set up widget stack
         self.widgetStack = QStackedWidget()
         self.widgetStack.addWidget(stagesWidget)
-        self.widgetStack.addWidget(labelWidget)
+        self.widgetStack.addWidget(labelerWidget)
 
-        self.setCentralWidget(self.widgetStack)
+        # Full stack
+        self.mainWidget = QWidget()
+        mainLayout = QVBoxLayout()
+        mainLayout.addWidget(dashboardWidget)
+        mainLayout.addWidget(self.widgetStack)
+        self.mainWidget.setLayout(mainLayout)
+
+        self.setCentralWidget(self.mainWidget)
 
     @pyqtSlot(int)
     def update_pro_bar_val(self, value):
-        self.widgetStack.widget(0).findChild(QProgressBar, "pro_bar").setValue(value)
-        self.widgetStack.widget(1).findChild(QProgressBar, "labelerProBar").setValue(value)
+        self.centralWidget().findChild(QProgressBar, "pro_bar").setValue(value)
 
     @pyqtSlot(int, int)
     def update_pro_bar_bounds(self, proBarMin, proBarMax):
-        self.widgetStack.widget(0).findChild(QProgressBar, "pro_bar").setMinimum(proBarMin)
-        self.widgetStack.widget(0).findChild(QProgressBar, "pro_bar").setMaximum(proBarMax)
-        self.widgetStack.widget(1).findChild(QProgressBar, "labelerProBar").setMinimum(proBarMin)
-        self.widgetStack.widget(1).findChild(QProgressBar, "labelerProBar").setMaximum(proBarMax)
+        self.centralWidget().findChild(QProgressBar, "pro_bar").setMinimum(proBarMin)
+        self.centralWidget().findChild(QProgressBar, "pro_bar").setMaximum(proBarMax)
 
     @pyqtSlot(str)
     def update_text(self, text):
-        self.widgetStack.widget(0).findChild(QLabel, "msg_box").setText(text)
-        self.widgetStack.widget(1).findChild(QLabel, "labelerMsgBox").setText(text)
+        self.centralWidget().findChild(QLabel, "msg_box").setText(text)
 
     @pyqtSlot(object)
     def updateImage(self, record):
@@ -121,7 +127,7 @@ class MainWindow(QMainWindow):
         self.disableAllStageButtons()
         self.enableStageButton(0)
 
-        self.widgetStack.currentWidget().findChild(QPushButton, "download_btn").clicked.connect(self.controller.downloader.checkDatasetStatus)
+        self.centralWidget().findChild(QPushButton, "download_btn").clicked.connect(self.controller.downloader.checkDatasetStatus)
 
         self.connectToDashboard(self.controller.downloader)
 
@@ -142,13 +148,13 @@ class MainWindow(QMainWindow):
         # Unpacker
         self.unpackThread = QThread()
         self.unpacker.moveToThread(self.unpackThread)
-        self.widgetStack.currentWidget().findChild(QPushButton, "unpack_btn").clicked.connect(self.unpackThread.start)
+        self.centralWidget().findChild(QPushButton, "unpack_btn").clicked.connect(self.unpackThread.start)
         self.unpackThread.started.connect(self.unpacker.unpack)
 
         # Unpack Updater
         self.unpackUpdaterThread = QThread()
         self.unpackUpdater.moveToThread(self.unpackUpdaterThread)
-        self.widgetStack.currentWidget().findChild(QPushButton, "unpack_btn").clicked.connect(self.unpackUpdaterThread.start)
+        self.centralWidget().findChild(QPushButton, "unpack_btn").clicked.connect(self.unpackUpdaterThread.start)
         self.unpackUpdaterThread.started.connect(self.unpackUpdater.update)
 
         self.connectToDashboard(self.unpackUpdater)
@@ -174,13 +180,13 @@ class MainWindow(QMainWindow):
         # Storer
         self.storeThread = QThread()
         self.storer.moveToThread(self.storeThread)
-        self.widgetStack.currentWidget().findChild(QPushButton, "store_btn").clicked.connect(self.storeThread.start)
+        self.centralWidget().findChild(QPushButton, "store_btn").clicked.connect(self.storeThread.start)
         self.storeThread.started.connect(self.storer.store)
 
         # Store Updater
         self.storeUpdaterThread = QThread()
         self.storeUpdater.moveToThread(self.storeUpdaterThread)
-        self.widgetStack.currentWidget().findChild(QPushButton, "store_btn").clicked.connect(self.storeUpdaterThread.start)
+        self.centralWidget().findChild(QPushButton, "store_btn").clicked.connect(self.storeUpdaterThread.start)
         self.storer.startUpdating.connect(self.storeUpdater.update)
 
         self.connectToDashboard(self.storeUpdater)
@@ -200,7 +206,7 @@ class MainWindow(QMainWindow):
         self.disableAllStageButtons()
         self.enableStageButton(3)
 
-        self.widgetStack.currentWidget().findChild(QPushButton, "features_btn").clicked.connect(self.controller.featCalc.calculate_features)
+        self.centralWidget().findChild(QPushButton, "features_btn").clicked.connect(self.controller.featCalc.calculate_features)
 
         self.connectToDashboard(self.controller.featCalc)
 
@@ -215,23 +221,21 @@ class MainWindow(QMainWindow):
         self.enableStageButton(4)
 
         if self.controller.configHandler.getDatasetType() == 'subset':
-            currentWidgetIndex = self.widgetStack.currentIndex()
-            nextWidgetIndex = self.widgetStack.currentIndex() + 1
+            self.centralWidget().findChild(QPushButton, "label_btn").clicked.connect(lambda: self.widgetStack.setCurrentIndex(1))
+            self.centralWidget().findChild(QPushButton, "label_btn").clicked.connect(self.controller.labeler.startLabeler)
 
-            self.widgetStack.currentWidget().findChild(QPushButton, "label_btn").clicked.connect(lambda: self.centralWidget().setCurrentIndex(nextWidgetIndex))
-            self.widgetStack.currentWidget().findChild(QPushButton, "label_btn").clicked.connect(self.controller.labeler.startLabeler)
-
-            self.widgetStack.widget(nextWidgetIndex).findChild(QPushButton, "frontal_btn").clicked.connect(self.controller.labeler.frontal)
-            self.widgetStack.widget(nextWidgetIndex).findChild(QPushButton, "lateral_btn").clicked.connect(self.controller.labeler.lateral)
+            self.centralWidget().findChild(QPushButton, "frontal_btn").clicked.connect(self.controller.labeler.frontal)
+            self.centralWidget().findChild(QPushButton, "lateral_btn").clicked.connect(self.controller.labeler.lateral)
             self.controller.labeler.attemptUpdateImage.connect(self.updateImage)
 
             self.connectToDashboard(self.controller.labeler)
-            self.controller.labeler.finished.connect(lambda: self.centralWidget().setCurrentIndex(currentWidgetIndex))
+            test = self.centralWidget().findChild(QPushButton, "widgetStack")
+            self.controller.labeler.finished.connect(lambda: self.widgetStack.setCurrentIndex(0))
             self.controller.labeler.finished.connect(self.trainStageUi)
             self.controller.labeler.finished.connect(self.controller.labeler.deleteLater)
 
         elif self.controller.configHandler.getDatasetType() == 'full_set':
-            self.widgetStack.currentWidget().findChild(QPushButton, "label_btn").clicked.connect(self.controller.label_importer.importLabels)
+            self.centralWidget().findChild(QPushButton, "label_btn").clicked.connect(self.controller.label_importer.importLabels)
             self.connectToDashboard(self.controller.label_importer)
             self.controller.label_importer.finished.connect(self.trainStageUi)
             self.controller.label_importer.finished.connect(self.controller.label_importer.deleteLater)
@@ -242,12 +246,13 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def trainStageUi(self):
         logging.info('Window initializing in Training phase')
-        self.setFixedSize(self.centralWidget().currentWidget().layout().sizeHint())
+        self.widgetStack.setFixedSize(self.widgetStack.currentWidget().layout().sizeHint())
+        self.setFixedSize(self.centralWidget().layout().sizeHint())
 
         self.disableAllStageButtons()
         self.enableStageButton(5)
 
-        self.widgetStack.currentWidget().findChild(QPushButton, "classify_btn").clicked.connect(self.controller.trainer.train)
+        self.centralWidget().findChild(QPushButton, "classify_btn").clicked.connect(self.controller.trainer.train)
 
         self.connectToDashboard(self.controller.trainer)
 
@@ -261,10 +266,10 @@ class MainWindow(QMainWindow):
 
     def disableAllStageButtons(self):
         for button in self.buttons_list:
-            self.widgetStack.currentWidget().findChild(QPushButton, button).setDisabled(True)
+            self.centralWidget().findChild(QPushButton, button).setDisabled(True)
 
     def enableStageButton(self, stageIndex):
-        self.widgetStack.currentWidget().findChild(QPushButton, self.buttons_list[stageIndex]).setDisabled(False)
+        self.centralWidget().findChild(QPushButton, self.buttons_list[stageIndex]).setDisabled(False)
 
     def arr_into_pixmap(self, image, bits_stored):
         """Convert the image array into a QPixmap for display."""
