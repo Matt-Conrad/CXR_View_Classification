@@ -3,6 +3,7 @@ import os
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtGui import QIcon
 from downloader import Downloader
+from unpacker import Unpacker
 from labeler import Labeler
 from label_importer import LabelImporter
 from trainer import Trainer
@@ -31,6 +32,7 @@ class Controller(QObject):
         self.dbHandler = DatabaseHandler(self.configHandler)
 
         self.downloader = Downloader(self.configHandler)
+        self.unpacker = Unpacker(self.configHandler)
         self.featCalc = FeatureCalculator(self.configHandler, self.dbHandler)
         self.labeler = Labeler(self.configHandler, self.dbHandler)
         self.label_importer = LabelImporter(self.configHandler, self.dbHandler)

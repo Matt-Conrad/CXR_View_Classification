@@ -1,45 +1,58 @@
-from stage import Stage
-from PyQt5.QtCore import pyqtSlot
+from stage import StageStage
+from PyQt5.QtCore import pyqtSlot, QRunnable, QThreadPool, QObject
 import tarfile
 import logging
 import os
 
-class Unpacker(Stage):
-    """Controls logic of getting the dataset from online sources."""
+class Unpacker(QObject):
     def __init__(self, configHandler):
-        Stage.__init__(self, configHandler)
-        self.folderRelPath = "./" + configHandler.getDatasetName()
+        QObject.__init__(self)
+        self.configHandler = configHandler
+        self.threadpool = QThreadPool()
+        self.worker = self.Worker(self.configHandler)
+        self.updater = self.Updater(self.configHandler)
 
     @pyqtSlot()
-    def run(self):
-        filenameRelPath = "./" + self.configHandler.getTgzFilename()
+    def unpack(self):
+        self.threadpool.start(self.worker)
+        self.threadpool.start(self.updater)
 
-        logging.info('Unpacking dataset from %s', filenameRelPath)
+    class Worker(StageStage):
+        """Controls logic of getting the dataset from online sources."""
+        def __init__(self, configHandler):
+            StageStage.__init__(self, configHandler)
+            self.folderRelPath = "./" + configHandler.getDatasetName()
 
-        tf = tarfile.open(filenameRelPath)
-        tf.extractall(path=self.folderRelPath)
+        @pyqtSlot()
+        def run(self):
+            filenameRelPath = "./" + self.configHandler.getTgzFilename()
 
-        logging.info('Done unpacking')
+            logging.info('Unpacking dataset from %s', filenameRelPath)
 
-    
-class UnpackUpdater(Stage):
-    """Controls logic of getting the dataset from online sources."""
-    def __init__(self, configHandler):
-        Stage.__init__(self, configHandler)
-        self.folderRelPath = "./" + configHandler.getDatasetName()
+            tf = tarfile.open(filenameRelPath)
+            tf.extractall(path=self.folderRelPath)
 
-    @pyqtSlot()
-    def update(self):
-        self.attemptUpdateText.emit("Unpacking Images")
-        self.attemptUpdateProBarBounds.emit(0, self.expected_num_files)
-        self.attemptUpdateProBarValue.emit(0)
-        
-        while self.count_DCMs() != self.expected_num_files:
-            self.attemptUpdateProBarValue.emit(self.count_DCMs())
+            logging.info('Done unpacking')
+
+    class Updater(StageStage):
+        """Controls logic of getting the dataset from online sources."""
+        def __init__(self, configHandler):
+            StageStage.__init__(self, configHandler)
+            self.folderRelPath = "./" + configHandler.getDatasetName()
+
+        @pyqtSlot()
+        def run(self):
+            self.signals.attemptUpdateText.emit("Unpacking Images")
+            self.signals.attemptUpdateProBarBounds.emit(0, self.expected_num_files)
+            self.signals.attemptUpdateProBarValue.emit(0)
             
-        self.attemptUpdateProBarValue.emit(self.count_DCMs())
-        self.attemptUpdateText.emit("Images unpacked")
-        self.finished.emit()
+            while self.count_DCMs() != self.expected_num_files:
+                self.signals.attemptUpdateProBarValue.emit(self.count_DCMs())
+                
+            self.signals.attemptUpdateProBarValue.emit(self.count_DCMs())
+            self.signals.attemptUpdateText.emit("Images unpacked")
+            self.signals.finished.emit()
 
-    def count_DCMs(self):
-        return sum([len(files) for r, d, files in os.walk(self.folderRelPath) if any(item.endswith('.dcm') for item in files)])
+        def count_DCMs(self):
+            return sum([len(files) for r, d, files in os.walk(self.folderRelPath) if any(item.endswith('.dcm') for item in files)])
+

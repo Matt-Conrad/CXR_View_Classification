@@ -2,7 +2,6 @@ import logging
 from PyQt5.QtCore import pyqtSlot, QThread, Qt
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtWidgets import QMainWindow, QWidget, QProgressBar, QLabel, QPushButton, QStackedWidget, QGridLayout, QVBoxLayout
-from unpacker import Unpacker, UnpackUpdater
 from storer import Storer, StoreUpdater
 import pydicom as pdm
 import cv2
@@ -40,7 +39,7 @@ class MainWindow(QMainWindow):
         stagesWidget = QWidget()
 
         download_btn = QPushButton("Download", objectName="download_btn", clicked=self.controller.downloader.checkDatasetStatus)
-        unpack_btn = QPushButton("Unpack", objectName="unpack_btn")
+        unpack_btn = QPushButton("Unpack", objectName="unpack_btn", clicked=self.controller.unpacker.unpack)
         store_btn = QPushButton("Store Metadata", objectName="store_btn")
         features_btn = QPushButton("Calculate Features", objectName="features_btn", clicked=self.controller.featCalc.calculate_features)
         label_btn = QPushButton("Label Images", objectName="label_btn")
@@ -112,7 +111,6 @@ class MainWindow(QMainWindow):
         self.enableStageButton(0)
 
         self.connectToDashboard(self.controller.downloader)
-        self.connectForCleanup(self.controller.downloader)
 
         self.controller.downloader.finished.connect(self.unpackStageUi)
 
@@ -124,29 +122,9 @@ class MainWindow(QMainWindow):
         self.disableAllStageButtons()
         self.enableStageButton(1)
 
-        self.unpacker = Unpacker(self.controller.configHandler)
-        self.unpackUpdater = UnpackUpdater(self.controller.configHandler)
+        self.connectToDashboard(self.controller.unpacker.updater.signals)
 
-        # Unpacker
-        self.unpackThread = QThread()
-        self.unpacker.moveToThread(self.unpackThread)
-        self.centralWidget().findChild(QPushButton, "unpack_btn").clicked.connect(self.unpackThread.start)
-        self.unpackThread.started.connect(self.unpacker.run)
-
-        # Unpack Updater
-        self.unpackUpdaterThread = QThread()
-        self.unpackUpdater.moveToThread(self.unpackUpdaterThread)
-        self.centralWidget().findChild(QPushButton, "unpack_btn").clicked.connect(self.unpackUpdaterThread.start)
-        self.unpackUpdaterThread.started.connect(self.unpackUpdater.update)
-
-        self.connectToDashboard(self.unpackUpdater)
-        
-        self.unpacker.finished.connect(self.unpackThread.quit)
-        self.unpackUpdater.finished.connect(self.unpackUpdaterThread.quit)
-
-        self.connectForCleanup(self.unpacker, self.unpackUpdater)
-
-        self.unpackUpdater.finished.connect(self.storeStageUi)
+        self.controller.unpacker.updater.signals.finished.connect(self.storeStageUi)
         logging.info('***Unpack phase initialized***')
         
     @pyqtSlot()
@@ -175,8 +153,6 @@ class MainWindow(QMainWindow):
         self.storer.finished.connect(self.storeThread.quit)
         self.storeUpdater.finished.connect(self.storeUpdaterThread.quit)
 
-        self.connectForCleanup(self.storer, self.storeUpdater)
-
         self.storeUpdater.finished.connect(self.calcFeatStageUi)
         logging.info('***Store phase initialized***')
 
@@ -190,7 +166,6 @@ class MainWindow(QMainWindow):
 
         self.controller.featCalc.finished.connect(self.labelStageUi)
 
-        self.connectForCleanup(self.controller.featCalc)
         logging.info('***Feature Calculation phase initialized***')
 
     @pyqtSlot()
@@ -208,13 +183,11 @@ class MainWindow(QMainWindow):
             self.connectToDashboard(self.controller.labeler)
             self.controller.labeler.finished.connect(lambda: self.widgetStack.setCurrentIndex(0))
             self.controller.labeler.finished.connect(self.trainStageUi)
-            self.connectForCleanup(self.controller.labeler)
 
         elif self.controller.configHandler.getDatasetType() == 'full_set':
             self.centralWidget().findChild(QPushButton, "label_btn").clicked.connect(self.controller.label_importer.importLabels)
             self.connectToDashboard(self.controller.label_importer)
             self.controller.label_importer.finished.connect(self.trainStageUi)
-            self.connectForCleanup(self.controller.label_importer)
         else:
             raise ValueError('Value must be one of the keys in SOURCE_URL')
         logging.info('***Labeling phase initialized***')
@@ -230,18 +203,12 @@ class MainWindow(QMainWindow):
 
         self.connectToDashboard(self.controller.trainer)
 
-        self.connectForCleanup(self.controller.trainer)
         logging.info('***Training phase initialized***')
 
     def connectToDashboard(self, stage):
         stage.attemptUpdateProBarBounds.connect(self.update_pro_bar_bounds)
         stage.attemptUpdateProBarValue.connect(self.update_pro_bar_val)
         stage.attemptUpdateText.connect(self.update_text)
-    
-    def connectForCleanup(self, worker, updater=None):
-        worker.finished.connect(worker.deleteLater)
-        if updater is not None:
-            updater.finished.connect(updater.deleteLater)
 
     def disableAllStageButtons(self):
         for button in self.buttons_list:
