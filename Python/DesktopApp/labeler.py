@@ -60,10 +60,10 @@ class Labeler(Stage):
         logging.debug('Getting the image list')
         sql_query = 'SELECT file_path, bits_stored FROM ' + self.configHandler.getTableName("metadata") + ' ORDER BY file_path;'
         self.cursor = self.dbHandler.openCursor(self.dbHandler.connection)
-        self.dbHandler.executeQuery(self.cursor, sql_query)
+        self.dbHandler.executeQuery2(self.cursor, sql_query)
 
     def store_label(self, decision):
         logging.debug('Storing label')
         sql_query = 'INSERT INTO ' + self.configHandler.getTableName("label") + ' (file_name, file_path, image_view) VALUES (\'' + self.record['file_path'].split(os.sep)[-1] + '\', \'' + self.record['file_path'] + '\', \'' + decision + '\');'
         cursor = self.dbHandler.openCursor(self.dbHandler.connection)
-        self.dbHandler.executeQuery(cursor, sql_query)
+        self.dbHandler.executeQuery2(cursor, sql_query)

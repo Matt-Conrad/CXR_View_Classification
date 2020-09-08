@@ -17,8 +17,7 @@ class FeatureCalculator(Stage):
         logging.info('Calculating features from images')
         
         sql_query = 'SELECT * FROM ' + self.configHandler.getTableName("metadata") + ';'
-        cursor = self.dbHandler.openCursor(self.dbHandler.connection)
-        self.dbHandler.executeQuery(cursor, sql_query)
+        records = self.dbHandler.executeQuery(self.dbHandler.connection, sql_query, fetchHowMany="all")
         self.dbHandler.add_table_to_db(self.featTableName, self.configHandler.getColumnsInfoPath(), 'features_list')
 
         self.attemptUpdateText.emit('Calculating features')
@@ -26,7 +25,7 @@ class FeatureCalculator(Stage):
         self.attemptUpdateProBarValue.emit(self.dbHandler.count_records(self.featTableName))
 
         count = 0
-        for record in cursor:
+        for record in records:
             file_path = record['file_path']
             count += 1
             logging.debug('Calculating for image number: %s File: %s', str(count), file_path)
@@ -49,6 +48,5 @@ class FeatureCalculator(Stage):
         sql_query = 'INSERT INTO ' + self.configHandler.getTableName("features") + ' (file_name, file_path, hor_profile, vert_profile) VALUES (%s, %s, %s, %s);'
 
         values = (file_path.split(os.sep)[-1], file_path, hor_profile.tolist(), vert_profile.tolist())
-        cursor = self.dbHandler.openCursor(self.dbHandler.connection)
-        self.dbHandler.executeQuery(cursor, sql_query, values)
+        self.dbHandler.executeQuery(self.dbHandler.connection, sql_query, values)
     
