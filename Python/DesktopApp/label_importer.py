@@ -34,7 +34,7 @@ class LabelImporter(Stage):
             if not elements[element_name]['calculation_only']:
                 sql_query = sql_query + element_name + ','
         sql_query = sql_query[:-1] + ') FROM \'' + self.configHandler.getParentFolder() + "/" + self.configHandler.getCsvPath() + '\' DELIMITER \',\' CSV HEADER;'
-
-        self.dbHandler.executeQuery(self.dbHandler.storeCursor, sql_query)
+        cursor = self.dbHandler.openCursor(self.dbHandler.connection)
+        self.dbHandler.executeQuery(cursor, sql_query)
         self.dbHandler.count_records(self.configHandler.getTableName('label'))
         

@@ -13,6 +13,7 @@ class Labeler(Stage):
 
         self.count = 0
         self.record = None
+        self.cursor = None
 
     @pyqtSlot()
     def startLabeler(self):
@@ -40,7 +41,7 @@ class Labeler(Stage):
 
     def display_next_image(self):
         logging.debug('Displaying next image')
-        self.record = self.dbHandler.retrieveCursor.fetchone()
+        self.record = self.cursor.fetchone()
 
         self.attemptUpdateProBarValue.emit(self.dbHandler.count_records(self.configHandler.getTableName('label')))
 
@@ -58,9 +59,11 @@ class Labeler(Stage):
     def query_image_list(self):
         logging.debug('Getting the image list')
         sql_query = 'SELECT file_path, bits_stored FROM ' + self.configHandler.getTableName("metadata") + ' ORDER BY file_path;'
-        self.dbHandler.executeQuery(self.dbHandler.retrieveCursor, sql_query)
+        self.cursor = self.dbHandler.openCursor(self.dbHandler.connection)
+        self.dbHandler.executeQuery(self.cursor, sql_query)
 
     def store_label(self, decision):
         logging.debug('Storing label')
         sql_query = 'INSERT INTO ' + self.configHandler.getTableName("label") + ' (file_name, file_path, image_view) VALUES (\'' + self.record['file_path'].split(os.sep)[-1] + '\', \'' + self.record['file_path'] + '\', \'' + decision + '\');'
-        self.dbHandler.executeQuery(self.dbHandler.storeCursor, sql_query)
+        cursor = self.dbHandler.openCursor(self.dbHandler.connection)
+        self.dbHandler.executeQuery(cursor, sql_query)
