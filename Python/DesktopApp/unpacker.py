@@ -1,5 +1,5 @@
 from stage import StageStage
-from PyQt5.QtCore import pyqtSlot, QRunnable, QThreadPool, QObject
+from PyQt5.QtCore import pyqtSlot, QThreadPool, QObject
 import tarfile
 import logging
 import os
@@ -7,10 +7,9 @@ import os
 class Unpacker(QObject):
     def __init__(self, configHandler):
         QObject.__init__(self)
-        self.configHandler = configHandler
         self.threadpool = QThreadPool()
-        self.worker = self.Worker(self.configHandler)
-        self.updater = self.Updater(self.configHandler)
+        self.worker = self.Worker(configHandler)
+        self.updater = self.Updater(configHandler)
 
     @pyqtSlot()
     def unpack(self):

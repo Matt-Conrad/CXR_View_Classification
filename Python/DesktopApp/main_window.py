@@ -2,7 +2,6 @@ import logging
 from PyQt5.QtCore import pyqtSlot, QThread, Qt
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtWidgets import QMainWindow, QWidget, QProgressBar, QLabel, QPushButton, QStackedWidget, QGridLayout, QVBoxLayout
-from storer import Storer, StoreUpdater
 import pydicom as pdm
 import cv2
 import numpy as np
@@ -32,7 +31,7 @@ class MainWindow(QMainWindow):
         dashboardLayout = QGridLayout()
         dashboardLayout.addWidget(msg_box, 1, 0, 1, 3)
         dashboardLayout.addWidget(pro_bar, 2, 0, 1, 3)
-        
+
         dashboardWidget.setLayout(dashboardLayout)
 
         # Create widget for the stage buttons
@@ -40,7 +39,7 @@ class MainWindow(QMainWindow):
 
         download_btn = QPushButton("Download", objectName="download_btn", clicked=self.controller.downloader.checkDatasetStatus)
         unpack_btn = QPushButton("Unpack", objectName="unpack_btn", clicked=self.controller.unpacker.unpack)
-        store_btn = QPushButton("Store Metadata", objectName="store_btn")
+        store_btn = QPushButton("Store Metadata", objectName="store_btn", clicked=self.controller.storer.store)
         features_btn = QPushButton("Calculate Features", objectName="features_btn", clicked=self.controller.featCalc.calculate_features)
         label_btn = QPushButton("Label Images", objectName="label_btn")
         classify_btn = QPushButton("Train Classifier", objectName="classify_btn", clicked=self.controller.trainer.train)
@@ -113,7 +112,6 @@ class MainWindow(QMainWindow):
         self.connectToDashboard(self.controller.downloader)
 
         self.controller.downloader.finished.connect(self.unpackStageUi)
-
         logging.info('***Download phase initialized***')
 
     @pyqtSlot()
@@ -133,27 +131,9 @@ class MainWindow(QMainWindow):
         self.disableAllStageButtons()
         self.enableStageButton(2)
 
-        self.storer = Storer(self.controller.configHandler, self.controller.dbHandler)
-        self.storeUpdater = StoreUpdater(self.controller.configHandler, self.controller.dbHandler)
+        self.connectToDashboard(self.controller.storer.updater.signals)
 
-        # Storer
-        self.storeThread = QThread()
-        self.storer.moveToThread(self.storeThread)
-        self.centralWidget().findChild(QPushButton, "store_btn").clicked.connect(self.storeThread.start)
-        self.storeThread.started.connect(self.storer.run)
-
-        # Store Updater
-        self.storeUpdaterThread = QThread()
-        self.storeUpdater.moveToThread(self.storeUpdaterThread)
-        self.centralWidget().findChild(QPushButton, "store_btn").clicked.connect(self.storeUpdaterThread.start)
-        self.storer.startUpdating.connect(self.storeUpdater.update)
-
-        self.connectToDashboard(self.storeUpdater)
-
-        self.storer.finished.connect(self.storeThread.quit)
-        self.storeUpdater.finished.connect(self.storeUpdaterThread.quit)
-
-        self.storeUpdater.finished.connect(self.calcFeatStageUi)
+        self.controller.storer.updater.signals.finished.connect(self.calcFeatStageUi)
         logging.info('***Store phase initialized***')
 
     @pyqtSlot()
@@ -165,7 +145,6 @@ class MainWindow(QMainWindow):
         self.connectToDashboard(self.controller.featCalc)
 
         self.controller.featCalc.finished.connect(self.labelStageUi)
-
         logging.info('***Feature Calculation phase initialized***')
 
     @pyqtSlot()
@@ -202,7 +181,6 @@ class MainWindow(QMainWindow):
         self.enableStageButton(5)
 
         self.connectToDashboard(self.controller.trainer)
-
         logging.info('***Training phase initialized***')
 
     def connectToDashboard(self, stage):

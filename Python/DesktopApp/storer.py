@@ -1,44 +1,53 @@
-from PyQt5.QtCore import pyqtSlot, pyqtSignal
-from stage import Stage
+from stage import StageStage
+from PyQt5.QtCore import pyqtSlot, QThreadPool, QObject
 from metadata_to_db.dicom_to_db import DicomToDatabase
 
-class Storer(Stage):
-    """Class for moving all DCM tag-values from a directory of DCMs into a PostgreSQL DB."""
-    startUpdating = pyqtSignal()
-
+class Storer(QObject):
     def __init__(self, configHandler, dbHandler):
-        Stage.__init__(self, configHandler, dbHandler)
-        self.dicomToDatabase = DicomToDatabase(configHandler, dbHandler)
+        QObject.__init__(self)
+        self.threadpool = QThreadPool()
+        self.configHandler = configHandler
+        self.worker = self.Worker(configHandler, dbHandler)
+        self.updater = self.Updater(configHandler, dbHandler)
 
     @pyqtSlot()
-    def run(self):
-        metaTableName = self.configHandler.getTableName("metadata")
-        columnsInfoPath = self.configHandler.getColumnsInfoPath()
+    def store(self):
+        self.worker.dbHandler.add_table_to_db(self.configHandler.getTableName("metadata"), self.configHandler.getColumnsInfoPath(), "elements")
+        self.threadpool.start(self.worker)
+        self.threadpool.start(self.updater)
 
-        if not self.dbHandler.table_exists(metaTableName):
-            self.dbHandler.add_table_to_db(metaTableName, columnsInfoPath, "elements")
-        self.startUpdating.emit()
+    class Worker(StageStage):
+        def __init__(self, configHandler, dbHandler):
+            StageStage.__init__(self, configHandler, dbHandler)
+            self.dicomToDatabase = DicomToDatabase(configHandler, dbHandler)
 
-        self.dicomToDatabase.dicomToDb(self.dbHandler.dbInfo['database'], metaTableName, columnsInfoPath)
+        @pyqtSlot()
+        def run(self):
+            metaTableName = self.configHandler.getTableName("metadata")
+            columnsInfoPath = self.configHandler.getColumnsInfoPath()
 
-class StoreUpdater(Stage):
-    """Updates dashboard for the storer class."""
-    def __init__(self, configHandler, dbHandler):
-        Stage.__init__(self, configHandler, dbHandler)
-        self.folderRelPath = "./" + configHandler.getDatasetName()
+            # if not self.dbHandler.table_exists(metaTableName):
+            #     self.dbHandler.add_table_to_db(metaTableName, columnsInfoPath, "elements")
 
-    @pyqtSlot()
-    def update(self):
-        self.attemptUpdateText.emit("Storing metadata")
-        self.attemptUpdateProBarBounds.emit(0, self.expected_num_files)
-        self.attemptUpdateProBarValue.emit(0)
+            self.dicomToDatabase.dicomToDb(self.dbHandler.dbInfo['database'], metaTableName, columnsInfoPath)
 
-        while not self.dbHandler.table_exists(self.configHandler.getTableName('metadata')):
-            pass
+    class Updater(StageStage):
+        def __init__(self, configHandler, dbHandler):
+            StageStage.__init__(self, configHandler, dbHandler)
+            self.folderRelPath = "./" + configHandler.getDatasetName()
 
-        while self.dbHandler.count_records(self.configHandler.getTableName('metadata')) != self.expected_num_files:
-            self.attemptUpdateProBarValue.emit(self.dbHandler.count_records(self.configHandler.getTableName('metadata')))
-            
-        self.attemptUpdateProBarValue.emit(self.dbHandler.count_records(self.configHandler.getTableName('metadata')))
-        self.finished.emit()
-        self.attemptUpdateText.emit("Done storing metadata")
+        @pyqtSlot()
+        def run(self):
+            self.signals.attemptUpdateText.emit("Storing metadata")
+            self.signals.attemptUpdateProBarBounds.emit(0, self.expected_num_files)
+            self.signals.attemptUpdateProBarValue.emit(0)
+
+            while not self.dbHandler.table_exists(self.configHandler.getTableName('metadata')):
+                pass
+
+            while self.dbHandler.count_records(self.configHandler.getTableName('metadata')) != self.expected_num_files:
+                self.signals.attemptUpdateProBarValue.emit(self.dbHandler.count_records(self.configHandler.getTableName('metadata')))
+                
+            self.signals.attemptUpdateProBarValue.emit(self.dbHandler.count_records(self.configHandler.getTableName('metadata')))
+            self.signals.finished.emit()
+            self.signals.attemptUpdateText.emit("Done storing metadata")
