@@ -17,7 +17,7 @@ class FeatureCalculator(Stage):
         logging.info('Calculating features from images')
         
         sql_query = 'SELECT * FROM ' + self.configHandler.getTableName("metadata") + ';'
-        records = self.dbHandler.executeQuery(self.dbHandler.connection, sql_query, fetchHowMany="all")
+        records = self.dbHandler.executeQuery(self.dbHandler.connection, sql_query).fetchall()
         self.dbHandler.add_table_to_db(self.featTableName, self.configHandler.getColumnsInfoPath(), 'features_list')
 
         self.attemptUpdateText.emit('Calculating features')

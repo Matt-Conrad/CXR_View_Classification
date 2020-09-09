@@ -20,7 +20,7 @@ class Trainer(Stage):
 
         feat_table_name = self.configHandler.getTableName("features")
         sql_query = 'SELECT * FROM ' + feat_table_name + ' ORDER BY file_path ASC;'
-        records = self.dbHandler.executeQuery(self.dbHandler.connection, sql_query, fetchHowMany="all")
+        records = self.dbHandler.executeQuery(self.dbHandler.connection, sql_query).fetchall()
         file_names = [record['file_name'] for record in records]
         X1 = [record["hor_profile"] for record in records]
         X2 = [record["vert_profile"] for record in records]
@@ -30,7 +30,7 @@ class Trainer(Stage):
         X = np.concatenate((X1, X2), axis=1)
 
         sql_query = 'SELECT image_view FROM ' + self.configHandler.getTableName("label") + ' ORDER BY file_path ASC;'
-        records = self.dbHandler.executeQuery(self.dbHandler.connection, sql_query, fetchHowMany="all")
+        records = self.dbHandler.executeQuery(self.dbHandler.connection, sql_query).fetchall()
         y = [record[0] for record in records]
         
         logging.debug("Splitting dataset and cross validating SVM for accuracy of classifier")

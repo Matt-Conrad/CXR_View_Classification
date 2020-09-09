@@ -57,7 +57,7 @@ class Labeler(Stage):
     def query_image_list(self):
         logging.debug('Getting the image list')
         sql_query = 'SELECT file_path, bits_stored FROM ' + self.configHandler.getTableName("metadata") + ' ORDER BY file_path;'
-        self.records = self.dbHandler.executeQuery(self.dbHandler.connection, sql_query, fetchHowMany="all")
+        self.records = self.dbHandler.executeQuery(self.dbHandler.connection, sql_query).fetchall()
 
     def store_label(self, decision):
         logging.debug('Storing label')
