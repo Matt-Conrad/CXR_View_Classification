@@ -20,6 +20,9 @@ class Downloader(Stage):
             
             if os.path.getsize(self.filenameRelPath) == self.expected_size:
                 logging.info('%s was downloaded properly', self.filenameRelPath)
+                self.attemptUpdateProBarValue.emit(self.getTgzSize())
+                self.attemptUpdateText.emit("Image download complete")
+                self.finished.emit()
             else:
                 logging.warning('%s was NOT downloaded properly', self.filenameRelPath)
                 logging.info('Removing %s', self.filenameRelPath)
@@ -29,10 +32,6 @@ class Downloader(Stage):
         else:
             logging.info('%s does not exist', self.filenameRelPath)
             self.downloadDataset()
-
-        self.attemptUpdateProBarValue.emit(self.getTgzSize())
-        self.attemptUpdateText.emit("Image download complete")
-        self.finished.emit()
 
     def downloadDataset(self):
         logging.info('Downloading dataset from %s', self.configHandler.getUrl())
