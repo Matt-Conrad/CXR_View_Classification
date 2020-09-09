@@ -1,24 +1,21 @@
-from stage import StageStage
+from stage import Stage, Runnable
 from PyQt5.QtCore import pyqtSlot, QThreadPool, QObject
 from metadata_to_db.dicom_to_db import DicomToDatabase
 
-class Storer(QObject):
+class Storer(Stage):
     def __init__(self, configHandler, dbHandler):
-        QObject.__init__(self)
-        self.threadpool = QThreadPool()
-        self.configHandler = configHandler
+        Stage.__init__(self, configHandler)
         self.worker = self.Worker(configHandler, dbHandler)
         self.updater = self.Updater(configHandler, dbHandler)
 
     @pyqtSlot()
     def store(self):
-        self.worker.dbHandler.add_table_to_db(self.configHandler.getTableName("metadata"), self.configHandler.getColumnsInfoPath(), "elements")
         self.threadpool.start(self.worker)
         self.threadpool.start(self.updater)
 
-    class Worker(StageStage):
+    class Worker(Runnable):
         def __init__(self, configHandler, dbHandler):
-            StageStage.__init__(self, configHandler, dbHandler)
+            Runnable.__init__(self, configHandler, dbHandler)
             self.dicomToDatabase = DicomToDatabase(configHandler, dbHandler)
 
         @pyqtSlot()
@@ -26,14 +23,14 @@ class Storer(QObject):
             metaTableName = self.configHandler.getTableName("metadata")
             columnsInfoPath = self.configHandler.getColumnsInfoPath()
 
-            # if not self.dbHandler.table_exists(metaTableName):
-            #     self.dbHandler.add_table_to_db(metaTableName, columnsInfoPath, "elements")
+            if not self.dbHandler.table_exists(metaTableName):
+                self.dbHandler.add_table_to_db(metaTableName, columnsInfoPath, "elements")
 
             self.dicomToDatabase.dicomToDb(self.dbHandler.dbInfo['database'], metaTableName, columnsInfoPath)
 
-    class Updater(StageStage):
+    class Updater(Runnable):
         def __init__(self, configHandler, dbHandler):
-            StageStage.__init__(self, configHandler, dbHandler)
+            Runnable.__init__(self, configHandler, dbHandler)
             self.folderRelPath = "./" + configHandler.getDatasetName()
 
         @pyqtSlot()

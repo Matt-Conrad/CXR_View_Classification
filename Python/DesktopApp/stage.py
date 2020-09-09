@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QObject, pyqtSignal, QRunnable
+from PyQt5.QtCore import QObject, pyqtSignal, QRunnable, QThreadPool
 from expected_sizes import EXPECTED_NUM_FILES, EXPECTED_SIZES
 
 class Stage(QObject):
@@ -7,6 +7,7 @@ class Stage(QObject):
     attemptUpdateProBarValue = pyqtSignal(int)
     attemptUpdateProBarBounds = pyqtSignal(int, int)
     attemptUpdateText = pyqtSignal(str)
+    threadpool = QThreadPool()
 
     def __init__(self, configHandler, dbHandler=None):
         QObject.__init__(self)
@@ -22,7 +23,7 @@ class Signals(QObject):
     attemptUpdateProBarBounds = pyqtSignal(int, int)
     attemptUpdateText = pyqtSignal(str)
 
-class StageStage(QRunnable):
+class Runnable(QRunnable):
     """Code for stage of the CXR training process."""
     def __init__(self, configHandler, dbHandler=None):
         QRunnable.__init__(self)
@@ -32,6 +33,3 @@ class StageStage(QRunnable):
 
         self.expected_size = EXPECTED_SIZES[self.configHandler.getDatasetType()]
         self.expected_num_files = EXPECTED_NUM_FILES[self.configHandler.getDatasetType()]
-    
-
-

@@ -1,13 +1,12 @@
-from stage import StageStage
+from stage import Stage, Runnable
 from PyQt5.QtCore import pyqtSlot, QThreadPool, QObject
 import tarfile
 import logging
 import os
 
-class Unpacker(QObject):
+class Unpacker(Stage):
     def __init__(self, configHandler):
-        QObject.__init__(self)
-        self.threadpool = QThreadPool()
+        Stage.__init__(self, configHandler)
         self.worker = self.Worker(configHandler)
         self.updater = self.Updater(configHandler)
 
@@ -16,10 +15,10 @@ class Unpacker(QObject):
         self.threadpool.start(self.worker)
         self.threadpool.start(self.updater)
 
-    class Worker(StageStage):
+    class Worker(Runnable):
         """Controls logic of getting the dataset from online sources."""
         def __init__(self, configHandler):
-            StageStage.__init__(self, configHandler)
+            Runnable.__init__(self, configHandler)
             self.folderRelPath = "./" + configHandler.getDatasetName()
 
         @pyqtSlot()
@@ -33,10 +32,10 @@ class Unpacker(QObject):
 
             logging.info('Done unpacking')
 
-    class Updater(StageStage):
+    class Updater(Runnable):
         """Controls logic of getting the dataset from online sources."""
         def __init__(self, configHandler):
-            StageStage.__init__(self, configHandler)
+            Runnable.__init__(self, configHandler)
             self.folderRelPath = "./" + configHandler.getDatasetName()
 
         @pyqtSlot()
