@@ -41,7 +41,7 @@ class MainWindow(QMainWindow):
         unpack_btn = QPushButton("Unpack", objectName="unpack_btn", clicked=self.controller.unpackStage.unpack)
         store_btn = QPushButton("Store Metadata", objectName="store_btn", clicked=self.controller.storeStage.store)
         features_btn = QPushButton("Calculate Features", objectName="features_btn", clicked=self.controller.featCalcStage.calculateFeatures)
-        label_btn = QPushButton("Label Images", objectName="label_btn")
+        label_btn = QPushButton("Label Images", objectName="label_btn", clicked=self.controller.labelStage.label)
         classify_btn = QPushButton("Train Classifier", objectName="classify_btn", clicked=self.controller.trainStage.train)
         
         stagesLayout = QGridLayout()
@@ -59,8 +59,8 @@ class MainWindow(QMainWindow):
 
         image = QLabel(objectName="image")
         image.setAlignment(Qt.AlignCenter)
-        frontal_btn = QPushButton('Frontal', objectName="frontal_btn", clicked=self.controller.labelerStage.labeler.frontal)
-        lateral_btn = QPushButton('Lateral', objectName="lateral_btn", clicked=self.controller.labelerStage.labeler.lateral)
+        frontal_btn = QPushButton('Frontal', objectName="frontal_btn", clicked=self.controller.labelStage.labeler.frontal)
+        lateral_btn = QPushButton('Lateral', objectName="lateral_btn", clicked=self.controller.labelStage.labeler.lateral)
 
         labelLayout = QGridLayout()
         labelLayout.addWidget(image, 1, 0, 1, 2)
@@ -83,26 +83,7 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(self.mainWidget)
 
-    @pyqtSlot(int)
-    def update_pro_bar_val(self, value):
-        self.centralWidget().findChild(QProgressBar, "pro_bar").setValue(value)
-
-    @pyqtSlot(int, int)
-    def update_pro_bar_bounds(self, proBarMin, proBarMax):
-        self.centralWidget().findChild(QProgressBar, "pro_bar").setMinimum(proBarMin)
-        self.centralWidget().findChild(QProgressBar, "pro_bar").setMaximum(proBarMax)
-
-    @pyqtSlot(str)
-    def update_text(self, text):
-        self.centralWidget().findChild(QLabel, "msg_box").setText(text)
-
-    @pyqtSlot(object)
-    def updateImage(self, record):
-        image = pdm.dcmread(record['file_path']).pixel_array
-        bits_stored = record['bits_stored']
-        pixmap = self.arr_into_pixmap(image, bits_stored)
-        self.widgetStack.currentWidget().findChild(QLabel, "image").setPixmap(pixmap)
-
+    ### STAGES UI
     @pyqtSlot()
     def downloadStageUi(self):
         logging.info('Window initializing in Download phase')
@@ -153,22 +134,13 @@ class MainWindow(QMainWindow):
         self.disableAllStageButtons()
         self.enableStageButton(4)
 
+        self.connectToDashboard(self.controller.labelStage.labeler.signals)
+
         if self.controller.configHandler.getDatasetType() == 'subset':
             self.centralWidget().findChild(QPushButton, "label_btn").clicked.connect(lambda: self.widgetStack.setCurrentIndex(1))
-            self.centralWidget().findChild(QPushButton, "label_btn").clicked.connect(self.controller.labelerStage.label)
+            self.controller.labelStage.labeler.signals.finished.connect(lambda: self.widgetStack.setCurrentIndex(0))
 
-            self.controller.labelerStage.labeler.signals.attemptUpdateImage.connect(self.updateImage)
-
-            self.connectToDashboard(self.controller.labelerStage.labeler.signals)
-            self.controller.labelerStage.labeler.signals.finished.connect(lambda: self.widgetStack.setCurrentIndex(0))
-            self.controller.labelerStage.labeler.signals.finished.connect(self.trainStageUi)
-
-        elif self.controller.configHandler.getDatasetType() == 'full_set':
-            self.centralWidget().findChild(QPushButton, "label_btn").clicked.connect(self.controller.labelImporterStage.importLabels)
-            self.connectToDashboard(self.controller.labelImporterStage.labelImporter.signals)
-            self.controller.labelImporterStage.labelImporter.signals.finished.connect(self.trainStageUi)
-        else:
-            raise ValueError('Value must be one of the keys in SOURCE_URL')
+        self.controller.labelStage.labeler.signals.finished.connect(self.trainStageUi)
         logging.info('***Labeling phase initialized***')
 
     @pyqtSlot()
@@ -183,10 +155,32 @@ class MainWindow(QMainWindow):
         self.connectToDashboard(self.controller.trainStage.trainer.signals)
         logging.info('***Training phase initialized***')
 
+    ### HELPERS
+    @pyqtSlot(int)
+    def update_pro_bar_val(self, value):
+        self.centralWidget().findChild(QProgressBar, "pro_bar").setValue(value)
+
+    @pyqtSlot(int, int)
+    def update_pro_bar_bounds(self, proBarMin, proBarMax):
+        self.centralWidget().findChild(QProgressBar, "pro_bar").setMinimum(proBarMin)
+        self.centralWidget().findChild(QProgressBar, "pro_bar").setMaximum(proBarMax)
+
+    @pyqtSlot(str)
+    def update_text(self, text):
+        self.centralWidget().findChild(QLabel, "msg_box").setText(text)
+
+    @pyqtSlot(object)
+    def updateImage(self, record):
+        image = pdm.dcmread(record['file_path']).pixel_array
+        bits_stored = record['bits_stored']
+        pixmap = self.arr_into_pixmap(image, bits_stored)
+        self.widgetStack.findChild(QLabel, "image").setPixmap(pixmap)
+
     def connectToDashboard(self, signals):
         signals.attemptUpdateProBarBounds.connect(self.update_pro_bar_bounds)
         signals.attemptUpdateProBarValue.connect(self.update_pro_bar_val)
         signals.attemptUpdateText.connect(self.update_text)
+        signals.attemptUpdateImage.connect(self.updateImage)
 
     def disableAllStageButtons(self):
         for button in self.buttons_list:

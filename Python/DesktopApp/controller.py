@@ -6,8 +6,7 @@ from downloadStage import DownloadStage
 from unpackStage import UnpackStage
 from storeStage import StoreStage
 from featureCalculatorStage import FeatCalcStage
-from labelerStage import LabelerStage
-from labelImporterStage import LabelImporterStage
+from labelStage import LabelStage
 from trainStage import TrainStage
 from cxr_config_handler import CxrConfigHandler
 from metadata_to_db.database_handler import DatabaseHandler
@@ -36,8 +35,7 @@ class Controller(QObject):
         self.unpackStage = UnpackStage(self.configHandler)
         self.storeStage = StoreStage(self.configHandler, self.dbHandler)
         self.featCalcStage = FeatCalcStage(self.configHandler, self.dbHandler)
-        self.labelerStage = LabelerStage(self.configHandler, self.dbHandler)
-        self.labelImporterStage = LabelImporterStage(self.configHandler, self.dbHandler)
+        self.labelStage = LabelStage(self.configHandler, self.dbHandler)
         self.trainStage = TrainStage(self.configHandler, self.dbHandler)
 
         self.main_app = MainWindow(self)
