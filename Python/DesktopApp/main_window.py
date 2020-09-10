@@ -37,12 +37,12 @@ class MainWindow(QMainWindow):
         # Create widget for the stage buttons
         stagesWidget = QWidget()
 
-        download_btn = QPushButton("Download", objectName="download_btn", clicked=self.controller.downloader.checkDatasetStatus)
-        unpack_btn = QPushButton("Unpack", objectName="unpack_btn", clicked=self.controller.unpacker.unpack)
-        store_btn = QPushButton("Store Metadata", objectName="store_btn", clicked=self.controller.storer.store)
-        features_btn = QPushButton("Calculate Features", objectName="features_btn", clicked=self.controller.featCalc.calculate_features)
+        download_btn = QPushButton("Download", objectName="download_btn", clicked=self.controller.downloadStage.download)
+        unpack_btn = QPushButton("Unpack", objectName="unpack_btn", clicked=self.controller.unpackStage.unpack)
+        store_btn = QPushButton("Store Metadata", objectName="store_btn", clicked=self.controller.storeStage.store)
+        features_btn = QPushButton("Calculate Features", objectName="features_btn", clicked=self.controller.featCalcStage.calculateFeatures)
         label_btn = QPushButton("Label Images", objectName="label_btn")
-        classify_btn = QPushButton("Train Classifier", objectName="classify_btn", clicked=self.controller.trainer.train)
+        classify_btn = QPushButton("Train Classifier", objectName="classify_btn", clicked=self.controller.trainStage.train)
         
         stagesLayout = QGridLayout()
         stagesLayout.addWidget(download_btn, 1, 0)
@@ -59,8 +59,8 @@ class MainWindow(QMainWindow):
 
         image = QLabel(objectName="image")
         image.setAlignment(Qt.AlignCenter)
-        frontal_btn = QPushButton('Frontal', objectName="frontal_btn", clicked=self.controller.labeler.frontal)
-        lateral_btn = QPushButton('Lateral', objectName="lateral_btn", clicked=self.controller.labeler.lateral)
+        frontal_btn = QPushButton('Frontal', objectName="frontal_btn", clicked=self.controller.labelerStage.labeler.frontal)
+        lateral_btn = QPushButton('Lateral', objectName="lateral_btn", clicked=self.controller.labelerStage.labeler.lateral)
 
         labelLayout = QGridLayout()
         labelLayout.addWidget(image, 1, 0, 1, 2)
@@ -109,9 +109,9 @@ class MainWindow(QMainWindow):
         self.disableAllStageButtons()
         self.enableStageButton(0)
 
-        self.connectToDashboard(self.controller.downloader)
+        self.connectToDashboard(self.controller.downloadStage.downloader.signals)
 
-        self.controller.downloader.finished.connect(self.unpackStageUi)
+        self.controller.downloadStage.downloader.signals.finished.connect(self.unpackStageUi)
         logging.info('***Download phase initialized***')
 
     @pyqtSlot()
@@ -120,9 +120,9 @@ class MainWindow(QMainWindow):
         self.disableAllStageButtons()
         self.enableStageButton(1)
 
-        self.connectToDashboard(self.controller.unpacker.updater.signals)
+        self.connectToDashboard(self.controller.unpackStage.unpackUpdater.signals)
 
-        self.controller.unpacker.updater.signals.finished.connect(self.storeStageUi)
+        self.controller.unpackStage.unpackUpdater.signals.finished.connect(self.storeStageUi)
         logging.info('***Unpack phase initialized***')
         
     @pyqtSlot()
@@ -131,9 +131,9 @@ class MainWindow(QMainWindow):
         self.disableAllStageButtons()
         self.enableStageButton(2)
 
-        self.connectToDashboard(self.controller.storer.updater.signals)
+        self.connectToDashboard(self.controller.storeStage.storeUpdater.signals)
 
-        self.controller.storer.updater.signals.finished.connect(self.calcFeatStageUi)
+        self.controller.storeStage.storeUpdater.signals.finished.connect(self.calcFeatStageUi)
         logging.info('***Store phase initialized***')
 
     @pyqtSlot()
@@ -142,9 +142,9 @@ class MainWindow(QMainWindow):
         self.disableAllStageButtons()
         self.enableStageButton(3)
 
-        self.connectToDashboard(self.controller.featCalc)
+        self.connectToDashboard(self.controller.featCalcStage.featureCalculator.signals)
 
-        self.controller.featCalc.finished.connect(self.labelStageUi)
+        self.controller.featCalcStage.featureCalculator.signals.finished.connect(self.labelStageUi)
         logging.info('***Feature Calculation phase initialized***')
 
     @pyqtSlot()
@@ -155,18 +155,18 @@ class MainWindow(QMainWindow):
 
         if self.controller.configHandler.getDatasetType() == 'subset':
             self.centralWidget().findChild(QPushButton, "label_btn").clicked.connect(lambda: self.widgetStack.setCurrentIndex(1))
-            self.centralWidget().findChild(QPushButton, "label_btn").clicked.connect(self.controller.labeler.startLabeler)
+            self.centralWidget().findChild(QPushButton, "label_btn").clicked.connect(self.controller.labelerStage.label)
 
-            self.controller.labeler.attemptUpdateImage.connect(self.updateImage)
+            self.controller.labelerStage.labeler.signals.attemptUpdateImage.connect(self.updateImage)
 
-            self.connectToDashboard(self.controller.labeler)
-            self.controller.labeler.finished.connect(lambda: self.widgetStack.setCurrentIndex(0))
-            self.controller.labeler.finished.connect(self.trainStageUi)
+            self.connectToDashboard(self.controller.labelerStage.labeler.signals)
+            self.controller.labelerStage.labeler.signals.finished.connect(lambda: self.widgetStack.setCurrentIndex(0))
+            self.controller.labelerStage.labeler.signals.finished.connect(self.trainStageUi)
 
         elif self.controller.configHandler.getDatasetType() == 'full_set':
-            self.centralWidget().findChild(QPushButton, "label_btn").clicked.connect(self.controller.label_importer.importLabels)
-            self.connectToDashboard(self.controller.label_importer)
-            self.controller.label_importer.finished.connect(self.trainStageUi)
+            self.centralWidget().findChild(QPushButton, "label_btn").clicked.connect(self.controller.LabelImportStage.importLabels)
+            self.connectToDashboard(self.controller.LabelImportStage.labelImporter.signals)
+            self.controller.LabelImportStage.labelImporter.signals.finished.connect(self.trainStageUi)
         else:
             raise ValueError('Value must be one of the keys in SOURCE_URL')
         logging.info('***Labeling phase initialized***')
@@ -180,13 +180,13 @@ class MainWindow(QMainWindow):
         self.disableAllStageButtons()
         self.enableStageButton(5)
 
-        self.connectToDashboard(self.controller.trainer)
+        self.connectToDashboard(self.controller.trainStage.trainer.signals)
         logging.info('***Training phase initialized***')
 
-    def connectToDashboard(self, stage):
-        stage.attemptUpdateProBarBounds.connect(self.update_pro_bar_bounds)
-        stage.attemptUpdateProBarValue.connect(self.update_pro_bar_val)
-        stage.attemptUpdateText.connect(self.update_text)
+    def connectToDashboard(self, signals):
+        signals.attemptUpdateProBarBounds.connect(self.update_pro_bar_bounds)
+        signals.attemptUpdateProBarValue.connect(self.update_pro_bar_val)
+        signals.attemptUpdateText.connect(self.update_text)
 
     def disableAllStageButtons(self):
         for button in self.buttons_list:

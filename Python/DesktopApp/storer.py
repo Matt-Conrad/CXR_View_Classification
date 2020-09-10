@@ -2,18 +2,18 @@ from stage import Stage, Runnable
 from PyQt5.QtCore import pyqtSlot, QThreadPool, QObject
 from metadata_to_db.dicom_to_db import DicomToDatabase
 
-class Storer(Stage):
+class StoreStage(Stage):
     def __init__(self, configHandler, dbHandler):
         Stage.__init__(self, configHandler)
-        self.worker = self.Worker(configHandler, dbHandler)
-        self.updater = self.Updater(configHandler, dbHandler)
+        self.storer = self.Storer(configHandler, dbHandler)
+        self.storeUpdater = self.StoreUpdater(configHandler, dbHandler)
 
     @pyqtSlot()
     def store(self):
-        self.threadpool.start(self.worker)
-        self.threadpool.start(self.updater)
+        self.threadpool.start(self.storer)
+        self.threadpool.start(self.storeUpdater)
 
-    class Worker(Runnable):
+    class Storer(Runnable):
         def __init__(self, configHandler, dbHandler):
             Runnable.__init__(self, configHandler, dbHandler)
             self.dicomToDatabase = DicomToDatabase(configHandler, dbHandler)
@@ -28,7 +28,7 @@ class Storer(Stage):
 
             self.dicomToDatabase.dicomToDb(self.dbHandler.dbInfo['database'], metaTableName, columnsInfoPath)
 
-    class Updater(Runnable):
+    class StoreUpdater(Runnable):
         def __init__(self, configHandler, dbHandler):
             Runnable.__init__(self, configHandler, dbHandler)
             self.folderRelPath = "./" + configHandler.getDatasetName()

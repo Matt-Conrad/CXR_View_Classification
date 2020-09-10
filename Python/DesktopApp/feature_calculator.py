@@ -1,4 +1,4 @@
-from stage import Stage
+from stage import Stage, Runnable
 import logging
 import os
 import pydicom as pdm
@@ -6,47 +6,57 @@ from shared_image_processing.features import calc_image_prof
 from cxr_pipeline.preprocessing import preprocessing
 from PyQt5.QtCore import pyqtSlot
 
-class FeatureCalculator(Stage):
-    """Calculates the feature vectors for each image."""
+class FeatCalcStage(Stage):
+    """Downloads datasets from online sources."""
     def __init__(self, configHandler, dbHandler):
         Stage.__init__(self, configHandler, dbHandler)
-        self.featTableName = self.configHandler.getTableName("features")
+        self.featureCalculator = self.FeatureCalculator(configHandler, dbHandler)
 
     @pyqtSlot()
-    def calculate_features(self):
-        logging.info('Calculating features from images')
-        
-        sql_query = 'SELECT * FROM ' + self.configHandler.getTableName("metadata") + ';'
-        records = self.dbHandler.executeQuery(self.dbHandler.connection, sql_query).fetchall()
-        self.dbHandler.add_table_to_db(self.featTableName, self.configHandler.getColumnsInfoPath(), 'features_list')
+    def calculateFeatures(self):
+        self.threadpool.start(self.featureCalculator)
 
-        self.attemptUpdateText.emit('Calculating features')
-        self.attemptUpdateProBarBounds.emit(0, self.expected_num_files)
-        self.attemptUpdateProBarValue.emit(self.dbHandler.count_records(self.featTableName))
+    class FeatureCalculator(Runnable):
+        """Calculates the feature vectors for each image."""
+        def __init__(self, configHandler, dbHandler):
+            Runnable.__init__(self, configHandler, dbHandler)
+            self.featTableName = self.configHandler.getTableName("features")
 
-        count = 0
-        for record in records:
-            file_path = record['file_path']
-            count += 1
-            logging.debug('Calculating for image number: %s File: %s', str(count), file_path)
-            image = pdm.dcmread(file_path).pixel_array
+        @pyqtSlot()
+        def run(self):
+            logging.info('Calculating features from images')
             
-            image = preprocessing(image, record['bits_stored'], record['photometric_interpretation'])
+            sql_query = 'SELECT * FROM ' + self.configHandler.getTableName("metadata") + ';'
+            records = self.dbHandler.executeQuery(self.dbHandler.connection, sql_query).fetchall()
+            self.dbHandler.add_table_to_db(self.featTableName, self.configHandler.getColumnsInfoPath(), 'features_list')
 
-            (hor_profile, vert_profile) = calc_image_prof(image)
+            self.signals.attemptUpdateText.emit('Calculating features')
+            self.signals.attemptUpdateProBarBounds.emit(0, self.expected_num_files)
+            self.signals.attemptUpdateProBarValue.emit(self.dbHandler.count_records(self.featTableName))
 
-            self.store(self.configHandler.getConfigFilename(), file_path, hor_profile, vert_profile)
+            count = 0
+            for record in records:
+                file_path = record['file_path']
+                count += 1
+                logging.debug('Calculating for image number: %s File: %s', str(count), file_path)
+                image = pdm.dcmread(file_path).pixel_array
+                
+                image = preprocessing(image, record['bits_stored'], record['photometric_interpretation'])
 
-            self.attemptUpdateProBarValue.emit(self.dbHandler.count_records(self.featTableName))
+                (hor_profile, vert_profile) = calc_image_prof(image)
 
-        self.attemptUpdateText.emit('Done calculating features')
-        self.finished.emit()
-        logging.info('Done calculating features from images')
+                self.store(self.configHandler.getConfigFilename(), file_path, hor_profile, vert_profile)
 
-    def store(self, config_file_name, file_path, hor_profile, vert_profile):
-        logging.debug('Storing the calculated features into the database.')
-        sql_query = 'INSERT INTO ' + self.configHandler.getTableName("features") + ' (file_name, file_path, hor_profile, vert_profile) VALUES (%s, %s, %s, %s);'
+                self.signals.attemptUpdateProBarValue.emit(self.dbHandler.count_records(self.featTableName))
 
-        values = (file_path.split(os.sep)[-1], file_path, hor_profile.tolist(), vert_profile.tolist())
-        self.dbHandler.executeQuery(self.dbHandler.connection, sql_query, values)
-    
+            self.signals.attemptUpdateText.emit('Done calculating features')
+            self.signals.finished.emit()
+            logging.info('Done calculating features from images')
+
+        def store(self, config_file_name, file_path, hor_profile, vert_profile):
+            logging.debug('Storing the calculated features into the database.')
+            sql_query = 'INSERT INTO ' + self.configHandler.getTableName("features") + ' (file_name, file_path, hor_profile, vert_profile) VALUES (%s, %s, %s, %s);'
+
+            values = (file_path.split(os.sep)[-1], file_path, hor_profile.tolist(), vert_profile.tolist())
+            self.dbHandler.executeQuery(self.dbHandler.connection, sql_query, values)
+        

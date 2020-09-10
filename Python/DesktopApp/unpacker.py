@@ -4,18 +4,18 @@ import tarfile
 import logging
 import os
 
-class Unpacker(Stage):
+class UnpackStage(Stage):
     def __init__(self, configHandler):
         Stage.__init__(self, configHandler)
-        self.worker = self.Worker(configHandler)
-        self.updater = self.Updater(configHandler)
+        self.unpacker = self.Unpacker(configHandler)
+        self.unpackUpdater = self.UnpackUpdater(configHandler)
 
     @pyqtSlot()
     def unpack(self):
-        self.threadpool.start(self.worker)
-        self.threadpool.start(self.updater)
+        self.threadpool.start(self.unpacker)
+        self.threadpool.start(self.unpackUpdater)
 
-    class Worker(Runnable):
+    class Unpacker(Runnable):
         """Controls logic of getting the dataset from online sources."""
         def __init__(self, configHandler):
             Runnable.__init__(self, configHandler)
@@ -32,7 +32,7 @@ class Unpacker(Stage):
 
             logging.info('Done unpacking')
 
-    class Updater(Runnable):
+    class UnpackUpdater(Runnable):
         """Controls logic of getting the dataset from online sources."""
         def __init__(self, configHandler):
             Runnable.__init__(self, configHandler)
