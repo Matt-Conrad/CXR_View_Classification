@@ -6,7 +6,7 @@ import os
 
 class UnpackStage(Stage):
     def __init__(self, configHandler):
-        Stage.__init__(self, configHandler)
+        Stage.__init__(self)
         self.unpacker = self.Unpacker(configHandler)
         self.unpackUpdater = self.UnpackUpdater(configHandler)
 

@@ -10,7 +10,7 @@ from joblib import dump
 class TrainStage(Stage):
     """Downloads datasets from online sources."""
     def __init__(self, configHandler, dbHandler):
-        Stage.__init__(self, configHandler, dbHandler)
+        Stage.__init__(self)
         self.trainer = self.Trainer(configHandler, dbHandler)
 
     @pyqtSlot()

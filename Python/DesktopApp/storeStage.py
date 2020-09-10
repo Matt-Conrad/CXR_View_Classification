@@ -4,7 +4,7 @@ from metadata_to_db.dicom_to_db import DicomToDatabase
 
 class StoreStage(Stage):
     def __init__(self, configHandler, dbHandler):
-        Stage.__init__(self, configHandler)
+        Stage.__init__(self)
         self.storer = self.Storer(configHandler, dbHandler)
         self.storeUpdater = self.StoreUpdater(configHandler, dbHandler)
 

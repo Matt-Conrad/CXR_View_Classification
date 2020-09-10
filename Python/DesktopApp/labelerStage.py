@@ -7,7 +7,7 @@ from stage import Stage, Runnable
 class LabelerStage(Stage):
     """Downloads datasets from online sources."""
     def __init__(self, configHandler, dbHandler):
-        Stage.__init__(self, configHandler, dbHandler)
+        Stage.__init__(self)
         self.labeler = self.Labeler(configHandler, dbHandler)
 
     @pyqtSlot()

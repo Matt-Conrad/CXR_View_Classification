@@ -5,7 +5,7 @@ from PyQt5.QtCore import pyqtSlot
 
 class LabelImporterStage(Stage):
     def __init__(self, configHandler, dbHandler):
-        Stage.__init__(self, configHandler, dbHandler)
+        Stage.__init__(self)
         self.labelImporter = self.LabelImporter(configHandler, dbHandler)
 
     @pyqtSlot()

@@ -7,7 +7,7 @@ from PyQt5.QtCore import pyqtSlot
 class DownloadStage(Stage):
     """Downloads datasets from online sources."""
     def __init__(self, configHandler):
-        Stage.__init__(self, configHandler)
+        Stage.__init__(self)
         self.downloader = self.Downloader(configHandler)
 
     @pyqtSlot()

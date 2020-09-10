@@ -9,7 +9,7 @@ from PyQt5.QtCore import pyqtSlot
 class FeatCalcStage(Stage):
     """Downloads datasets from online sources."""
     def __init__(self, configHandler, dbHandler):
-        Stage.__init__(self, configHandler, dbHandler)
+        Stage.__init__(self)
         self.featureCalculator = self.FeatureCalculator(configHandler, dbHandler)
 
     @pyqtSlot()

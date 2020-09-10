@@ -5,13 +5,8 @@ class Stage(QObject):
     """Code for stage of the CXR training process."""
     threadpool = QThreadPool()
 
-    def __init__(self, configHandler, dbHandler=None):
+    def __init__(self):
         QObject.__init__(self)
-        self.configHandler = configHandler
-        self.dbHandler = dbHandler
-
-        self.expected_size = EXPECTED_SIZES[self.configHandler.getDatasetType()]
-        self.expected_num_files = EXPECTED_NUM_FILES[self.configHandler.getDatasetType()]
 
 class Runnable(QRunnable):
     """Code for stage of the CXR training process."""
