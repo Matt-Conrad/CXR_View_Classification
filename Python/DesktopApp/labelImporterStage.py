@@ -3,7 +3,7 @@ import json
 import logging
 from PyQt5.QtCore import pyqtSlot
 
-class LabelImportStage(Stage):
+class LabelImporterStage(Stage):
     def __init__(self, configHandler, dbHandler):
         Stage.__init__(self, configHandler, dbHandler)
         self.labelImporter = self.LabelImporter(configHandler, dbHandler)

@@ -2,13 +2,13 @@ import logging
 import os
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtGui import QIcon
-from downloader import DownloadStage
-from unpacker import UnpackStage
-from storer import StoreStage
-from feature_calculator import FeatCalcStage
-from labeler import LabelerStage
-from label_importer import LabelImportStage
-from trainer import TrainStage
+from downloadStage import DownloadStage
+from unpackStage import UnpackStage
+from storeStage import StoreStage
+from featureCalculatorStage import FeatCalcStage
+from labelerStage import LabelerStage
+from labelImporterStage import LabelImporterStage
+from trainStage import TrainStage
 from cxr_config_handler import CxrConfigHandler
 from metadata_to_db.database_handler import DatabaseHandler
 from main_window import MainWindow
@@ -37,7 +37,7 @@ class Controller(QObject):
         self.storeStage = StoreStage(self.configHandler, self.dbHandler)
         self.featCalcStage = FeatCalcStage(self.configHandler, self.dbHandler)
         self.labelerStage = LabelerStage(self.configHandler, self.dbHandler)
-        self.labelImportStage = LabelImportStage(self.configHandler, self.dbHandler)
+        self.labelImporterStage = LabelImporterStage(self.configHandler, self.dbHandler)
         self.trainStage = TrainStage(self.configHandler, self.dbHandler)
 
         self.main_app = MainWindow(self)

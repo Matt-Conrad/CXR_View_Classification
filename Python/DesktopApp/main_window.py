@@ -164,9 +164,9 @@ class MainWindow(QMainWindow):
             self.controller.labelerStage.labeler.signals.finished.connect(self.trainStageUi)
 
         elif self.controller.configHandler.getDatasetType() == 'full_set':
-            self.centralWidget().findChild(QPushButton, "label_btn").clicked.connect(self.controller.LabelImportStage.importLabels)
-            self.connectToDashboard(self.controller.LabelImportStage.labelImporter.signals)
-            self.controller.LabelImportStage.labelImporter.signals.finished.connect(self.trainStageUi)
+            self.centralWidget().findChild(QPushButton, "label_btn").clicked.connect(self.controller.labelImporterStage.importLabels)
+            self.connectToDashboard(self.controller.labelImporterStage.labelImporter.signals)
+            self.controller.labelImporterStage.labelImporter.signals.finished.connect(self.trainStageUi)
         else:
             raise ValueError('Value must be one of the keys in SOURCE_URL')
         logging.info('***Labeling phase initialized***')
