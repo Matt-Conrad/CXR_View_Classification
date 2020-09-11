@@ -18,8 +18,7 @@ class LabelStage(Stage):
 
     @pyqtSlot()
     def label(self):
-        # self.threadpool.start(self.labeler)
-        self.labeler.run()
+        self.threadpool.start(self.labeler)
 
     class LabelImporter(Runnable):
         """Class for importing image labels from CSV."""
@@ -76,31 +75,33 @@ class LabelStage(Stage):
             
             self.display_next_image()
 
+            while self.count < self.expected_num_files:
+                pass
+
+            logging.info('End of query')
+            self.signals.attemptUpdateText.emit("Image labeling complete")
+            self.signals.finished.emit()
+
         def frontal(self):
             logging.debug('Front')
             self.store_label('F')
+            self.count += 1
             self.display_next_image()
-
+            
         def lateral(self):
             logging.debug('Lateral')
             self.store_label('L')
+            self.count += 1
             self.display_next_image()
 
         def display_next_image(self):
-            logging.debug('Displaying next image')
+            logging.debug('Image Count: ' + str(self.count))
+            self.signals.attemptUpdateText.emit('Image Count: ' + str(self.count))
             self.signals.attemptUpdateProBarValue.emit(self.dbHandler.count_records(self.configHandler.getTableName('label')))
 
-            if self.count == self.expected_num_files:
-                logging.info('End of query')
-                self.signals.attemptUpdateText.emit("Image labeling complete")
-                self.signals.finished.emit()
-            else:
-                logging.debug('Image Count: ' + str(self.count))
+            if self.count < self.expected_num_files:
                 self.record = self.records[self.count]
-                if self.count > 0:
-                    self.signals.attemptUpdateText.emit('Image Count: ' + str(self.count))
                 self.signals.attemptUpdateImage.emit(self.record)
-                self.count += 1
         
         def query_image_list(self):
             logging.debug('Getting the image list')
