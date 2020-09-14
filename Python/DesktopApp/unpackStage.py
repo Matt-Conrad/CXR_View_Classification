@@ -41,16 +41,16 @@ class UnpackStage(Stage):
         @pyqtSlot()
         def run(self):
             self.signals.attemptUpdateText.emit("Unpacking Images")
-            self.signals.attemptUpdateProBarBounds.emit(0, self.expected_num_files)
+            self.signals.attemptUpdateProBarBounds.emit(0, self.expectedNumFiles)
             self.signals.attemptUpdateProBarValue.emit(0)
             
-            while self.count_DCMs() != self.expected_num_files:
-                self.signals.attemptUpdateProBarValue.emit(self.count_DCMs())
+            while self.countDcms() != self.expectedNumFiles:
+                self.signals.attemptUpdateProBarValue.emit(self.countDcms())
                 
-            self.signals.attemptUpdateProBarValue.emit(self.count_DCMs())
+            self.signals.attemptUpdateProBarValue.emit(self.countDcms())
             self.signals.attemptUpdateText.emit("Images unpacked")
             self.signals.finished.emit()
 
-        def count_DCMs(self):
+        def countDcms(self):
             return sum([len(files) for r, d, files in os.walk(self.folderRelPath) if any(item.endswith('.dcm') for item in files)])
 

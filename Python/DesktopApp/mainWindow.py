@@ -14,7 +14,7 @@ class MainWindow(QMainWindow):
         QMainWindow.__init__(self, windowTitle="CXR Classifier Training Walkthrough")
         self.controller = controller
 
-        self.buttonsList = ["download_btn", "unpack_btn", "store_btn", "features_btn", "label_btn", "classify_btn"]
+        self.buttonsList = ["downloadBtn", "unpackBtn", "storeBtn", "featureBtn", "labelBtn", "classifyBtn"]
 
         self.fillWindow()
         self.initGuiState()
@@ -27,32 +27,32 @@ class MainWindow(QMainWindow):
         # Create widget for the dashboard
         dashboardWidget = QWidget()
 
-        msg_box = QLabel('Welcome to the CXR Classification Application', objectName="msg_box")
-        pro_bar = QProgressBar(objectName="pro_bar")
+        msgBox = QLabel('Welcome to the CXR Classification Application', objectName="msgBox")
+        proBar = QProgressBar(objectName="proBar")
 
         dashboardLayout = QGridLayout()
-        dashboardLayout.addWidget(msg_box, 1, 0, 1, 3)
-        dashboardLayout.addWidget(pro_bar, 2, 0, 1, 3)
+        dashboardLayout.addWidget(msgBox, 1, 0, 1, 3)
+        dashboardLayout.addWidget(proBar, 2, 0, 1, 3)
 
         dashboardWidget.setLayout(dashboardLayout)
 
         # Create widget for the stage buttons
         stagesWidget = QWidget()
 
-        download_btn = QPushButton("Download", objectName="download_btn", clicked=self.controller.downloadStage.download)
-        unpack_btn = QPushButton("Unpack", objectName="unpack_btn", clicked=self.controller.unpackStage.unpack)
-        store_btn = QPushButton("Store Metadata", objectName="store_btn", clicked=self.controller.storeStage.store)
-        features_btn = QPushButton("Calculate Features", objectName="features_btn", clicked=self.controller.featCalcStage.calculateFeatures)
-        label_btn = QPushButton("Label Images", objectName="label_btn", clicked=self.controller.labelStage.label)
-        classify_btn = QPushButton("Train Classifier", objectName="classify_btn", clicked=self.controller.trainStage.train)
+        downloadBtn = QPushButton("Download", objectName="downloadBtn", clicked=self.controller.downloadStage.download)
+        unpackBtn = QPushButton("Unpack", objectName="unpackBtn", clicked=self.controller.unpackStage.unpack)
+        storeBtn = QPushButton("Store Metadata", objectName="storeBtn", clicked=self.controller.storeStage.store)
+        featureBtn = QPushButton("Calculate Features", objectName="featureBtn", clicked=self.controller.featCalcStage.calculateFeatures)
+        labelBtn = QPushButton("Label Images", objectName="labelBtn", clicked=self.controller.labelStage.label)
+        classifyBtn = QPushButton("Train Classifier", objectName="classifyBtn", clicked=self.controller.trainStage.train)
         
         stagesLayout = QGridLayout()
-        stagesLayout.addWidget(download_btn, 1, 0)
-        stagesLayout.addWidget(unpack_btn, 1, 1)
-        stagesLayout.addWidget(store_btn, 1, 2)
-        stagesLayout.addWidget(features_btn, 2, 0)
-        stagesLayout.addWidget(label_btn, 2, 1)
-        stagesLayout.addWidget(classify_btn, 2, 2)
+        stagesLayout.addWidget(downloadBtn, 1, 0)
+        stagesLayout.addWidget(unpackBtn, 1, 1)
+        stagesLayout.addWidget(storeBtn, 1, 2)
+        stagesLayout.addWidget(featureBtn, 2, 0)
+        stagesLayout.addWidget(labelBtn, 2, 1)
+        stagesLayout.addWidget(classifyBtn, 2, 2)
 
         stagesWidget.setLayout(stagesLayout)
 
@@ -61,13 +61,13 @@ class MainWindow(QMainWindow):
 
         image = QLabel(objectName="image")
         image.setAlignment(Qt.AlignCenter)
-        frontal_btn = QPushButton('Frontal', objectName="frontal_btn", clicked=self.controller.labelStage.labeler.frontal)
-        lateral_btn = QPushButton('Lateral', objectName="lateral_btn", clicked=self.controller.labelStage.labeler.lateral)
+        frontalBtn = QPushButton('Frontal', objectName="frontalBtn", clicked=self.controller.labelStage.labeler.frontal)
+        lateralBtn = QPushButton('Lateral', objectName="lateralBtn", clicked=self.controller.labelStage.labeler.lateral)
 
         labelLayout = QGridLayout()
         labelLayout.addWidget(image, 1, 0, 1, 2)
-        labelLayout.addWidget(frontal_btn, 2, 0)
-        labelLayout.addWidget(lateral_btn, 2, 1)
+        labelLayout.addWidget(frontalBtn, 2, 0)
+        labelLayout.addWidget(lateralBtn, 2, 1)
 
         labelerWidget.setLayout(labelLayout)
         
@@ -156,7 +156,7 @@ class MainWindow(QMainWindow):
         self.connectToDashboard(self.controller.labelStage.labeler.signals)
 
         if self.controller.configHandler.getDatasetType() == 'subset':
-            self.centralWidget().findChild(QPushButton, "label_btn").clicked.connect(lambda: self.widgetStack.setCurrentIndex(1))
+            self.centralWidget().findChild(QPushButton, "labelBtn").clicked.connect(lambda: self.widgetStack.setCurrentIndex(1))
             self.controller.labelStage.labeler.signals.finished.connect(lambda: self.widgetStack.setCurrentIndex(0))
 
         self.controller.labelStage.labeler.signals.finished.connect(self.trainStageUi)
@@ -177,22 +177,22 @@ class MainWindow(QMainWindow):
     ### HELPERS
     @pyqtSlot(int)
     def updateProBarVal(self, value):
-        self.centralWidget().findChild(QProgressBar, "pro_bar").setValue(value)
+        self.centralWidget().findChild(QProgressBar, "proBar").setValue(value)
 
     @pyqtSlot(int, int)
     def updateProBarBounds(self, proBarMin, proBarMax):
-        self.centralWidget().findChild(QProgressBar, "pro_bar").setMinimum(proBarMin)
-        self.centralWidget().findChild(QProgressBar, "pro_bar").setMaximum(proBarMax)
+        self.centralWidget().findChild(QProgressBar, "proBar").setMinimum(proBarMin)
+        self.centralWidget().findChild(QProgressBar, "proBar").setMaximum(proBarMax)
 
     @pyqtSlot(str)
     def updateText(self, text):
-        self.centralWidget().findChild(QLabel, "msg_box").setText(text)
+        self.centralWidget().findChild(QLabel, "msgBox").setText(text)
 
     @pyqtSlot(object)
     def updateImage(self, record):
         image = pdm.dcmread(record['file_path']).pixel_array
-        bits_stored = record['bits_stored']
-        pixmap = self.arrIntoPixmap(image, bits_stored)
+        bitsStored = record['bits_stored']
+        pixmap = self.arrIntoPixmap(image, bitsStored)
         self.widgetStack.findChild(QLabel, "image").setPixmap(pixmap)
 
     def connectToDashboard(self, signals):
@@ -208,17 +208,17 @@ class MainWindow(QMainWindow):
     def enableStageButton(self, stageIndex):
         self.centralWidget().findChild(QPushButton, self.buttonsList[stageIndex]).setDisabled(False)
 
-    def arrIntoPixmap(self, image, bits_stored):
+    def arrIntoPixmap(self, image, bitsStored):
         """Convert the image array into a QPixmap for display."""
         # Scale the pixel intensity to uint8
-        highest_possible_intensity = (np.power(2, bits_stored) - 1)
-        image = (image/highest_possible_intensity * 255).astype(np.uint8)
+        highestPossibleIntensity = (np.power(2, bitsStored) - 1)
+        image = (image/highestPossibleIntensity * 255).astype(np.uint8)
 
         image = cv2.resize(image, (300,300), interpolation=cv2.INTER_AREA)
 
         height, width = image.shape
-        bytes_per_line = width
-        q_image = QImage(image, width, height, bytes_per_line, QImage.Format_Grayscale8)
-        pixmap = QPixmap.fromImage(q_image)
+        bytesPerLine = width
+        qImage = QImage(image, width, height, bytesPerLine, QImage.Format_Grayscale8)
+        pixmap = QPixmap.fromImage(qImage)
 
         return pixmap

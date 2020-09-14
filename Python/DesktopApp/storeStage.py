@@ -36,13 +36,13 @@ class StoreStage(Stage):
         @pyqtSlot()
         def run(self):
             self.signals.attemptUpdateText.emit("Storing metadata")
-            self.signals.attemptUpdateProBarBounds.emit(0, self.expected_num_files)
+            self.signals.attemptUpdateProBarBounds.emit(0, self.expectedNumFiles)
             self.signals.attemptUpdateProBarValue.emit(0)
 
             while not self.dbHandler.table_exists(self.configHandler.getTableName('metadata')):
                 pass
 
-            while self.dbHandler.count_records(self.configHandler.getTableName('metadata')) != self.expected_num_files:
+            while self.dbHandler.count_records(self.configHandler.getTableName('metadata')) != self.expectedNumFiles:
                 self.signals.attemptUpdateProBarValue.emit(self.dbHandler.count_records(self.configHandler.getTableName('metadata')))
                 
             self.signals.attemptUpdateProBarValue.emit(self.dbHandler.count_records(self.configHandler.getTableName('metadata')))

@@ -34,16 +34,16 @@ class Controller(QObject):
 
     def configureLogging(self):
         # Get log level from config file
-        log_level = self.configHandler.getSetting(sectionName='logging', settingName='level')
-        if log_level == 'debug':
-            log_level_obj = logging.DEBUG
-        elif log_level == 'info':
-            log_level_obj = logging.INFO
+        logLevel = self.configHandler.getSetting(sectionName='logging', settingName='level')
+        if logLevel == 'debug':
+            logLevelObj = logging.DEBUG
+        elif logLevel == 'info':
+            logLevelObj = logging.INFO
         
         # Remove any log handlers to make way for our logger
         for handler in logging.root.handlers[:]:
             logging.root.removeHandler(handler)
         
         # Set the logging
-        logging.basicConfig(filename='CXR_Classification.log', level=log_level_obj,
+        logging.basicConfig(filename='CXR_Classification.log', level=logLevelObj,
                             format='%(asctime)s %(levelname)-8s: %(message)s', datefmt='%Y-%m-%d|%H:%M:%S')

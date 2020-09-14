@@ -26,12 +26,16 @@ class TrainStage(Stage):
         def run(self):
             logging.info('Training SVM')
 
+            self.signals.attemptUpdateText.emit("Training classifier")
+            self.signals.attemptUpdateProBarBounds.emit(0, self.expectedNumFiles)
+            self.signals.attemptUpdateProBarValue.emit(0)
+
             logging.debug("Extracting feature matrix and labels vector from DB")
 
-            feat_table_name = self.configHandler.getTableName("features")
-            sql_query = 'SELECT * FROM ' + feat_table_name + ' ORDER BY file_path ASC;'
-            records = self.dbHandler.executeQuery(self.dbHandler.connection, sql_query).fetchall()
-            file_names = [record['file_name'] for record in records]
+            featTableName = self.configHandler.getTableName("features")
+            sqlQuery = 'SELECT * FROM ' + featTableName + ' ORDER BY file_path ASC;'
+            records = self.dbHandler.executeQuery(self.dbHandler.connection, sqlQuery).fetchall()
+            fileNames = [record['file_name'] for record in records]
             X1 = [record["hor_profile"] for record in records]
             X2 = [record["vert_profile"] for record in records]
 
@@ -39,42 +43,43 @@ class TrainStage(Stage):
             X2 = np.array(X2, dtype=np.float)
             X = np.concatenate((X1, X2), axis=1)
 
-            sql_query = 'SELECT image_view FROM ' + self.configHandler.getTableName("label") + ' ORDER BY file_path ASC;'
-            records = self.dbHandler.executeQuery(self.dbHandler.connection, sql_query).fetchall()
+            sqlQuery = 'SELECT image_view FROM ' + self.configHandler.getTableName("label") + ' ORDER BY file_path ASC;'
+            records = self.dbHandler.executeQuery(self.dbHandler.connection, sqlQuery).fetchall()
             y = [record[0] for record in records]
             
             logging.debug("Splitting dataset and cross validating SVM for accuracy of classifier")
 
-            X_train, X_test, y_train, y_test, file_names_train, file_names_test = train_test_split(X, y, file_names, test_size=1/3, shuffle=True)
+            XTrain, XTest, yTrain, yTest, fileNamesTrain, fileNamesTest = train_test_split(X, y, fileNames, test_size=1/3, shuffle=True)
 
             clf = svm.SVC(kernel='linear')
-            n_splits = 10
-            if len(X_train) < n_splits:
-                kf = KFold(n_splits=len(X_train), shuffle=True)
+            nSplits = 10
+            if len(XTrain) < nSplits:
+                kf = KFold(n_splits=len(XTrain), shuffle=True)
             else:
-                kf = KFold(n_splits=n_splits, shuffle=True)
-            scores = cross_val_score(clf, X_train, y_train, cv=kf, scoring='accuracy')
+                kf = KFold(n_splits=nSplits, shuffle=True)
+            scores = cross_val_score(clf, XTrain, yTrain, cv=kf, scoring='accuracy')
 
             accuracy = np.mean(scores)
 
             # Fit the classifier to the full training set, which is 2/3 of the full set as suggested in the paper 
-            clf.fit(X_train, y_train)
-            test_accuracy = clf.score(X_test, y_test)
-            logging.info('Test Set Accuracy: %s', str(test_accuracy))
+            clf.fit(XTrain, yTrain)
+            testAccuracy = clf.score(XTest, yTest)
+            logging.info('Test Set Accuracy: %s', str(testAccuracy))
             
             logging.debug("Saving classifier")
-            classifier_file_name = 'full_set_classifier.joblib'
-            logging.info('Classifier saved as %s', classifier_file_name)
-            dump(clf, classifier_file_name)
+            classifierFilename = 'full_set_classifier.joblib'
+            logging.info('Classifier saved as %s', classifierFilename)
+            dump(clf, classifierFilename)
 
             # Save the list of images that are in the test set. You can send these over HTTP to the service.
-            image_list_name = "test_images.csv"
-            logging.info('A list of images in the test set is saved in %s', image_list_name)
+            imageListName = "test_images.csv"
+            logging.info('A list of images in the test set is saved in %s', imageListName)
             with open("test_images.csv", "w") as f:
                 writer = csv.writer(f)
-                for row in file_names_test:
+                for row in fileNamesTest:
                     writer.writerow([row])
 
             self.signals.attemptUpdateText.emit('K-Fold Cross Validation Accuracy: ' + str(accuracy))
+            self.signals.attemptUpdateProBarValue.emit(self.expectedNumFiles)
             self.signals.finished.emit()
             logging.info('Done training SVM. K-Fold Cross Validation Accuracy: %s', str(accuracy))

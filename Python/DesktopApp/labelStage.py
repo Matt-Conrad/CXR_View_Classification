@@ -33,24 +33,24 @@ class LabelStage(Stage):
             self.signals.attemptUpdateText.emit("Importing label data")
 
             self.dbHandler.add_table_to_db(self.configHandler.getTableName('label'), self.configHandler.getColumnsInfoPath(), 'labels')
-            self.import_image_label_data()
+            self.importImageLabelData()
             
             self.signals.attemptUpdateProBarValue.emit(1)
             self.signals.attemptUpdateText.emit("Done importing")
             self.signals.finished.emit()
             logging.info("Done importing label data")
 
-        def import_image_label_data(self):
+        def importImageLabelData(self):
             with open(self.configHandler.getColumnsInfoPath()) as file_reader:
-                elements_json = json.load(file_reader)
-            elements = elements_json['labels']
+                elementsJson = json.load(file_reader)
+            elements = elementsJson['labels']
 
-            sql_query = 'COPY ' + self.configHandler.getTableName('label') + '(file_name, file_path, '
+            sqlQuery = 'COPY ' + self.configHandler.getTableName('label') + '(file_name, file_path, '
             for element_name in elements:
                 if not elements[element_name]['calculation_only']:
-                    sql_query = sql_query + element_name + ','
-            sql_query = sql_query[:-1] + ') FROM \'' + self.configHandler.getParentFolder() + "/" + self.configHandler.getCsvPath() + '\' DELIMITER \',\' CSV HEADER;'
-            self.dbHandler.executeQuery(self.dbHandler.connection, sql_query)
+                    sqlQuery = sqlQuery + element_name + ','
+            sqlQuery = sqlQuery[:-1] + ') FROM \'' + self.configHandler.getParentFolder() + "/" + self.configHandler.getCsvPath() + '\' DELIMITER \',\' CSV HEADER;'
+            self.dbHandler.executeQuery(self.dbHandler.connection, sqlQuery)
             self.dbHandler.count_records(self.configHandler.getTableName('label'))
 
     class ManualLabeler(Runnable):
@@ -66,16 +66,16 @@ class LabelStage(Stage):
         def run(self):
             """Displays the content into the window."""
             logging.debug('Filling window')
-            self.query_image_list()
+            self.queryImageList()
             
             self.signals.attemptUpdateText.emit("Please manually label images")
-            self.signals.attemptUpdateProBarBounds.emit(0, self.expected_num_files)
+            self.signals.attemptUpdateProBarBounds.emit(0, self.expectedNumFiles)
 
             self.dbHandler.add_table_to_db(self.configHandler.getTableName('label'), self.configHandler.getColumnsInfoPath(), 'labels')
             
-            self.display_next_image()
+            self.displayNextImage()
 
-            while self.count < self.expected_num_files:
+            while self.count < self.expectedNumFiles:
                 pass
 
             logging.info('End of query')
@@ -86,29 +86,29 @@ class LabelStage(Stage):
             logging.debug('Front')
             self.store_label('F')
             self.count += 1
-            self.display_next_image()
+            self.displayNextImage()
             
         def lateral(self):
             logging.debug('Lateral')
             self.store_label('L')
             self.count += 1
-            self.display_next_image()
+            self.displayNextImage()
 
-        def display_next_image(self):
+        def displayNextImage(self):
             logging.debug('Image Count: ' + str(self.count))
             self.signals.attemptUpdateText.emit('Image Count: ' + str(self.count))
             self.signals.attemptUpdateProBarValue.emit(self.dbHandler.count_records(self.configHandler.getTableName('label')))
 
-            if self.count < self.expected_num_files:
+            if self.count < self.expectedNumFiles:
                 self.record = self.records[self.count]
                 self.signals.attemptUpdateImage.emit(self.record)
         
-        def query_image_list(self):
+        def queryImageList(self):
             logging.debug('Getting the image list')
-            sql_query = 'SELECT file_path, bits_stored FROM ' + self.configHandler.getTableName("metadata") + ' ORDER BY file_path;'
-            self.records = self.dbHandler.executeQuery(self.dbHandler.connection, sql_query).fetchall()
+            sqlQuery = 'SELECT file_path, bits_stored FROM ' + self.configHandler.getTableName("metadata") + ' ORDER BY file_path;'
+            self.records = self.dbHandler.executeQuery(self.dbHandler.connection, sqlQuery).fetchall()
 
         def store_label(self, decision):
             logging.debug('Storing label')
-            sql_query = 'INSERT INTO ' + self.configHandler.getTableName("label") + ' (file_name, file_path, image_view) VALUES (\'' + self.record['file_path'].split(os.sep)[-1] + '\', \'' + self.record['file_path'] + '\', \'' + decision + '\');'
-            self.dbHandler.executeQuery(self.dbHandler.connection, sql_query)
+            sqlQuery = 'INSERT INTO ' + self.configHandler.getTableName("label") + ' (file_name, file_path, image_view) VALUES (\'' + self.record['file_path'].split(os.sep)[-1] + '\', \'' + self.record['file_path'] + '\', \'' + decision + '\');'
+            self.dbHandler.executeQuery(self.dbHandler.connection, sqlQuery)

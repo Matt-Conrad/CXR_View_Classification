@@ -16,8 +16,8 @@ class Runnable(QRunnable):
         self.configHandler = configHandler
         self.dbHandler = dbHandler
 
-        self.expected_size = EXPECTED_SIZES[self.configHandler.getDatasetType()]
-        self.expected_num_files = EXPECTED_NUM_FILES[self.configHandler.getDatasetType()]
+        self.expectedSize = EXPECTED_SIZES[self.configHandler.getDatasetType()]
+        self.expectedNumFiles = EXPECTED_NUM_FILES[self.configHandler.getDatasetType()]
 
 class Signals(QObject):
     finished = pyqtSignal()

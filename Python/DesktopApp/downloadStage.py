@@ -27,7 +27,7 @@ class DownloadStage(Stage):
                 logging.info('%s already exists', self.filenameRelPath)
                 logging.info('Checking if %s was downloaded properly', self.filenameRelPath)
                 
-                if os.path.getsize(self.filenameRelPath) == self.expected_size:
+                if os.path.getsize(self.filenameRelPath) == self.expectedSize:
                     logging.info('%s was downloaded properly', self.filenameRelPath)
                     self.signals.attemptUpdateProBarValue.emit(self.getTgzSize())
                     self.signals.attemptUpdateText.emit("Image download complete")
@@ -73,8 +73,8 @@ class DownloadStage(Stage):
             """Calculates the size of the TGZ file max."""
             if self.datasetType == 'full_set':
                 # Dividing by 100 because the expected size of this TGZ is larger than QProgressBar accepts
-                return int(self.expected_size / 100)
+                return int(self.expectedSize / 100)
             elif self.datasetType== 'subset':
-                return self.expected_size
+                return self.expectedSize
             else:
                 raise ValueError('Value must be one of the keys in SOURCE_URL')
