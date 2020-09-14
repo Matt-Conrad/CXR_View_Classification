@@ -1,6 +1,6 @@
 from stage import Stage, Runnable
 from PyQt5.QtCore import pyqtSlot
-from metadata_to_db.dicom_to_db import DicomToDatabase
+from metadata_to_db.dicomToDb import DicomToDatabase
 
 class StoreStage(Stage):
     def __init__(self, configHandler, dbHandler):
@@ -23,8 +23,8 @@ class StoreStage(Stage):
             metaTableName = self.configHandler.getTableName("metadata")
             columnsInfoPath = self.configHandler.getColumnsInfoPath()
 
-            if not self.dbHandler.table_exists(metaTableName):
-                self.dbHandler.add_table_to_db(metaTableName, columnsInfoPath, "elements")
+            if not self.dbHandler.tableExists(metaTableName):
+                self.dbHandler.addTableToDb(metaTableName, columnsInfoPath, "elements")
 
             self.dicomToDatabase.dicomToDb(self.dbHandler.dbInfo['database'], metaTableName, columnsInfoPath)
 
@@ -39,12 +39,12 @@ class StoreStage(Stage):
             self.signals.attemptUpdateProBarBounds.emit(0, self.expectedNumFiles)
             self.signals.attemptUpdateProBarValue.emit(0)
 
-            while not self.dbHandler.table_exists(self.configHandler.getTableName('metadata')):
+            while not self.dbHandler.tableExists(self.configHandler.getTableName('metadata')):
                 pass
 
-            while self.dbHandler.count_records(self.configHandler.getTableName('metadata')) != self.expectedNumFiles:
-                self.signals.attemptUpdateProBarValue.emit(self.dbHandler.count_records(self.configHandler.getTableName('metadata')))
+            while self.dbHandler.countRecords(self.configHandler.getTableName('metadata')) != self.expectedNumFiles:
+                self.signals.attemptUpdateProBarValue.emit(self.dbHandler.countRecords(self.configHandler.getTableName('metadata')))
                 
-            self.signals.attemptUpdateProBarValue.emit(self.dbHandler.count_records(self.configHandler.getTableName('metadata')))
+            self.signals.attemptUpdateProBarValue.emit(self.dbHandler.countRecords(self.configHandler.getTableName('metadata')))
             self.signals.finished.emit()
             self.signals.attemptUpdateText.emit("Done storing metadata")

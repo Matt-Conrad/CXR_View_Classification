@@ -28,11 +28,11 @@ class FeatCalcStage(Stage):
             
             sqlQuery = 'SELECT * FROM ' + self.configHandler.getTableName("metadata") + ';'
             records = self.dbHandler.executeQuery(self.dbHandler.connection, sqlQuery).fetchall()
-            self.dbHandler.add_table_to_db(self.featTableName, self.configHandler.getColumnsInfoPath(), 'features_list')
+            self.dbHandler.addTableToDb(self.featTableName, self.configHandler.getColumnsInfoPath(), 'features_list')
 
             self.signals.attemptUpdateText.emit('Calculating features')
             self.signals.attemptUpdateProBarBounds.emit(0, self.expectedNumFiles)
-            self.signals.attemptUpdateProBarValue.emit(self.dbHandler.count_records(self.featTableName))
+            self.signals.attemptUpdateProBarValue.emit(self.dbHandler.countRecords(self.featTableName))
 
             count = 0
             for record in records:
@@ -46,7 +46,7 @@ class FeatCalcStage(Stage):
                 (horProfile, vertProfile) = calc_image_prof(image)
 
                 self.store(filePath, horProfile, vertProfile)
-                self.signals.attemptUpdateProBarValue.emit(self.dbHandler.count_records(self.featTableName))
+                self.signals.attemptUpdateProBarValue.emit(self.dbHandler.countRecords(self.featTableName))
 
             self.signals.attemptUpdateText.emit('Done calculating features')
             self.signals.finished.emit()

@@ -32,7 +32,7 @@ class LabelStage(Stage):
             self.signals.attemptUpdateProBarValue.emit(0)
             self.signals.attemptUpdateText.emit("Importing label data")
 
-            self.dbHandler.add_table_to_db(self.configHandler.getTableName('label'), self.configHandler.getColumnsInfoPath(), 'labels')
+            self.dbHandler.addTableToDb(self.configHandler.getTableName('label'), self.configHandler.getColumnsInfoPath(), 'labels')
             self.importImageLabelData()
             
             self.signals.attemptUpdateProBarValue.emit(1)
@@ -41,17 +41,17 @@ class LabelStage(Stage):
             logging.info("Done importing label data")
 
         def importImageLabelData(self):
-            with open(self.configHandler.getColumnsInfoPath()) as file_reader:
-                elementsJson = json.load(file_reader)
+            with open(self.configHandler.getColumnsInfoPath()) as fileReader:
+                elementsJson = json.load(fileReader)
             elements = elementsJson['labels']
 
             sqlQuery = 'COPY ' + self.configHandler.getTableName('label') + '(file_name, file_path, '
-            for element_name in elements:
-                if not elements[element_name]['calculation_only']:
-                    sqlQuery = sqlQuery + element_name + ','
+            for elementName in elements:
+                if not elements[elementName]['calculation_only']:
+                    sqlQuery = sqlQuery + elementName + ','
             sqlQuery = sqlQuery[:-1] + ') FROM \'' + self.configHandler.getParentFolder() + "/" + self.configHandler.getCsvPath() + '\' DELIMITER \',\' CSV HEADER;'
             self.dbHandler.executeQuery(self.dbHandler.connection, sqlQuery)
-            self.dbHandler.count_records(self.configHandler.getTableName('label'))
+            self.dbHandler.countRecords(self.configHandler.getTableName('label'))
 
     class ManualLabeler(Runnable):
         """Class used to assist in labeling the data."""
@@ -71,7 +71,7 @@ class LabelStage(Stage):
             self.signals.attemptUpdateText.emit("Please manually label images")
             self.signals.attemptUpdateProBarBounds.emit(0, self.expectedNumFiles)
 
-            self.dbHandler.add_table_to_db(self.configHandler.getTableName('label'), self.configHandler.getColumnsInfoPath(), 'labels')
+            self.dbHandler.addTableToDb(self.configHandler.getTableName('label'), self.configHandler.getColumnsInfoPath(), 'labels')
             
             self.displayNextImage()
 
@@ -84,20 +84,20 @@ class LabelStage(Stage):
 
         def frontal(self):
             logging.debug('Front')
-            self.store_label('F')
+            self.storeLabel('F')
             self.count += 1
             self.displayNextImage()
             
         def lateral(self):
             logging.debug('Lateral')
-            self.store_label('L')
+            self.storeLabel('L')
             self.count += 1
             self.displayNextImage()
 
         def displayNextImage(self):
             logging.debug('Image Count: ' + str(self.count))
             self.signals.attemptUpdateText.emit('Image Count: ' + str(self.count))
-            self.signals.attemptUpdateProBarValue.emit(self.dbHandler.count_records(self.configHandler.getTableName('label')))
+            self.signals.attemptUpdateProBarValue.emit(self.dbHandler.countRecords(self.configHandler.getTableName('label')))
 
             if self.count < self.expectedNumFiles:
                 self.record = self.records[self.count]
@@ -108,7 +108,7 @@ class LabelStage(Stage):
             sqlQuery = 'SELECT file_path, bits_stored FROM ' + self.configHandler.getTableName("metadata") + ' ORDER BY file_path;'
             self.records = self.dbHandler.executeQuery(self.dbHandler.connection, sqlQuery).fetchall()
 
-        def store_label(self, decision):
+        def storeLabel(self, decision):
             logging.debug('Storing label')
             sqlQuery = 'INSERT INTO ' + self.configHandler.getTableName("label") + ' (file_name, file_path, image_view) VALUES (\'' + self.record['file_path'].split(os.sep)[-1] + '\', \'' + self.record['file_path'] + '\', \'' + decision + '\');'
             self.dbHandler.executeQuery(self.dbHandler.connection, sqlQuery)

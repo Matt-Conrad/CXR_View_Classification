@@ -7,7 +7,7 @@ from featureCalculatorStage import FeatCalcStage
 from labelStage import LabelStage
 from trainStage import TrainStage
 from cxrConfigHandler import CxrConfigHandler
-from metadata_to_db.database_handler import DatabaseHandler
+from metadata_to_db.databaseHandler import DatabaseHandler
 from mainWindow import MainWindow
 
 class Controller(QObject):

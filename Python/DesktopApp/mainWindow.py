@@ -90,11 +90,11 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(QIcon(self.controller.configHandler.getParentFolder() + '/' + 'icon.jpg'))
 
         # Initialize in right stage
-        if self.controller.dbHandler.table_exists(self.controller.configHandler.getTableName("label")):
+        if self.controller.dbHandler.tableExists(self.controller.configHandler.getTableName("label")):
             self.trainStageUi()
-        elif self.controller.dbHandler.table_exists(self.controller.configHandler.getTableName("features")):
+        elif self.controller.dbHandler.tableExists(self.controller.configHandler.getTableName("features")):
             self.labelStageUi()
-        elif self.controller.dbHandler.table_exists(self.controller.configHandler.getTableName("metadata")):
+        elif self.controller.dbHandler.tableExists(self.controller.configHandler.getTableName("metadata")):
             self.calcFeatStageUi()
         elif os.path.isdir(self.controller.configHandler.getDatasetName()):
             self.storeStageUi()
