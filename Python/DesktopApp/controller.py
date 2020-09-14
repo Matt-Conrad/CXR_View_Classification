@@ -38,20 +38,20 @@ class Controller(QObject):
         self.labelStage = LabelStage(self.configHandler, self.dbHandler)
         self.trainStage = TrainStage(self.configHandler, self.dbHandler)
 
-        self.main_app = MainWindow(self)
+        self.mainWindow = MainWindow(self)
 
-        self.init_gui_state()
+        self.initGuiState()
         logging.info('***CONTROLLER INITIALIZED***')
 
-    def init_gui_state(self):
-        self.main_app.setWindowIcon(QIcon(self.configHandler.getParentFolder() + '/' + 'icon.jpg'))
+    def initGuiState(self):
+        self.mainWindow.setWindowIcon(QIcon(self.configHandler.getParentFolder() + '/' + 'icon.jpg'))
 
-        self.initDownloadStage.connect(self.main_app.downloadStageUi)
-        self.initUnpackStage.connect(self.main_app.unpackStageUi)
-        self.initStoreStage.connect(self.main_app.storeStageUi)
-        self.initCalcFeatStage.connect(self.main_app.calcFeatStageUi)
-        self.initLabelStage.connect(self.main_app.labelStageUi)
-        self.initTrainStage.connect(self.main_app.trainStageUi)
+        self.initDownloadStage.connect(self.mainWindow.downloadStageUi)
+        self.initUnpackStage.connect(self.mainWindow.unpackStageUi)
+        self.initStoreStage.connect(self.mainWindow.storeStageUi)
+        self.initCalcFeatStage.connect(self.mainWindow.calcFeatStageUi)
+        self.initLabelStage.connect(self.mainWindow.labelStageUi)
+        self.initTrainStage.connect(self.mainWindow.trainStageUi)
 
         # Initialize in right stage
         if self.dbHandler.table_exists(self.configHandler.getTableName("label")):

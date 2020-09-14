@@ -1,5 +1,5 @@
 from stage import Stage, Runnable
-from PyQt5.QtCore import pyqtSlot, QThreadPool, QObject
+from PyQt5.QtCore import pyqtSlot
 from metadata_to_db.dicom_to_db import DicomToDatabase
 
 class StoreStage(Stage):

@@ -13,14 +13,14 @@ class MainWindow(QMainWindow):
         QMainWindow.__init__(self, windowTitle="CXR Classifier Training Walkthrough")
         self.controller = controller
 
-        self.buttons_list = ["download_btn", "unpack_btn", "store_btn", "features_btn", "label_btn", "classify_btn"]
+        self.buttonsList = ["download_btn", "unpack_btn", "store_btn", "features_btn", "label_btn", "classify_btn"]
 
-        self.fill_window()
+        self.fillWindow()
         self.show()
         
         logging.info('Done constructing Main app')
 
-    def fill_window(self):
+    def fillWindow(self):
         """Fills the window with buttons."""
         # Create widget for the dashboard
         dashboardWidget = QWidget()
@@ -157,39 +157,39 @@ class MainWindow(QMainWindow):
 
     ### HELPERS
     @pyqtSlot(int)
-    def update_pro_bar_val(self, value):
+    def updateProBarVal(self, value):
         self.centralWidget().findChild(QProgressBar, "pro_bar").setValue(value)
 
     @pyqtSlot(int, int)
-    def update_pro_bar_bounds(self, proBarMin, proBarMax):
+    def updateProBarBounds(self, proBarMin, proBarMax):
         self.centralWidget().findChild(QProgressBar, "pro_bar").setMinimum(proBarMin)
         self.centralWidget().findChild(QProgressBar, "pro_bar").setMaximum(proBarMax)
 
     @pyqtSlot(str)
-    def update_text(self, text):
+    def updateText(self, text):
         self.centralWidget().findChild(QLabel, "msg_box").setText(text)
 
     @pyqtSlot(object)
     def updateImage(self, record):
         image = pdm.dcmread(record['file_path']).pixel_array
         bits_stored = record['bits_stored']
-        pixmap = self.arr_into_pixmap(image, bits_stored)
+        pixmap = self.arrIntoPixmap(image, bits_stored)
         self.widgetStack.findChild(QLabel, "image").setPixmap(pixmap)
 
     def connectToDashboard(self, signals):
         signals.attemptUpdateProBarBounds.connect(self.update_pro_bar_bounds)
-        signals.attemptUpdateProBarValue.connect(self.update_pro_bar_val)
+        signals.attemptUpdateProBarValue.connect(self.updateProBarVal)
         signals.attemptUpdateText.connect(self.update_text)
         signals.attemptUpdateImage.connect(self.updateImage)
 
     def disableAllStageButtons(self):
-        for button in self.buttons_list:
+        for button in self.buttonsList:
             self.centralWidget().findChild(QPushButton, button).setDisabled(True)
 
     def enableStageButton(self, stageIndex):
-        self.centralWidget().findChild(QPushButton, self.buttons_list[stageIndex]).setDisabled(False)
+        self.centralWidget().findChild(QPushButton, self.buttonsList[stageIndex]).setDisabled(False)
 
-    def arr_into_pixmap(self, image, bits_stored):
+    def arrIntoPixmap(self, image, bits_stored):
         """Convert the image array into a QPixmap for display."""
         # Scale the pixel intensity to uint8
         highest_possible_intensity = (np.power(2, bits_stored) - 1)

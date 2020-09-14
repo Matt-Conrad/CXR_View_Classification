@@ -1,5 +1,5 @@
 from stage import Stage, Runnable
-from PyQt5.QtCore import pyqtSlot, QThreadPool, QObject
+from PyQt5.QtCore import pyqtSlot
 import tarfile
 import logging
 import os
