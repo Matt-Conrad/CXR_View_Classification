@@ -103,7 +103,6 @@ class MainWindow(QMainWindow):
         else:
             self.downloadStageUi()
             
-    
     @pyqtSlot()
     def downloadStageUi(self):
         logging.info('Window initializing in Download phase')

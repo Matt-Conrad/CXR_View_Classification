@@ -1,6 +1,6 @@
 from PyQt5.QtCore import pyqtSlot
 from metadata_to_db.config_handler import ConfigHandler
-from expected_sizes import SOURCE_URL
+from expectedSizes import SOURCE_URL
 import os
 
 class CxrConfigHandler(ConfigHandler):

@@ -6,9 +6,9 @@ from storeStage import StoreStage
 from featureCalculatorStage import FeatCalcStage
 from labelStage import LabelStage
 from trainStage import TrainStage
-from cxr_config_handler import CxrConfigHandler
+from cxrConfigHandler import CxrConfigHandler
 from metadata_to_db.database_handler import DatabaseHandler
-from main_window import MainWindow
+from mainWindow import MainWindow
 
 class Controller(QObject):
     """Controller class that controls the logic of the application."""

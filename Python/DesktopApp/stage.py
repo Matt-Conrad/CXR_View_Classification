@@ -1,5 +1,5 @@
 from PyQt5.QtCore import QObject, pyqtSignal, QRunnable, QThreadPool
-from expected_sizes import EXPECTED_NUM_FILES, EXPECTED_SIZES
+from expectedSizes import EXPECTED_NUM_FILES, EXPECTED_SIZES
 
 class Stage(QObject):
     """Code for stage of the CXR training process."""
