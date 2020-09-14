@@ -1,7 +1,5 @@
 import logging
-import os
-from PyQt5.QtCore import QObject, pyqtSignal
-from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import QObject
 from downloadStage import DownloadStage
 from unpackStage import UnpackStage
 from storeStage import StoreStage
@@ -14,14 +12,6 @@ from main_window import MainWindow
 
 class Controller(QObject):
     """Controller class that controls the logic of the application."""
-    # Signals
-    initDownloadStage = pyqtSignal()
-    initUnpackStage = pyqtSignal()
-    initStoreStage = pyqtSignal()
-    initCalcFeatStage = pyqtSignal()
-    initLabelStage = pyqtSignal()
-    initTrainStage = pyqtSignal()
-
     def __init__(self):
         self.configHandler = CxrConfigHandler("./config.ini")
         self.configureLogging()
@@ -40,32 +30,7 @@ class Controller(QObject):
 
         self.mainWindow = MainWindow(self)
 
-        self.initGuiState()
         logging.info('***CONTROLLER INITIALIZED***')
-
-    def initGuiState(self):
-        self.mainWindow.setWindowIcon(QIcon(self.configHandler.getParentFolder() + '/' + 'icon.jpg'))
-
-        self.initDownloadStage.connect(self.mainWindow.downloadStageUi)
-        self.initUnpackStage.connect(self.mainWindow.unpackStageUi)
-        self.initStoreStage.connect(self.mainWindow.storeStageUi)
-        self.initCalcFeatStage.connect(self.mainWindow.calcFeatStageUi)
-        self.initLabelStage.connect(self.mainWindow.labelStageUi)
-        self.initTrainStage.connect(self.mainWindow.trainStageUi)
-
-        # Initialize in right stage
-        if self.dbHandler.table_exists(self.configHandler.getTableName("label")):
-            self.initTrainStage.emit()
-        elif self.dbHandler.table_exists(self.configHandler.getTableName("features")):
-            self.initLabelStage.emit()
-        elif self.dbHandler.table_exists(self.configHandler.getTableName("metadata")):
-            self.initCalcFeatStage.emit()
-        elif os.path.isdir(self.configHandler.getDatasetName()):
-            self.initStoreStage.emit()
-        elif os.path.exists(self.configHandler.getTgzFilename()):
-            self.initUnpackStage.emit()
-        else:
-            self.initDownloadStage.emit()
 
     def configureLogging(self):
         # Get log level from config file

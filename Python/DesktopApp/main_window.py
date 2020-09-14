@@ -1,10 +1,11 @@
 import logging
-from PyQt5.QtCore import pyqtSlot, QThread, Qt
-from PyQt5.QtGui import QPixmap, QImage
-from PyQt5.QtWidgets import QMainWindow, QWidget, QProgressBar, QLabel, QPushButton, QStackedWidget, QGridLayout, QVBoxLayout
+import os
 import pydicom as pdm
 import cv2
 import numpy as np
+from PyQt5.QtCore import pyqtSlot, QThread, Qt
+from PyQt5.QtGui import QPixmap, QImage, QIcon
+from PyQt5.QtWidgets import QMainWindow, QWidget, QProgressBar, QLabel, QPushButton, QStackedWidget, QGridLayout, QVBoxLayout
 
 class MainWindow(QMainWindow):
     """Contains GUI code for the application."""
@@ -16,6 +17,7 @@ class MainWindow(QMainWindow):
         self.buttonsList = ["download_btn", "unpack_btn", "store_btn", "features_btn", "label_btn", "classify_btn"]
 
         self.fillWindow()
+        self.initGuiState()
         self.show()
         
         logging.info('Done constructing Main app')
@@ -84,6 +86,24 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.mainWidget)
 
     ### STAGES UI
+    def initGuiState(self):
+        self.setWindowIcon(QIcon(self.controller.configHandler.getParentFolder() + '/' + 'icon.jpg'))
+
+        # Initialize in right stage
+        if self.controller.dbHandler.table_exists(self.controller.configHandler.getTableName("label")):
+            self.trainStageUi()
+        elif self.controller.dbHandler.table_exists(self.controller.configHandler.getTableName("features")):
+            self.labelStageUi()
+        elif self.controller.dbHandler.table_exists(self.controller.configHandler.getTableName("metadata")):
+            self.calcFeatStageUi()
+        elif os.path.isdir(self.controller.configHandler.getDatasetName()):
+            self.storeStageUi()
+        elif os.path.exists(self.controller.configHandler.getTgzFilename()):
+            self.unpackStageUi()
+        else:
+            self.downloadStageUi()
+            
+    
     @pyqtSlot()
     def downloadStageUi(self):
         logging.info('Window initializing in Download phase')
@@ -177,9 +197,9 @@ class MainWindow(QMainWindow):
         self.widgetStack.findChild(QLabel, "image").setPixmap(pixmap)
 
     def connectToDashboard(self, signals):
-        signals.attemptUpdateProBarBounds.connect(self.update_pro_bar_bounds)
+        signals.attemptUpdateProBarBounds.connect(self.updateProBarBounds)
         signals.attemptUpdateProBarValue.connect(self.updateProBarVal)
-        signals.attemptUpdateText.connect(self.update_text)
+        signals.attemptUpdateText.connect(self.updateText)
         signals.attemptUpdateImage.connect(self.updateImage)
 
     def disableAllStageButtons(self):
