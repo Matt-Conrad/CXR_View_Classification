@@ -122,9 +122,7 @@ void MainWindow::stage1_ui()
     connect(downloadThread, SIGNAL (started()), controller->downloader, SLOT (getDataset()));
 
     // Connect the updater to the dashboard
-    connect(controller->downloader, SIGNAL (attemptUpdateProBarBounds(quint64, quint64)), this, SLOT (updateProBarBounds(quint64, quint64)));
-    connect(controller->downloader, SIGNAL (attemptUpdateProBarValue(quint64)), this, SLOT (updateProBarValue(quint64)));
-    connect(controller->downloader, SIGNAL (attemptUpdateText(QString)), this, SLOT (updateText(QString)));
+    connectToDashBoard(controller->downloader);
 
     // When functions in the threads finished, quit the thread, delete the objects in the threads, and delete the threads when able
     connect(controller->downloader, SIGNAL (finished()), downloadThread, SLOT (quit()));
@@ -147,9 +145,7 @@ void MainWindow::stage2_ui()
     connect(unpackThread, SIGNAL (started()), controller->unpacker, SLOT (unpack()));
 
     // Connect the updater to the dashboard
-    connect(controller->unpacker, SIGNAL (attemptUpdateProBarBounds(quint64, quint64)), this, SLOT (updateProBarBounds(quint64, quint64)));
-    connect(controller->unpacker, SIGNAL (attemptUpdateProBarValue(quint64)), this, SLOT (updateProBarValue(quint64)));
-    connect(controller->unpacker, SIGNAL (attemptUpdateText(QString)), this, SLOT (updateText(QString)));
+    connectToDashBoard(controller->unpacker);
 
     // When functions in the threads finished, quit the thread, delete the objects in the threads, and delete the threads when able
     connect(controller->unpacker, SIGNAL (finished()), unpackThread, SLOT (quit()));
@@ -172,9 +168,7 @@ void MainWindow::stage3_ui()
     connect(storeThread, SIGNAL (started()), controller->storer, SLOT (dicomToDb()));
 
     // Connect the updater to the dashboard
-    connect(controller->storer, SIGNAL (attemptUpdateProBarBounds(quint64, quint64)), this, SLOT (updateProBarBounds(quint64, quint64)));
-    connect(controller->storer, SIGNAL (attemptUpdateProBarValue(quint64)), this, SLOT (updateProBarValue(quint64)));
-    connect(controller->storer, SIGNAL (attemptUpdateText(QString)), this, SLOT (updateText(QString)));
+    connectToDashBoard(controller->storer);
 
     // When functions in the threads finished, quit the thread, delete the objects in the threads, and delete the threads when able
     connect(controller->storer, SIGNAL (finished()), storeThread, SLOT (quit()));
@@ -197,9 +191,7 @@ void MainWindow::stage4_ui()
     connect(featCalcThread, SIGNAL (started()), controller->featCalc, SLOT (calculateFeatures()));
 
     // Connect the updater to the dashboard
-    connect(controller->featCalc, SIGNAL (attemptUpdateProBarBounds(quint64, quint64)), this, SLOT (updateProBarBounds(quint64, quint64)));
-    connect(controller->featCalc, SIGNAL (attemptUpdateProBarValue(quint64)), this, SLOT (updateProBarValue(quint64)));
-    connect(controller->featCalc, SIGNAL (attemptUpdateText(QString)), this, SLOT (updateText(QString)));
+    connectToDashBoard(controller->featCalc);
 
     // When functions in the threads finished, quit the thread, delete the objects in the threads, and delete the threads when able
     connect(controller->featCalc, SIGNAL (finished()), featCalcThread, SLOT (quit()));
@@ -220,7 +212,7 @@ void MainWindow::stage5_ui()
         connect(controller->labeler, SIGNAL (finished()), controller->labeler, SLOT (deleteLater()));
     } else {
         connect(mainWidget->findChild<QPushButton *>("labelBtn"), SIGNAL (clicked()), controller->labelImporter, SLOT (importLabels()));
-        connect(controller->labelImporter, SIGNAL (attemptUpdateText(QString)), this, SLOT (updateText(QString)));
+        connectToDashBoard(controller->labelImporter);
         connect(controller->labelImporter, SIGNAL (finished()), this, SLOT(stage6_ui()));
         connect(controller->labelImporter, SIGNAL (finished()), controller->labeler, SLOT (deleteLater()));
     }
@@ -232,14 +224,16 @@ void MainWindow::stage6_ui()
     enableStageButton(5);
 
     connect(mainWidget->findChild<QPushButton *>("classifyBtn"), SIGNAL (clicked()), controller->trainer, SLOT (trainClassifier()));
-    connect(controller->trainer, SIGNAL (attemptUpdateText(QString)), this, SLOT (updateText(QString)));
+    connectToDashBoard(controller->trainer);
     connect(controller->trainer, SIGNAL (finished()), controller->labeler, SLOT (deleteLater()));
 }
 
-//void MainWindow::connectToDashBoard(QObject stage)
-//{
-
-//}
+void MainWindow::connectToDashBoard(Stage * stage)
+{
+    connect(stage, SIGNAL (attemptUpdateProBarBounds(quint64, quint64)), this, SLOT (updateProBarBounds(quint64, quint64)));
+    connect(stage, SIGNAL (attemptUpdateProBarValue(quint64)), this, SLOT (updateProBarValue(quint64)));
+    connect(stage, SIGNAL (attemptUpdateText(QString)), this, SLOT (updateText(QString)));
+}
 
 void MainWindow::disableAllStageButtons()
 {

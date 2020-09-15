@@ -29,7 +29,10 @@ SOURCES += \
         labelimporter.cpp \
         main.cpp \
         mainwindow.cpp \
+        runnable.cpp \
+        signals.cpp \
         stage.cpp \
+        stage1.cpp \
         storer.cpp \
         trainer.cpp \
         unpacker.cpp
@@ -49,7 +52,10 @@ HEADERS += \
     labeler.h \
     labelimporter.h \
     mainwindow.h \
+    runnable.h \
+    signals.h \
     stage.h \
+    stage1.h \
     storer.h \
     trainer.h \
     unpacker.h \

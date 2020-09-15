@@ -10,6 +10,7 @@
 #include <QStackedWidget>
 #include <QVBoxLayout>
 #include <QString>
+#include <stage.h>
 
 class AppController;
 
@@ -38,7 +39,7 @@ public slots:
     void stage5_ui();
     void stage6_ui();
 
-//    void connectToDashBoard(QObject);
+    void connectToDashBoard(Stage *);
     void disableAllStageButtons();
     void enableStageButton(quint64);
     void updateProBarBounds(quint64, quint64);
