@@ -7,6 +7,9 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <QProgressBar>
+#include <QStackedWidget>
+#include <QVBoxLayout>
+#include <QString>
 
 class AppController;
 
@@ -19,7 +22,10 @@ public:
 private:
     AppController * controller;
 
-    QWidget * centralWidget = nullptr;
+    QString buttonsList[6] = {"downloadBtn", "unpackBtn", "storeBtn", "featureBtn", "labelBtn", "classifyBtn"};
+
+    QStackedWidget * widgetStack;
+    QWidget * mainWidget = nullptr;
 
     void fillWindow();
     void initGuiState();
@@ -32,7 +38,9 @@ public slots:
     void stage5_ui();
     void stage6_ui();
 
-    void startDashboard(QString, quint64, quint64);
+//    void connectToDashBoard(QObject);
+    void disableAllStageButtons();
+    void enableStageButton(quint64);
     void updateProBarBounds(quint64, quint64);
     void updateProBarValue(quint64);
     void updateText(QString);

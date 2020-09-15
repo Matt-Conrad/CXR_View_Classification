@@ -11,64 +11,80 @@ MainWindow::MainWindow(AppController * controller) : QMainWindow()
 
 void MainWindow::fillWindow()
 {
-    centralWidget = new QWidget(this);
+    // Create widget for the dashboard
+    QWidget * dashboardWidget = new QWidget();
 
-    // Create all widgets
     QLabel * msgBox = new QLabel("Welcome to the CXR Classification Application");
     QProgressBar * proBar = new QProgressBar;
+
+    msgBox->setObjectName("msgBox");
+    proBar->setObjectName("proBar");
+
+    QGridLayout * dashboardLayout = new QGridLayout();
+    dashboardLayout->addWidget(msgBox, 1, 0, 1, 3);
+    dashboardLayout->addWidget(proBar, 2, 0, 1, 3);
+
+    dashboardWidget->setLayout(dashboardLayout);
+
+    // Create widget for the stage buttons
+    QWidget * stagesWidget = new QWidget();
 
     QPushButton * downloadBtn = new QPushButton("Download");
     QPushButton * unpackBtn = new QPushButton("Unpack");
     QPushButton * storeBtn = new QPushButton("Store Metadata");
-    QPushButton * featuresBtn = new QPushButton("Calculate Features");
+    QPushButton * featureBtn = new QPushButton("Calculate Features");
     QPushButton * labelBtn = new QPushButton("Label Images");
     QPushButton * classifyBtn = new QPushButton("Train Classifier");
 
-    // Set object names to access them through the centralWidget
-    msgBox->setObjectName("msgBox");
-    proBar->setObjectName("proBar");
     downloadBtn->setObjectName("downloadBtn");
     unpackBtn->setObjectName("unpackBtn");
     storeBtn->setObjectName("storeBtn");
-    featuresBtn->setObjectName("featuresBtn");
+    featureBtn->setObjectName("featureBtn");
     labelBtn->setObjectName("labelBtn");
     classifyBtn->setObjectName("classifyBtn");
 
-    // Add widgets to layout
-    QGridLayout * layout = new QGridLayout;
-    layout->addWidget(msgBox, 0, 0, 1, 3);
-    layout->addWidget(proBar, 1, 0, 1, 3);
-    layout->addWidget(downloadBtn, 2, 0);
-    layout->addWidget(unpackBtn, 2, 1);
-    layout->addWidget(storeBtn, 2, 2);
-    layout->addWidget(featuresBtn, 3, 0);
-    layout->addWidget(labelBtn, 3, 1);
-    layout->addWidget(classifyBtn, 3, 2);
+    QGridLayout * stagesLayout = new QGridLayout();
+    stagesLayout->addWidget(downloadBtn, 1, 0);
+    stagesLayout->addWidget(unpackBtn, 1, 1);
+    stagesLayout->addWidget(storeBtn, 1, 2);
+    stagesLayout->addWidget(featureBtn, 2, 0);
+    stagesLayout->addWidget(labelBtn, 2, 1);
+    stagesLayout->addWidget(classifyBtn, 2, 2);
 
-    // Set layout
-    centralWidget->setLayout(layout);
-    setCentralWidget(centralWidget);
-}
+    stagesWidget->setLayout(stagesLayout);
 
-void MainWindow::startDashboard(QString text, quint64 proBarMin, quint64 proBarMax) {
-    centralWidget->findChild<QLabel *>("msgBox")->setText(text);
-    centralWidget->findChild<QProgressBar *>("proBar")->setMinimum(proBarMin);
-    centralWidget->findChild<QProgressBar *>("proBar")->setMaximum(proBarMax);
-}
+    // Create widget for the labeler
+    QWidget * labelerWidget = new QWidget();
 
-void MainWindow::updateText(QString text)
-{
-    centralWidget->findChild<QLabel *>("msgBox")->setText(text);
-}
+    QLabel * image = new QLabel();
+    image->setAlignment(Qt::AlignCenter);
+    QPushButton * frontalBtn = new QPushButton("Frontal");
+    QPushButton * lateralBtn = new QPushButton("Lateral");
 
-void MainWindow::updateProBarBounds(quint64 proBarMin, quint64 proBarMax)
-{
-    centralWidget->findChild<QProgressBar *>("proBar")->setMinimum(proBarMin);
-    centralWidget->findChild<QProgressBar *>("proBar")->setMaximum(proBarMax);
-}
+    image->setObjectName("image");
+    frontalBtn->setObjectName("frontalBtn");
+    lateralBtn->setObjectName("lateralBtn");
 
-void MainWindow::updateProBarValue(quint64 value) {
-    centralWidget->findChild<QProgressBar *>("proBar")->setValue(value);
+    QGridLayout * labelLayout = new QGridLayout();
+    labelLayout->addWidget(image, 1, 0, 1, 2);
+    labelLayout->addWidget(frontalBtn, 2, 0);
+    labelLayout->addWidget(lateralBtn, 2, 1);
+
+    labelerWidget->setLayout(labelLayout);
+
+    // Set up widget stack
+    widgetStack = new QStackedWidget();
+    widgetStack->addWidget(stagesWidget);
+    widgetStack->addWidget(labelerWidget);
+
+    // Full stack
+    mainWidget = new QWidget(this);
+    QVBoxLayout * mainLayout = new QVBoxLayout();
+    mainLayout->addWidget(dashboardWidget);
+    mainLayout->addWidget(widgetStack);
+    mainWidget->setLayout(mainLayout);
+
+    setCentralWidget(mainWidget);
 }
 
 void MainWindow::initGuiState()
@@ -94,18 +110,13 @@ void MainWindow::initGuiState()
 
 void MainWindow::stage1_ui()
 {
-    // Disable unused buttons
-    centralWidget->findChild<QPushButton *>("downloadBtn")->setDisabled(false);
-    centralWidget->findChild<QPushButton *>("unpackBtn")->setDisabled(true);
-    centralWidget->findChild<QPushButton *>("storeBtn")->setDisabled(true);
-    centralWidget->findChild<QPushButton *>("featuresBtn")->setDisabled(true);
-    centralWidget->findChild<QPushButton *>("labelBtn")->setDisabled(true);
-    centralWidget->findChild<QPushButton *>("classifyBtn")->setDisabled(true);
+    disableAllStageButtons();
+    enableStageButton(0);
 
     // Create a worker thread to download and a worker thread to update the GUI at the click of the button
     QThread * downloadThread = new QThread;
     controller->downloader->moveToThread(downloadThread);
-    connect(centralWidget->findChild<QPushButton *>("downloadBtn"), SIGNAL (clicked()), downloadThread, SLOT (start()));
+    connect(mainWidget->findChild<QPushButton *>("downloadBtn"), SIGNAL (clicked()), downloadThread, SLOT (start()));
 
     // Connect the threads to the functions of the classes in the threads
     connect(downloadThread, SIGNAL (started()), controller->downloader, SLOT (getDataset()));
@@ -124,17 +135,13 @@ void MainWindow::stage1_ui()
 
 void MainWindow::stage2_ui()
 {
-    centralWidget->findChild<QPushButton *>("downloadBtn")->setDisabled(true);
-    centralWidget->findChild<QPushButton *>("unpackBtn")->setDisabled(false);
-    centralWidget->findChild<QPushButton *>("storeBtn")->setDisabled(true);
-    centralWidget->findChild<QPushButton *>("featuresBtn")->setDisabled(true);
-    centralWidget->findChild<QPushButton *>("labelBtn")->setDisabled(true);
-    centralWidget->findChild<QPushButton *>("classifyBtn")->setDisabled(true);
+    disableAllStageButtons();
+    enableStageButton(1);
 
     // Create a worker thread to download and a worker thread to update the GUI at the click of the button
     QThread * unpackThread = new QThread;
     controller->unpacker->moveToThread(unpackThread);
-    connect(centralWidget->findChild<QPushButton *>("unpackBtn"), SIGNAL (clicked()), unpackThread, SLOT (start()));
+    connect(mainWidget->findChild<QPushButton *>("unpackBtn"), SIGNAL (clicked()), unpackThread, SLOT (start()));
 \
     // Connect the threads to the functions of the classes in the threads
     connect(unpackThread, SIGNAL (started()), controller->unpacker, SLOT (unpack()));
@@ -153,17 +160,13 @@ void MainWindow::stage2_ui()
 
 void MainWindow::stage3_ui()
 {
-    centralWidget->findChild<QPushButton *>("downloadBtn")->setDisabled(true);
-    centralWidget->findChild<QPushButton *>("unpackBtn")->setDisabled(true);
-    centralWidget->findChild<QPushButton *>("storeBtn")->setDisabled(false);
-    centralWidget->findChild<QPushButton *>("featuresBtn")->setDisabled(true);
-    centralWidget->findChild<QPushButton *>("labelBtn")->setDisabled(true);
-    centralWidget->findChild<QPushButton *>("classifyBtn")->setDisabled(true);
+    disableAllStageButtons();
+    enableStageButton(2);
 
     // Create a worker thread to download and a worker thread to update the GUI at the click of the button
     QThread * storeThread = new QThread;
     controller->storer->moveToThread(storeThread);
-    connect(centralWidget->findChild<QPushButton *>("storeBtn"), SIGNAL (clicked()), storeThread, SLOT (start()));
+    connect(mainWidget->findChild<QPushButton *>("storeBtn"), SIGNAL (clicked()), storeThread, SLOT (start()));
 \
     // Connect the threads to the functions of the classes in the threads
     connect(storeThread, SIGNAL (started()), controller->storer, SLOT (dicomToDb()));
@@ -182,17 +185,13 @@ void MainWindow::stage3_ui()
 
 void MainWindow::stage4_ui()
 {
-    centralWidget->findChild<QPushButton *>("downloadBtn")->setDisabled(true);
-    centralWidget->findChild<QPushButton *>("unpackBtn")->setDisabled(true);
-    centralWidget->findChild<QPushButton *>("storeBtn")->setDisabled(true);
-    centralWidget->findChild<QPushButton *>("featuresBtn")->setDisabled(false);
-    centralWidget->findChild<QPushButton *>("labelBtn")->setDisabled(true);
-    centralWidget->findChild<QPushButton *>("classifyBtn")->setDisabled(true);
+    disableAllStageButtons();
+    enableStageButton(3);
 
     // Create a worker thread to download and a worker thread to update the GUI at the click of the button
     QThread * featCalcThread = new QThread;
     controller->featCalc->moveToThread(featCalcThread);
-    connect(centralWidget->findChild<QPushButton *>("featuresBtn"), SIGNAL (clicked()), featCalcThread, SLOT (start()));
+    connect(mainWidget->findChild<QPushButton *>("featureBtn"), SIGNAL (clicked()), featCalcThread, SLOT (start()));
 
     // Connect the threads to the functions of the classes in the threads
     connect(featCalcThread, SIGNAL (started()), controller->featCalc, SLOT (calculateFeatures()));
@@ -211,20 +210,16 @@ void MainWindow::stage4_ui()
 
 void MainWindow::stage5_ui()
 {
-    centralWidget->findChild<QPushButton *>("downloadBtn")->setDisabled(true);
-    centralWidget->findChild<QPushButton *>("unpackBtn")->setDisabled(true);
-    centralWidget->findChild<QPushButton *>("storeBtn")->setDisabled(true);
-    centralWidget->findChild<QPushButton *>("featuresBtn")->setDisabled(true);
-    centralWidget->findChild<QPushButton *>("labelBtn")->setDisabled(false);
-    centralWidget->findChild<QPushButton *>("classifyBtn")->setDisabled(true);
+    disableAllStageButtons();
+    enableStageButton(4);
 
     if (controller->configHandler->getDatasetType() == "subset") {
-        connect(centralWidget->findChild<QPushButton *>("labelBtn"), SIGNAL (clicked()), controller->labeler, SLOT (fillWindow()));
+        connect(mainWidget->findChild<QPushButton *>("labelBtn"), SIGNAL (clicked()), controller->labeler, SLOT (fillWindow()));
         connect(controller->labeler, SIGNAL (attemptUpdateText(QString)), this, SLOT (updateText(QString)));
         connect(controller->labeler, SIGNAL (finished()), this, SLOT(stage6_ui()));
         connect(controller->labeler, SIGNAL (finished()), controller->labeler, SLOT (deleteLater()));
     } else {
-        connect(centralWidget->findChild<QPushButton *>("labelBtn"), SIGNAL (clicked()), controller->labelImporter, SLOT (importLabels()));
+        connect(mainWidget->findChild<QPushButton *>("labelBtn"), SIGNAL (clicked()), controller->labelImporter, SLOT (importLabels()));
         connect(controller->labelImporter, SIGNAL (attemptUpdateText(QString)), this, SLOT (updateText(QString)));
         connect(controller->labelImporter, SIGNAL (finished()), this, SLOT(stage6_ui()));
         connect(controller->labelImporter, SIGNAL (finished()), controller->labeler, SLOT (deleteLater()));
@@ -233,14 +228,45 @@ void MainWindow::stage5_ui()
 
 void MainWindow::stage6_ui()
 {
-    centralWidget->findChild<QPushButton *>("downloadBtn")->setDisabled(true);
-    centralWidget->findChild<QPushButton *>("unpackBtn")->setDisabled(true);
-    centralWidget->findChild<QPushButton *>("storeBtn")->setDisabled(true);
-    centralWidget->findChild<QPushButton *>("featuresBtn")->setDisabled(true);
-    centralWidget->findChild<QPushButton *>("labelBtn")->setDisabled(true);
-    centralWidget->findChild<QPushButton *>("classifyBtn")->setDisabled(false);
+    disableAllStageButtons();
+    enableStageButton(5);
 
-    connect(centralWidget->findChild<QPushButton *>("classifyBtn"), SIGNAL (clicked()), controller->trainer, SLOT (trainClassifier()));
+    connect(mainWidget->findChild<QPushButton *>("classifyBtn"), SIGNAL (clicked()), controller->trainer, SLOT (trainClassifier()));
     connect(controller->trainer, SIGNAL (attemptUpdateText(QString)), this, SLOT (updateText(QString)));
     connect(controller->trainer, SIGNAL (finished()), controller->labeler, SLOT (deleteLater()));
+}
+
+//void MainWindow::connectToDashBoard(QObject stage)
+//{
+
+//}
+
+void MainWindow::disableAllStageButtons()
+{
+    mainWidget->findChild<QPushButton *>("downloadBtn")->setDisabled(true);
+    mainWidget->findChild<QPushButton *>("unpackBtn")->setDisabled(true);
+    mainWidget->findChild<QPushButton *>("storeBtn")->setDisabled(true);
+    mainWidget->findChild<QPushButton *>("featureBtn")->setDisabled(true);
+    mainWidget->findChild<QPushButton *>("labelBtn")->setDisabled(true);
+    mainWidget->findChild<QPushButton *>("classifyBtn")->setDisabled(true);
+}
+
+void MainWindow::enableStageButton(quint64 stageIndex)
+{
+    mainWidget->findChild<QPushButton *>(buttonsList[stageIndex])->setDisabled(false);
+}
+
+void MainWindow::updateText(QString text)
+{
+    mainWidget->findChild<QLabel *>("msgBox")->setText(text);
+}
+
+void MainWindow::updateProBarBounds(quint64 proBarMin, quint64 proBarMax)
+{
+    mainWidget->findChild<QProgressBar *>("proBar")->setMinimum(proBarMin);
+    mainWidget->findChild<QProgressBar *>("proBar")->setMaximum(proBarMax);
+}
+
+void MainWindow::updateProBarValue(quint64 value) {
+    mainWidget->findChild<QProgressBar *>("proBar")->setValue(value);
 }
