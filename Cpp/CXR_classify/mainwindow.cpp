@@ -5,6 +5,7 @@ MainWindow::MainWindow(AppController * controller) : QMainWindow()
 {
     MainWindow::controller = controller;
     fillWindow();
+    initGuiState();
     show();
 }
 
@@ -68,6 +69,27 @@ void MainWindow::updateProBarBounds(quint64 proBarMin, quint64 proBarMax)
 
 void MainWindow::updateProBarValue(quint64 value) {
     centralWidget->findChild<QProgressBar *>("proBar")->setValue(value);
+}
+
+void MainWindow::initGuiState()
+{
+    setWindowIcon(QIcon("../../miscellaneous/icon.jpg"));
+
+    std::string folderRelPath = "./" + controller->configHandler->getDatasetName();
+
+    if (controller->dbHandler->tableExists(controller->configHandler->getTableName("label"))) {
+        stage6_ui();
+    } else if (controller->dbHandler->tableExists(controller->configHandler->getTableName("features"))) {
+        stage5_ui();
+    } else if (controller->dbHandler->tableExists(controller->configHandler->getTableName("metadata"))) {
+        stage4_ui();
+    } else if (std::filesystem::exists(folderRelPath)) {
+        stage3_ui();
+    } else if (std::filesystem::exists(controller->configHandler->getTgzFilename())) {
+        stage2_ui();
+    } else {
+        stage1_ui();
+    }
 }
 
 void MainWindow::stage1_ui()

@@ -23,7 +23,7 @@ public slots:
     void trainClassifier();
 
 private:
-    static const unsigned numSamples = 7468;
+    static const unsigned numSamples = 10;//7468;
 };
 
 #endif // TRAINER_H

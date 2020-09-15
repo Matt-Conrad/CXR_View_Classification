@@ -27,8 +27,6 @@ private:
     ConfigHandler * configHandler = new ConfigHandler("../CXR_classify/config.ini");
     DatabaseHandler * dbHandler = new DatabaseHandler(configHandler);
 
-    void initGuiState();
-
 public:
     AppController();
     ~AppController();
@@ -41,14 +39,6 @@ public:
     Trainer * trainer = new Trainer(configHandler, dbHandler);
 
     MainWindow mainWindow = MainWindow(this);
-
-signals:
-    void initStage1();
-    void initStage2();
-    void initStage3();
-    void initStage4();
-    void initStage5();
-    void initStage6();
 };
 
 #endif // APPCONTROLLER_H

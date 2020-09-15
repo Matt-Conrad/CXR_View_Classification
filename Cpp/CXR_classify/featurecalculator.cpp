@@ -135,7 +135,8 @@ void FeatureCalculator::store(std::string filePath, cv::Mat horProfile, cv::Mat 
 cv::Mat FeatureCalculator::calcHorProf()
 {
     cv::Mat horProfile(1, 200, CV_64F);
-    cv::cuda::reduce(imageResize, horProfile, 0, cv::REDUCE_AVG, CV_64F);
+//    cv::cuda::reduce(imageResize, horProfile, 0, cv::REDUCE_AVG, CV_64F);
+    cv::reduce(imageResize, horProfile, 1, cv::REDUCE_AVG, CV_64F);
 
     return horProfile;
 }
@@ -143,7 +144,8 @@ cv::Mat FeatureCalculator::calcHorProf()
 cv::Mat FeatureCalculator::calcVertProf()
 {
     cv::Mat vertProfile(200, 1, CV_64F);
-    cv::cuda::reduce(imageResize, vertProfile, 1, cv::REDUCE_AVG, CV_64F);
+//    cv::cuda::reduce(imageResize, vertProfile, 1, cv::REDUCE_AVG, CV_64F);
+    cv::reduce(imageResize, vertProfile, 1, cv::REDUCE_AVG, CV_64F);
 
     return vertProfile;
 }

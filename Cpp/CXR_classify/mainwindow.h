@@ -22,6 +22,7 @@ private:
     QWidget * centralWidget = nullptr;
 
     void fillWindow();
+    void initGuiState();
 
 public slots:
     void stage1_ui();
