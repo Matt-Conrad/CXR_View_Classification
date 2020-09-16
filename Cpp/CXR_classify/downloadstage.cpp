@@ -1,13 +1,11 @@
 #include "downloadstage.h"
 
-
 DownloadStage::DownloadStage(ConfigHandler * configHandler) : Stage1()
 {
-    DownloadStage::downloader = new Downloader1(configHandler);
+    downloader = new Downloader(configHandler);
 }
 
 void DownloadStage::download()
 {
     threadpool->start(downloader);
-
 }

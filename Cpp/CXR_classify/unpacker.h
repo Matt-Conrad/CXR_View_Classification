@@ -7,14 +7,10 @@
 #include <archive.h>
 #include <archive_entry.h>
 #include "confighandler.h"
-#include "stage.h"
+#include "runnable.h"
 
-class Unpacker : public Stage
+class Unpacker : public Runnable
 {
-    Q_OBJECT
-
-friend class AppController;
-
 public:
     Unpacker(ConfigHandler *);
 
@@ -27,7 +23,7 @@ private:
     quint64 countDcms();
 
 public slots:
-    void unpack();
+    void run();
 };
 
 #endif // UNPACKER_H

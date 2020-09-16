@@ -1,6 +1,6 @@
 #include "unpacker.h"
 
-Unpacker::Unpacker(ConfigHandler * configHandler) : Stage(configHandler)
+Unpacker::Unpacker(ConfigHandler * configHandler) : Runnable(configHandler)
 {
     Unpacker::folderRelPath = "./" + configHandler->getDatasetName();
 }
@@ -77,7 +77,7 @@ int Unpacker::extract(const char * filename, std::string destination)
             fprintf(stderr, "%s\n", archive_error_string(ext));
         if (r < ARCHIVE_WARN)
             return 1;
-        emit attemptUpdateProBarValue(countDcms());
+        emit signalOptions->attemptUpdateProBarValue(countDcms());
     }
     archive_read_close(a);
     archive_read_free(a);
@@ -86,23 +86,23 @@ int Unpacker::extract(const char * filename, std::string destination)
     return 0;
 }
 
-void Unpacker::unpack()
+void Unpacker::run()
 {
     std::string filenameRelPath = "./" + configHandler->getTgzFilename();
 
-    emit attemptUpdateText("Unpacking images");
-    emit attemptUpdateProBarBounds(0, expected_num_files);
-    emit attemptUpdateProBarValue(0);
+    emit signalOptions->attemptUpdateText("Unpacking images");
+    emit signalOptions->attemptUpdateProBarBounds(0, expected_num_files);
+    emit signalOptions->attemptUpdateProBarValue(0);
     if (configHandler->getDatasetType() == "full_set") {
         std::filesystem::create_directory(folderRelPath);
         extract(filenameRelPath.c_str(), folderRelPath);
-        emit attemptUpdateProBarValue(countDcms());
+        emit signalOptions->attemptUpdateProBarValue(countDcms());
     } else {
         extract(filenameRelPath.c_str(), "./");
     }
-    emit attemptUpdateProBarValue(countDcms());
-    emit attemptUpdateText("Images unpacked");
-    emit finished();
+    emit signalOptions->attemptUpdateProBarValue(countDcms());
+    emit signalOptions->attemptUpdateText("Images unpacked");
+    emit signalOptions->finished();
 }
 
 quint64 Unpacker::countDcms()

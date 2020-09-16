@@ -123,22 +123,9 @@ void MainWindow::stage2_ui()
     disableAllStageButtons();
     enableStageButton(1);
 
-    // Create a worker thread to download and a worker thread to update the GUI at the click of the button
-    QThread * unpackThread = new QThread;
-    controller->unpacker->moveToThread(unpackThread);
-    connect(mainWidget->findChild<QPushButton *>("unpackBtn"), SIGNAL (clicked()), unpackThread, SLOT (start()));
-\
-    // Connect the threads to the functions of the classes in the threads
-    connect(unpackThread, SIGNAL (started()), controller->unpacker, SLOT (unpack()));
-
-    // Connect the updater to the dashboard
-    connectToDashBoard(controller->unpacker);
-
-    // When functions in the threads finished, quit the thread, delete the objects in the threads, and delete the threads when able
-    connect(controller->unpacker, SIGNAL (finished()), unpackThread, SLOT (quit()));
-    connect(controller->unpacker, SIGNAL (finished()), this, SLOT(stage3_ui()));
-    connect(controller->unpacker, SIGNAL (finished()), controller->unpacker, SLOT (deleteLater()));
-    connect(unpackThread, SIGNAL (finished()), unpackThread, SLOT (deleteLater()));
+    connect(mainWidget->findChild<QPushButton *>("unpackBtn"), SIGNAL (clicked()), controller->unpackStage, SLOT (unpack()));
+    connectToDashBoard1(controller->unpackStage->unpacker->signalOptions);
+    connect(controller->unpackStage->unpacker->signalOptions, SIGNAL (finished()), this, SLOT(stage3_ui()));
 }
 
 void MainWindow::stage3_ui()

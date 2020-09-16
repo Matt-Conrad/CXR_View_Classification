@@ -4,11 +4,10 @@
 #include <string>
 #include <filesystem>
 #include <QObject>
-#include "mainwindow.h"
-#include "downloader.h"
-#include "downloadstage.h"
 #include "confighandler.h"
-#include "unpacker.h"
+#include "mainwindow.h"
+#include "downloadstage.h"
+#include "unpackstage.h"
 #include "storer.h"
 #include "featurecalculator.h"
 #include "labeler.h"
@@ -31,9 +30,8 @@ private:
 public:
     AppController();
     ~AppController();
-    Downloader * downloader = new Downloader(configHandler);
     DownloadStage * downloadStage = new DownloadStage(configHandler);
-    Unpacker * unpacker = new Unpacker(configHandler);
+    UnpackStage * unpackStage = new UnpackStage(configHandler);
     Storer * storer = new Storer(configHandler, dbHandler);
     FeatureCalculator * featCalc = new FeatureCalculator(configHandler, dbHandler);
     Labeler * labeler = new Labeler(configHandler, dbHandler);

@@ -25,7 +25,6 @@ SOURCES += \
         confighandler.cpp \
         databasehandler.cpp \
         downloader.cpp \
-        downloader1.cpp \
         downloadstage.cpp \
         featurecalculator.cpp \
         labeler.cpp \
@@ -38,7 +37,8 @@ SOURCES += \
         stage1.cpp \
         storer.cpp \
         trainer.cpp \
-        unpacker.cpp
+        unpacker.cpp \
+        unpackstage.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -50,7 +50,6 @@ HEADERS += \
     confighandler.h \
     databasehandler.h \
     downloader.h \
-    downloader1.h \
     downloadstage.h \
     expectedsizes.h \
     featurecalculator.h \
@@ -63,7 +62,8 @@ HEADERS += \
     stage1.h \
     storer.h \
     trainer.h \
-    unpacker.h \
+    unpacker.h \ \
+    unpackstage.h
 
 LIBS += -ldl -lboost_system -lstdc++fs -lz -lbz2 -larchive -lpqxx -lpq -pthread -ldcmimgle -ldcmdata -loflog -lofstd -lopencv_cudaarithm -lopencv_core -lopencv_imgproc -fopenmp -larmadillo -lmlpack
 

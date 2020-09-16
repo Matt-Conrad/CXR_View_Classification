@@ -2,22 +2,16 @@
 #define DOWNLOADSTAGE_H
 
 #include <QObject>
-#include <string>
-#include <filesystem>
-#include <QtNetwork>
 #include "confighandler.h"
-#include "stage.h"
 #include "stage1.h"
-#include "runnable.h"
-#include "downloader1.h"
+#include "downloader.h"
 
 class DownloadStage : public Stage1
 {
     Q_OBJECT
 public:
     DownloadStage(ConfigHandler *);
-    Downloader1 * downloader;
-
+    Downloader * downloader;
 
 public slots:
     void download();

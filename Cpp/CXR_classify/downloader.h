@@ -1,19 +1,15 @@
-#ifndef DATASETDOWNLOADER_H
-#define DATASETDOWNLOADER_H
+#ifndef DOWNLOADER_H
+#define DOWNLOADER_H
 
 #include <QObject>
 #include <string>
 #include <filesystem>
 #include <QtNetwork>
 #include "confighandler.h"
-#include "stage.h"
+#include "runnable.h"
 
-class Downloader : public Stage
+class Downloader : public Runnable
 {
-    Q_OBJECT
-
-friend class AppController;
-
 public:
     Downloader(ConfigHandler *);
 
@@ -27,7 +23,7 @@ private:
     quint64 getTgzSize();
 
 public slots:
-    void getDataset();
+    void run();
 };
 
-#endif // DATASETDOWNLOADER_H
+#endif // DOWNLOADER_H
