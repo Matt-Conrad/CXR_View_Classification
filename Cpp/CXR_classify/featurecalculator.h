@@ -11,16 +11,15 @@
 #include <opencv2/cudaarithm.hpp>
 #include "confighandler.h"
 #include "databasehandler.h"
-#include "stage.h"
+#include "runnable.h"
 
-class FeatureCalculator : public Stage
+class FeatureCalculator : public Runnable
 {
-    Q_OBJECT
 public:
     FeatureCalculator(ConfigHandler *, DatabaseHandler *);
 
 public slots:
-    void calculateFeatures();
+    void run();
 
 private:
     std::string featTableName;

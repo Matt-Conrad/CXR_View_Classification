@@ -2,6 +2,7 @@
 #define STORESTAGE_H
 
 #include <QObject>
+#include "databasehandler.h"
 #include "confighandler.h"
 #include "stage1.h"
 #include "storer.h"

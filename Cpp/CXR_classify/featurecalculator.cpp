@@ -4,22 +4,22 @@
 #include <algorithm>
 #include <functional>
 
-FeatureCalculator::FeatureCalculator(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Stage(configHandler, dbHandler)
+FeatureCalculator::FeatureCalculator(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Runnable(configHandler, dbHandler)
 {
     FeatureCalculator::featTableName = configHandler->getTableName("features");
 }
 
-void FeatureCalculator::calculateFeatures()
+void FeatureCalculator::run()
 {
     auto start = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed;
 
-    emit attemptUpdateText("Calculating features");
-    emit attemptUpdateProBarBounds(0, expected_num_files);
+    emit signalOptions->attemptUpdateText("Calculating features");
+    emit signalOptions->attemptUpdateProBarBounds(0, expected_num_files);
 
     dbHandler->addTableToDb(configHandler->getColumnsInfoPath(), "features_list", featTableName);
 
-    emit attemptUpdateProBarValue(0);
+    emit signalOptions->attemptUpdateProBarValue(0);
     try
     {
         // Start a transaction
@@ -81,7 +81,7 @@ void FeatureCalculator::calculateFeatures()
 
             delete dcmImage;
 
-            emit attemptUpdateProBarValue(count);
+            emit signalOptions->attemptUpdateProBarValue(count);
         }
 
         w.commit();
@@ -91,9 +91,9 @@ void FeatureCalculator::calculateFeatures()
         std::cerr << e.what() << std::endl;
     }
 
-    emit attemptUpdateText("Done calculating features");
-    emit attemptUpdateProBarValue(dbHandler->countRecords(featTableName));
-    emit finished();
+    emit signalOptions->attemptUpdateText("Done calculating features");
+    emit signalOptions->attemptUpdateProBarValue(dbHandler->countRecords(featTableName));
+    emit signalOptions->finished();
 
     auto finish = std::chrono::high_resolution_clock::now();
     elapsed = finish - start;

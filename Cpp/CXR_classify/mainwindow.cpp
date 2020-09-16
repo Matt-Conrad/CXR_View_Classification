@@ -143,23 +143,9 @@ void MainWindow::stage4_ui()
     disableAllStageButtons();
     enableStageButton(3);
 
-    // Create a worker thread to download and a worker thread to update the GUI at the click of the button
-    QThread * featCalcThread = new QThread;
-    controller->featCalc->moveToThread(featCalcThread);
-    connect(mainWidget->findChild<QPushButton *>("featureBtn"), SIGNAL (clicked()), featCalcThread, SLOT (start()));
-
-    // Connect the threads to the functions of the classes in the threads
-    connect(featCalcThread, SIGNAL (started()), controller->featCalc, SLOT (calculateFeatures()));
-
-    // Connect the updater to the dashboard
-    connectToDashBoard(controller->featCalc);
-
-    // When functions in the threads finished, quit the thread, delete the objects in the threads, and delete the threads when able
-    connect(controller->featCalc, SIGNAL (finished()), featCalcThread, SLOT (quit()));
-    connect(controller->featCalc, SIGNAL (finished()), this, SLOT(stage5_ui()));
-    connect(controller->featCalc, SIGNAL (finished()), controller->featCalc, SLOT (deleteLater()));
-    connect(featCalcThread, SIGNAL (finished()), featCalcThread, SLOT (deleteLater()));
-}
+    connect(mainWidget->findChild<QPushButton *>("featureBtn"), SIGNAL (clicked()), controller->featureCalculatorStage, SLOT (calculateFeatures()));
+    connectToDashBoard1(controller->featureCalculatorStage->featureCalculator->signalOptions);
+    connect(controller->featureCalculatorStage->featureCalculator->signalOptions, SIGNAL (finished()), this, SLOT(stage5_ui()));}
 
 void MainWindow::stage5_ui()
 {

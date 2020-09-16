@@ -27,6 +27,7 @@ SOURCES += \
         downloader.cpp \
         downloadstage.cpp \
         featurecalculator.cpp \
+        featurecalculatorstage.cpp \
         labeler.cpp \
         labelimporter.cpp \
         main.cpp \
@@ -54,6 +55,7 @@ HEADERS += \
     downloadstage.h \
     expectedsizes.h \
     featurecalculator.h \
+    featurecalculatorstage.h \
     labeler.h \
     labelimporter.h \
     mainwindow.h \
