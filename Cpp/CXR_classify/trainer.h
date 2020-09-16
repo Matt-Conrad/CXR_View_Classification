@@ -10,17 +10,15 @@
 #include "mlpack/core/cv/metrics/accuracy.hpp"
 #include "confighandler.h"
 #include "databasehandler.h"
-#include "stage.h"
+#include "runnable.h"
 
-class Trainer : public Stage
+class Trainer : public Runnable
 {
-    Q_OBJECT
-
 public:
     Trainer(ConfigHandler *, DatabaseHandler *);
 
 public slots:
-    void trainClassifier();
+    void run();
 
 private:
     static const unsigned numSamples = 10;//7468;

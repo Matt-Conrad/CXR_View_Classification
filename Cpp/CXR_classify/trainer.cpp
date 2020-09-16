@@ -1,13 +1,13 @@
 #include "trainer.h"
 
-Trainer::Trainer(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Stage(configHandler, dbHandler)
+Trainer::Trainer(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Runnable(configHandler, dbHandler)
 {
 
 }
 
-void Trainer::trainClassifier()
+void Trainer::run()
 {
-    emit attemptUpdateText("Training classifier");
+    emit signalOptions->attemptUpdateText("Training classifier");
     try
     {
         // Connect to the database
@@ -90,7 +90,7 @@ void Trainer::trainClassifier()
         }
 
         std::string result("KFoldCV Accuracy: " + std::to_string(cvAcc));
-        emit attemptUpdateText(result.c_str());
+        emit signalOptions->attemptUpdateText(result.c_str());
 
         w.commit();
         dbHandler->deleteConnection(connection);
@@ -100,5 +100,5 @@ void Trainer::trainClassifier()
     {
         std::cout << e.what() << std::endl;
     }
-    emit finished();
+    emit signalOptions->finished();
 }

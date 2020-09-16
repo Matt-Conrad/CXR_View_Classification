@@ -24,7 +24,7 @@ public:
 private:
     AppController * controller;
 
-    QString buttonsList[6] = {"downloadBtn", "unpackBtn", "storeBtn", "featureBtn", "labelBtn", "classifyBtn"};
+    QString buttonsList[6] = {"downloadBtn", "unpackBtn", "storeBtn", "featureBtn", "labelBtn", "trainBtn"};
 
     QStackedWidget * widgetStack;
     QWidget * mainWidget = nullptr;

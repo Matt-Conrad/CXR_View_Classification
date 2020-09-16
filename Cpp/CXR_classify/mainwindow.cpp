@@ -34,14 +34,14 @@ void MainWindow::fillWindow()
     QPushButton * storeBtn = new QPushButton("Store Metadata");
     QPushButton * featureBtn = new QPushButton("Calculate Features");
     QPushButton * labelBtn = new QPushButton("Label Images");
-    QPushButton * classifyBtn = new QPushButton("Train Classifier");
+    QPushButton * trainBtn = new QPushButton("Train Classifier");
 
     downloadBtn->setObjectName("downloadBtn");
     unpackBtn->setObjectName("unpackBtn");
     storeBtn->setObjectName("storeBtn");
     featureBtn->setObjectName("featureBtn");
     labelBtn->setObjectName("labelBtn");
-    classifyBtn->setObjectName("classifyBtn");
+    trainBtn->setObjectName("trainBtn");
 
     QGridLayout * stagesLayout = new QGridLayout();
     stagesLayout->addWidget(downloadBtn, 1, 0);
@@ -49,7 +49,7 @@ void MainWindow::fillWindow()
     stagesLayout->addWidget(storeBtn, 1, 2);
     stagesLayout->addWidget(featureBtn, 2, 0);
     stagesLayout->addWidget(labelBtn, 2, 1);
-    stagesLayout->addWidget(classifyBtn, 2, 2);
+    stagesLayout->addWidget(trainBtn, 2, 2);
 
     stagesWidget->setLayout(stagesLayout);
 
@@ -145,7 +145,8 @@ void MainWindow::stage4_ui()
 
     connect(mainWidget->findChild<QPushButton *>("featureBtn"), SIGNAL (clicked()), controller->featureCalculatorStage, SLOT (calculateFeatures()));
     connectToDashBoard1(controller->featureCalculatorStage->featureCalculator->signalOptions);
-    connect(controller->featureCalculatorStage->featureCalculator->signalOptions, SIGNAL (finished()), this, SLOT(stage5_ui()));}
+    connect(controller->featureCalculatorStage->featureCalculator->signalOptions, SIGNAL (finished()), this, SLOT(stage5_ui()));
+}
 
 void MainWindow::stage5_ui()
 {
@@ -170,9 +171,8 @@ void MainWindow::stage6_ui()
     disableAllStageButtons();
     enableStageButton(5);
 
-    connect(mainWidget->findChild<QPushButton *>("classifyBtn"), SIGNAL (clicked()), controller->trainer, SLOT (trainClassifier()));
-    connectToDashBoard(controller->trainer);
-    connect(controller->trainer, SIGNAL (finished()), controller->labeler, SLOT (deleteLater()));
+    connect(mainWidget->findChild<QPushButton *>("trainBtn"), SIGNAL (clicked()), controller->trainStage, SLOT (train()));
+    connectToDashBoard1(controller->trainStage->trainer->signalOptions);
 }
 
 void MainWindow::connectToDashBoard(Stage * stage)
@@ -196,7 +196,7 @@ void MainWindow::disableAllStageButtons()
     mainWidget->findChild<QPushButton *>("storeBtn")->setDisabled(true);
     mainWidget->findChild<QPushButton *>("featureBtn")->setDisabled(true);
     mainWidget->findChild<QPushButton *>("labelBtn")->setDisabled(true);
-    mainWidget->findChild<QPushButton *>("classifyBtn")->setDisabled(true);
+    mainWidget->findChild<QPushButton *>("trainBtn")->setDisabled(true);
 }
 
 void MainWindow::enableStageButton(quint64 stageIndex)

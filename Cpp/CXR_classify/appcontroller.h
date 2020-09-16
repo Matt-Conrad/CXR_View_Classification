@@ -12,7 +12,7 @@
 #include "featurecalculatorstage.h"
 #include "labeler.h"
 #include "labelimporter.h"
-#include "trainer.h"
+#include "trainstage.h"
 #include "databasehandler.h"
 #include "expectedsizes.h"
 
@@ -36,7 +36,7 @@ public:
     FeatureCalculatorStage * featureCalculatorStage = new FeatureCalculatorStage(configHandler, dbHandler);
     Labeler * labeler = new Labeler(configHandler, dbHandler);
     LabelImporter * labelImporter = new LabelImporter(configHandler, dbHandler);
-    Trainer * trainer = new Trainer(configHandler, dbHandler);
+    TrainStage * trainStage = new TrainStage(configHandler, dbHandler);
 
     MainWindow mainWindow = MainWindow(this);
 };
