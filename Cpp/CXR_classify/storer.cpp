@@ -1,16 +1,16 @@
 #include "storer.h"
 #include <chrono>
 
-Storer::Storer(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Stage(configHandler, dbHandler)
+Storer::Storer(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Runnable(configHandler, dbHandler)
 {
 
 }
 
-void Storer::dicomToDb()
+void Storer::run()
 {
     auto start = std::chrono::high_resolution_clock::now();
-    emit attemptUpdateText("Storing metadata");
-    emit attemptUpdateProBarBounds(0, expected_num_files);
+    emit signalOptions->attemptUpdateText("Storing metadata");
+    emit signalOptions->attemptUpdateProBarBounds(0, expected_num_files);
 
     std::string metadataTableName = configHandler->getTableName("metadata");
     std::string columnsInfoPath = configHandler->getColumnsInfoPath();
@@ -20,7 +20,7 @@ void Storer::dicomToDb()
         dbHandler->addTableToDb(columnsInfoPath, "elements", metadataTableName);
     }
 
-    emit attemptUpdateProBarValue(0);
+    emit signalOptions->attemptUpdateProBarValue(0);
 
     // Open the json with the list of elements we're interested in
     boost::property_tree::ptree columnsJson;
@@ -44,7 +44,7 @@ void Storer::dicomToDb()
                 w.commit();
 
                 storeCount++;
-                emit attemptUpdateProBarValue(storeCount);
+                emit signalOptions->attemptUpdateProBarValue(storeCount);
             }
             catch (std::exception const &e)
             {
@@ -52,8 +52,8 @@ void Storer::dicomToDb()
             }
         }
     }
-    emit attemptUpdateText("Done storing metadata");
-    emit finished();
+    emit signalOptions->attemptUpdateText("Done storing metadata");
+    emit signalOptions->finished();
     auto finish = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = finish - start;
     std::cout << "Elapsed time: " << elapsed.count() << " s\n";

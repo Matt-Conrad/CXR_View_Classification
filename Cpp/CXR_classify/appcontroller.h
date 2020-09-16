@@ -8,7 +8,7 @@
 #include "mainwindow.h"
 #include "downloadstage.h"
 #include "unpackstage.h"
-#include "storer.h"
+#include "storestage.h"
 #include "featurecalculator.h"
 #include "labeler.h"
 #include "labelimporter.h"
@@ -32,7 +32,7 @@ public:
     ~AppController();
     DownloadStage * downloadStage = new DownloadStage(configHandler);
     UnpackStage * unpackStage = new UnpackStage(configHandler);
-    Storer * storer = new Storer(configHandler, dbHandler);
+    StoreStage * storeStage = new StoreStage(configHandler, dbHandler);
     FeatureCalculator * featCalc = new FeatureCalculator(configHandler, dbHandler);
     Labeler * labeler = new Labeler(configHandler, dbHandler);
     LabelImporter * labelImporter = new LabelImporter(configHandler, dbHandler);

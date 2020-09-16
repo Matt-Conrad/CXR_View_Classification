@@ -36,6 +36,7 @@ SOURCES += \
         stage.cpp \
         stage1.cpp \
         storer.cpp \
+        storestage.cpp \
         trainer.cpp \
         unpacker.cpp \
         unpackstage.cpp
@@ -61,6 +62,7 @@ HEADERS += \
     stage.h \
     stage1.h \
     storer.h \
+    storestage.h \
     trainer.h \
     unpacker.h \ \
     unpackstage.h

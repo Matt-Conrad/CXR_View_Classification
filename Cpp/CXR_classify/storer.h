@@ -13,20 +13,18 @@
 #include <dcmtk/dcmdata/dctagkey.h>
 #include "confighandler.h"
 #include "databasehandler.h"
-#include "stage.h"
+#include "runnable.h"
 
-class Storer : public Stage
+class Storer : public Runnable
 {
-    Q_OBJECT
-
 public:
     Storer(ConfigHandler *, DatabaseHandler *);
 
-public slots:
-    void dicomToDb();
-
 private:
     std::string createSqlQuery(std::string, boost::property_tree::ptree, std::string);
+
+public slots:
+    void run();
 };
 
 #endif // STORER_H

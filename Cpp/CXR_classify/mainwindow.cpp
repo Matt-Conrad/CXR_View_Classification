@@ -133,22 +133,9 @@ void MainWindow::stage3_ui()
     disableAllStageButtons();
     enableStageButton(2);
 
-    // Create a worker thread to download and a worker thread to update the GUI at the click of the button
-    QThread * storeThread = new QThread;
-    controller->storer->moveToThread(storeThread);
-    connect(mainWidget->findChild<QPushButton *>("storeBtn"), SIGNAL (clicked()), storeThread, SLOT (start()));
-\
-    // Connect the threads to the functions of the classes in the threads
-    connect(storeThread, SIGNAL (started()), controller->storer, SLOT (dicomToDb()));
-
-    // Connect the updater to the dashboard
-    connectToDashBoard(controller->storer);
-
-    // When functions in the threads finished, quit the thread, delete the objects in the threads, and delete the threads when able
-    connect(controller->storer, SIGNAL (finished()), storeThread, SLOT (quit()));
-    connect(controller->storer, SIGNAL (finished()), this, SLOT(stage4_ui()));
-    connect(controller->storer, SIGNAL (finished()), controller->storer, SLOT (deleteLater()));
-    connect(storeThread, SIGNAL (finished()), storeThread, SLOT (deleteLater()));
+    connect(mainWidget->findChild<QPushButton *>("storeBtn"), SIGNAL (clicked()), controller->storeStage, SLOT (store()));
+    connectToDashBoard1(controller->storeStage->storer->signalOptions);
+    connect(controller->storeStage->storer->signalOptions, SIGNAL (finished()), this, SLOT(stage4_ui()));
 }
 
 void MainWindow::stage4_ui()
