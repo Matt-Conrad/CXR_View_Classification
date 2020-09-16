@@ -6,6 +6,7 @@ QMAKE_CXXFLAGS += -std=c++17
 CONFIG += console
 CONFIG -= app_bundle
 
+
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
@@ -24,6 +25,8 @@ SOURCES += \
         confighandler.cpp \
         databasehandler.cpp \
         downloader.cpp \
+        downloader1.cpp \
+        downloadstage.cpp \
         featurecalculator.cpp \
         labeler.cpp \
         labelimporter.cpp \
@@ -47,6 +50,8 @@ HEADERS += \
     confighandler.h \
     databasehandler.h \
     downloader.h \
+    downloader1.h \
+    downloadstage.h \
     expectedsizes.h \
     featurecalculator.h \
     labeler.h \

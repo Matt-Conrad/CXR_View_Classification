@@ -7,13 +7,12 @@
 #include <databasehandler.h>
 #include <expectedsizes.h>
 
-class Runnable: QRunnable
+class Runnable: public QRunnable
 {
 public:
-    Runnable(ConfigHandler * configHandler, DatabaseHandler * dbHandler);
-
-protected:
+    Runnable(ConfigHandler *, DatabaseHandler * = nullptr);
     Signals * signalOptions;
+protected:
     ConfigHandler * configHandler;
     DatabaseHandler * dbHandler;
     quint64 expected_size;

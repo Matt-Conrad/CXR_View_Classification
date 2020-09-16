@@ -6,6 +6,7 @@
 #include <QObject>
 #include "mainwindow.h"
 #include "downloader.h"
+#include "downloadstage.h"
 #include "confighandler.h"
 #include "unpacker.h"
 #include "storer.h"
@@ -31,6 +32,7 @@ public:
     AppController();
     ~AppController();
     Downloader * downloader = new Downloader(configHandler);
+    DownloadStage * downloadStage = new DownloadStage(configHandler);
     Unpacker * unpacker = new Unpacker(configHandler);
     Storer * storer = new Storer(configHandler, dbHandler);
     FeatureCalculator * featCalc = new FeatureCalculator(configHandler, dbHandler);

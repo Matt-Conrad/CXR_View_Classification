@@ -113,22 +113,9 @@ void MainWindow::stage1_ui()
     disableAllStageButtons();
     enableStageButton(0);
 
-    // Create a worker thread to download and a worker thread to update the GUI at the click of the button
-    QThread * downloadThread = new QThread;
-    controller->downloader->moveToThread(downloadThread);
-    connect(mainWidget->findChild<QPushButton *>("downloadBtn"), SIGNAL (clicked()), downloadThread, SLOT (start()));
-
-    // Connect the threads to the functions of the classes in the threads
-    connect(downloadThread, SIGNAL (started()), controller->downloader, SLOT (getDataset()));
-
-    // Connect the updater to the dashboard
-    connectToDashBoard(controller->downloader);
-
-    // When functions in the threads finished, quit the thread, delete the objects in the threads, and delete the threads when able
-    connect(controller->downloader, SIGNAL (finished()), downloadThread, SLOT (quit()));
-    connect(controller->downloader, SIGNAL (finished()), this, SLOT(stage2_ui()));
-    connect(controller->downloader, SIGNAL (finished()), controller->downloader, SLOT (deleteLater()));
-    connect(downloadThread, SIGNAL (finished()), downloadThread, SLOT (deleteLater()));
+    connect(mainWidget->findChild<QPushButton *>("downloadBtn"), SIGNAL (clicked()), controller->downloadStage, SLOT (download()));
+    connectToDashBoard1(controller->downloadStage->downloader->signalOptions);
+    connect(controller->downloadStage->downloader->signalOptions, SIGNAL (finished()), this, SLOT(stage2_ui()));
 }
 
 void MainWindow::stage2_ui()
@@ -233,6 +220,13 @@ void MainWindow::connectToDashBoard(Stage * stage)
     connect(stage, SIGNAL (attemptUpdateProBarBounds(quint64, quint64)), this, SLOT (updateProBarBounds(quint64, quint64)));
     connect(stage, SIGNAL (attemptUpdateProBarValue(quint64)), this, SLOT (updateProBarValue(quint64)));
     connect(stage, SIGNAL (attemptUpdateText(QString)), this, SLOT (updateText(QString)));
+}
+
+void MainWindow::connectToDashBoard1(Signals * sigs)
+{
+    connect(sigs, SIGNAL (attemptUpdateProBarBounds(quint64, quint64)), this, SLOT (updateProBarBounds(quint64, quint64)));
+    connect(sigs, SIGNAL (attemptUpdateProBarValue(quint64)), this, SLOT (updateProBarValue(quint64)));
+    connect(sigs, SIGNAL (attemptUpdateText(QString)), this, SLOT (updateText(QString)));
 }
 
 void MainWindow::disableAllStageButtons()

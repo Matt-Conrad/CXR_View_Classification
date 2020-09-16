@@ -11,6 +11,7 @@
 #include <QVBoxLayout>
 #include <QString>
 #include <stage.h>
+#include <signals.h>
 
 class AppController;
 
@@ -40,6 +41,7 @@ public slots:
     void stage6_ui();
 
     void connectToDashBoard(Stage *);
+    void connectToDashBoard1(Signals *);
     void disableAllStageButtons();
     void enableStageButton(quint64);
     void updateProBarBounds(quint64, quint64);
