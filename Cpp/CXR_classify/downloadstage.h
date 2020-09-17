@@ -3,10 +3,10 @@
 
 #include <QObject>
 #include "confighandler.h"
-#include "stage1.h"
+#include "stage.h"
 #include "downloader.h"
 
-class DownloadStage : public Stage1
+class DownloadStage : public Stage
 {
     Q_OBJECT
 public:

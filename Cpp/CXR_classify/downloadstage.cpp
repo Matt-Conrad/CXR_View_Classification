@@ -1,6 +1,6 @@
 #include "downloadstage.h"
 
-DownloadStage::DownloadStage(ConfigHandler * configHandler) : Stage1()
+DownloadStage::DownloadStage(ConfigHandler * configHandler) : Stage()
 {
     downloader = new Downloader(configHandler);
 }

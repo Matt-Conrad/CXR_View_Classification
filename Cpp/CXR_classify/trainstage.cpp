@@ -1,6 +1,6 @@
 #include "trainstage.h"
 
-TrainStage::TrainStage(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Stage1()
+TrainStage::TrainStage(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Stage()
 {
     trainer = new Trainer(configHandler, dbHandler);
 }

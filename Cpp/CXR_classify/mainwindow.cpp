@@ -156,16 +156,19 @@ void MainWindow::labelStageUi()
     disableAllStageButtons();
     enableStageButton(4);
 
-    connectToDashboard(controller->labelStage->labeler->signalOptions);
+    connect(mainWidget->findChild<QPushButton *>("labelBtn"), SIGNAL (clicked()), controller->labelStage, SLOT (label()));
 
     if (controller->configHandler->getDatasetType() == "subset") {
-        connect(mainWidget->findChild<QPushButton *>("labelBtn"), SIGNAL (clicked()), controller->labelStage, SLOT (label()));
-
+        connectToDashboard(controller->labelStage->labeler->signalOptions);
         connect(mainWidget->findChild<QPushButton *>("labelBtn"), SIGNAL (clicked()), this, SLOT (secondPage()));
         connect(controller->labelStage->labeler->signalOptions, SIGNAL (finished()), this, SLOT (firstPage()));
+        connect(controller->labelStage->labeler->signalOptions, SIGNAL (finished()), this, SLOT (trainStageUi()));
+    } else {
+        connectToDashboard(controller->labelStage->labelImporter->signalOptions);
+        connect(controller->labelStage->labelImporter->signalOptions, SIGNAL (finished()), this, SLOT (trainStageUi()));
     }
 
-    connect(controller->labelStage->labeler->signalOptions, SIGNAL (finished()), this, SLOT (trainStageUi()));
+
 }
 
 void MainWindow::trainStageUi()

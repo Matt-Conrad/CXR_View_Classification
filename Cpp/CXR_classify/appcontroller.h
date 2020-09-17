@@ -11,7 +11,6 @@
 #include "storestage.h"
 #include "featurecalculatorstage.h"
 #include "labelstage.h"
-#include "labelimporter.h"
 #include "trainstage.h"
 #include "databasehandler.h"
 #include "expectedsizes.h"
@@ -35,7 +34,6 @@ public:
     StoreStage * storeStage = new StoreStage(configHandler, dbHandler);
     FeatureCalculatorStage * featureCalculatorStage = new FeatureCalculatorStage(configHandler, dbHandler);
     LabelStage * labelStage = new LabelStage(configHandler, dbHandler);
-    LabelImporter * labelImporter = new LabelImporter(configHandler, dbHandler);
     TrainStage * trainStage = new TrainStage(configHandler, dbHandler);
 
     MainWindow mainWindow = MainWindow(this);

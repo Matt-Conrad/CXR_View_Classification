@@ -36,7 +36,6 @@ SOURCES += \
         runnable.cpp \
         signals.cpp \
         stage.cpp \
-        stage1.cpp \
         storer.cpp \
         storestage.cpp \
         trainer.cpp \
@@ -65,7 +64,6 @@ HEADERS += \
     runnable.h \
     signals.h \
     stage.h \
-    stage1.h \
     storer.h \
     storestage.h \
     trainer.h \

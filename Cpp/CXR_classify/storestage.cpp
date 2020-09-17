@@ -1,6 +1,6 @@
 #include "storestage.h"
 
-StoreStage::StoreStage(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Stage1()
+StoreStage::StoreStage(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Stage()
 {
     storer = new Storer(configHandler, dbHandler);
 }

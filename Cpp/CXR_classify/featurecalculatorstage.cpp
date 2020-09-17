@@ -1,6 +1,6 @@
 #include "featurecalculatorstage.h"
 
-FeatureCalculatorStage::FeatureCalculatorStage(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Stage1()
+FeatureCalculatorStage::FeatureCalculatorStage(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Stage()
 {
     featureCalculator = new FeatureCalculator(configHandler, dbHandler);
 }

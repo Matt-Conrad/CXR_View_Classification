@@ -4,10 +4,10 @@
 #include <QObject>
 #include "databasehandler.h"
 #include "confighandler.h"
-#include "stage1.h"
+#include "stage.h"
 #include "trainer.h"
 
-class TrainStage : public Stage1
+class TrainStage : public Stage
 {
     Q_OBJECT
 public:

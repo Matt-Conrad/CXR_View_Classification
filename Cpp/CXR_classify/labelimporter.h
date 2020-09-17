@@ -7,17 +7,16 @@
 #include <pqxx/pqxx>
 #include "confighandler.h"
 #include "databasehandler.h"
-#include "stage.h"
+#include "runnable.h"
 
-class LabelImporter : public Stage
+class LabelImporter : public QObject, public Runnable
 {
     Q_OBJECT
-
 public:
     LabelImporter(ConfigHandler *, DatabaseHandler *);
 
 public slots:
-    void importLabels();
+    void run();
 };
 
 #endif // LABELIMPORTER_H

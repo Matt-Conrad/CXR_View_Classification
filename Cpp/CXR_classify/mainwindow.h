@@ -10,7 +10,6 @@
 #include <QStackedWidget>
 #include <QVBoxLayout>
 #include <QString>
-#include <stage.h>
 #include <signals.h>
 
 class AppController;

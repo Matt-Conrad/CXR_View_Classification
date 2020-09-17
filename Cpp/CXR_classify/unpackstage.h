@@ -4,9 +4,9 @@
 #include <QObject>
 #include "confighandler.h"
 #include "unpacker.h"
-#include "stage1.h"
+#include "stage.h"
 
-class UnpackStage : public Stage1
+class UnpackStage : public Stage
 {
     Q_OBJECT
 public:

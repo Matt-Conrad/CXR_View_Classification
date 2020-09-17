@@ -1,6 +1,6 @@
 #include "unpackstage.h"
 
-UnpackStage::UnpackStage(ConfigHandler * configHandler) : Stage1()
+UnpackStage::UnpackStage(ConfigHandler * configHandler) : Stage()
 {
     unpacker = new Unpacker(configHandler);
 }
