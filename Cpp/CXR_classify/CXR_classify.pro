@@ -30,6 +30,7 @@ SOURCES += \
         featurecalculatorstage.cpp \
         labeler.cpp \
         labelimporter.cpp \
+        labelstage.cpp \
         main.cpp \
         mainwindow.cpp \
         runnable.cpp \
@@ -59,6 +60,7 @@ HEADERS += \
     featurecalculatorstage.h \
     labeler.h \
     labelimporter.h \
+    labelstage.h \
     mainwindow.h \
     runnable.h \
     signals.h \

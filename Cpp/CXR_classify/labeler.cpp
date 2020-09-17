@@ -1,63 +1,48 @@
 #include "labeler.h"
 
-Labeler::Labeler(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : QWidget()
+Labeler::Labeler(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : QObject(), Runnable(configHandler, dbHandler)
 {
-    Labeler::configHandler = configHandler;
-    Labeler::dbHandler = dbHandler;
     Labeler::labelTableName = configHandler->getTableName("label");
 }
 
-void Labeler::closeLabelApp()
-{
-    closeConnection();
-    emit attemptUpdateText("Image labeling complete");
-    emit finished();
-    this->close();
-}
-
-void Labeler::closeConnection()
-{
-    dbHandler->deleteConnection(connection);
-}
-
-void Labeler::fillWindow()
+void Labeler::run()
 {
     queryImageList();
-    emit attemptUpdateText("Please manually label images");
-    dbHandler->addTableToDb(configHandler->getColumnsInfoPath(), "labels", labelTableName);
-    QGridLayout * layout = new QGridLayout;
-    layout->addWidget(image, 1, 0, 1, 2);
-    layout->addWidget(frontalButton, 2, 0);
-    layout->addWidget(lateralButton, 2, 1);
+    emit signalOptions->attemptUpdateText("Please manually label images");
+    emit signalOptions->attemptUpdateProBarBounds(0, expected_num_files);
 
-    // Set layout
-    this->setLayout(layout);
+    dbHandler->addTableToDb(configHandler->getColumnsInfoPath(), "labels", labelTableName);
+
     displayNextImage();
-    connect(this->frontalButton, SIGNAL(clicked()), this, SLOT(frontal()));
-    connect(this->lateralButton, SIGNAL(clicked()), this, SLOT(lateral()));
-    this->show();
+
+    while (count < expected_num_files) {
+        ;
+    }
+
+    emit signalOptions->attemptUpdateText("Image labeling complete");
+    emit signalOptions->finished();
 }
 
 void Labeler::frontal()
 {
     storeLabel("F");
+    count++;
     displayNextImage();
 }
 
 void Labeler::lateral()
 {
     storeLabel("L");
+    count++;
     displayNextImage();
 }
 
 void Labeler::displayNextImage()
 {
-    if (record == imageList.end()) {
-        emit attemptUpdateText("Done labeling");
-        closeLabelApp();
-    } else {
-        count++;
-        this->setWindowTitle("Image Count "  + QString::number(count));
+    emit signalOptions->attemptUpdateText("Image count: " + QString::number(count));
+    emit signalOptions->attemptUpdateProBarValue(count);
+
+    if (count < expected_num_files) {
         const char * filePath = record["file_path"].c_str();
         DicomImage * dcmImage = new DicomImage(filePath);
         uchar * pixelData = (uchar *) (dcmImage->getOutputData(8));
@@ -71,7 +56,8 @@ void Labeler::displayNextImage()
 
         QImage qImage(imageSquare.data, 300, 300, QImage::Format_Grayscale8);
         QPixmap pixmap = QPixmap::fromImage(qImage);
-        image->setPixmap(pixmap);
+
+        emit signalOptions->attemptUpdateImage(pixmap);
     }
 }
 

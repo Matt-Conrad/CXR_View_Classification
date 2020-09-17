@@ -11,18 +11,16 @@
 #include "opencv2/imgproc.hpp"
 #include "confighandler.h"
 #include "databasehandler.h"
+#include "runnable.h"
+#include <string>
 
-class Labeler : public QWidget
+class Labeler : public QObject, public Runnable
 {
     Q_OBJECT
-
 public:
     Labeler(ConfigHandler *, DatabaseHandler *);
 
 private:
-    ConfigHandler * configHandler;
-    DatabaseHandler * dbHandler;
-
     unsigned count = 0;
 
     std::string labelTableName;
@@ -31,26 +29,14 @@ private:
     pqxx::result::const_iterator record;
     pqxx::connection * connection;
 
-    QLabel * image = new QLabel(this);
-    QPushButton * frontalButton = new QPushButton("Frontal", this);
-    QPushButton * lateralButton = new QPushButton("Lateral", this);
-
     void queryImageList();
     void displayNextImage();
     void storeLabel(std::string);
-    void closeLabelApp();
-    void closeConnection();
-
-private slots:
-    void frontal();
-    void lateral();
 
 public slots:
-    void fillWindow();
-
-signals:
-    void finished();
-    void attemptUpdateText(QString);
+    void run();
+    void frontal();
+    void lateral();
 };
 
 #endif // LABELER_H

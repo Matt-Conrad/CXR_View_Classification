@@ -10,7 +10,7 @@
 #include "unpackstage.h"
 #include "storestage.h"
 #include "featurecalculatorstage.h"
-#include "labeler.h"
+#include "labelstage.h"
 #include "labelimporter.h"
 #include "trainstage.h"
 #include "databasehandler.h"
@@ -34,7 +34,7 @@ public:
     UnpackStage * unpackStage = new UnpackStage(configHandler);
     StoreStage * storeStage = new StoreStage(configHandler, dbHandler);
     FeatureCalculatorStage * featureCalculatorStage = new FeatureCalculatorStage(configHandler, dbHandler);
-    Labeler * labeler = new Labeler(configHandler, dbHandler);
+    LabelStage * labelStage = new LabelStage(configHandler, dbHandler);
     LabelImporter * labelImporter = new LabelImporter(configHandler, dbHandler);
     TrainStage * trainStage = new TrainStage(configHandler, dbHandler);
 

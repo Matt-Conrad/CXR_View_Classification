@@ -33,21 +33,23 @@ private:
     void initGuiState();
 
 public slots:
-    void stage1_ui();
-    void stage2_ui();
-    void stage3_ui();
-    void stage4_ui();
-    void stage5_ui();
-    void stage6_ui();
+    void downloadStageUi();
+    void unpackStageUi();
+    void storeStageUi();
+    void calcFeatStageUi();
+    void labelStageUi();
+    void trainStageUi();
 
-    void connectToDashBoard(Stage *);
+    void firstPage();
+    void secondPage();
+
     void connectToDashBoard1(Signals *);
     void disableAllStageButtons();
     void enableStageButton(quint64);
     void updateProBarBounds(quint64, quint64);
     void updateProBarValue(quint64);
     void updateText(QString);
-
+    void updateImage(QPixmap);
 };
 
 #endif // MAINAPPLICATION_H

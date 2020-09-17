@@ -2,6 +2,8 @@
 #define SIGNALS_H
 
 #include <QObject>
+#include <QString>
+#include <QPixmap>
 
 class Signals : public QObject
 {
@@ -14,7 +16,7 @@ signals:
     void attemptUpdateProBarValue(quint64);
     void attemptUpdateProBarBounds(quint64, quint64);
     void attemptUpdateText(QString);
-//    void attemptUpdateImage(QImage?????)
+    void attemptUpdateImage(QPixmap);
 };
 
 #endif // SIGNALS_H
