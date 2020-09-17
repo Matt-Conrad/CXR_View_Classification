@@ -7,14 +7,29 @@ from PyQt5.QtCore import pyqtSlot, QThread, Qt
 from PyQt5.QtGui import QPixmap, QImage, QIcon
 from PyQt5.QtWidgets import QMainWindow, QWidget, QProgressBar, QLabel, QPushButton, QStackedWidget, QGridLayout, QVBoxLayout
 
+import logging
+from downloadStage import DownloadStage
+from unpackStage import UnpackStage
+from storeStage import StoreStage
+from featureCalculatorStage import FeatCalcStage
+from labelStage import LabelStage
+from trainStage import TrainStage
+from cxrConfigHandler import CxrConfigHandler
+from metadata_to_db.databaseHandler import DatabaseHandler
+
 class MainWindow(QMainWindow):
     """Contains GUI code for the application."""
-    def __init__(self, controller):
+    def __init__(self):
+        self.configHandler = CxrConfigHandler("./config.ini")
+        self.configureLogging()
+
         logging.info('Constructing Main app')
         QMainWindow.__init__(self, windowTitle="CXR Classifier Training Walkthrough")
-        self.controller = controller
+        
+        self.dbHandler = DatabaseHandler(self.configHandler)
 
         self.buttonsList = ["downloadBtn", "unpackBtn", "storeBtn", "featureBtn", "labelBtn", "classifyBtn"]
+        self.currentStage = None
 
         self.fillWindow()
         self.initGuiState()
@@ -39,12 +54,12 @@ class MainWindow(QMainWindow):
         # Create widget for the stage buttons
         stagesWidget = QWidget()
 
-        downloadBtn = QPushButton("Download", objectName="downloadBtn", clicked=self.controller.downloadStage.download)
-        unpackBtn = QPushButton("Unpack", objectName="unpackBtn", clicked=self.controller.unpackStage.unpack)
-        storeBtn = QPushButton("Store Metadata", objectName="storeBtn", clicked=self.controller.storeStage.store)
-        featureBtn = QPushButton("Calculate Features", objectName="featureBtn", clicked=self.controller.featCalcStage.calculateFeatures)
-        labelBtn = QPushButton("Label Images", objectName="labelBtn", clicked=self.controller.labelStage.label)
-        classifyBtn = QPushButton("Train Classifier", objectName="classifyBtn", clicked=self.controller.trainStage.train)
+        downloadBtn = QPushButton("Download", objectName="downloadBtn")
+        unpackBtn = QPushButton("Unpack", objectName="unpackBtn")
+        storeBtn = QPushButton("Store Metadata", objectName="storeBtn")
+        featureBtn = QPushButton("Calculate Features", objectName="featureBtn")
+        labelBtn = QPushButton("Label Images", objectName="labelBtn")
+        classifyBtn = QPushButton("Train Classifier", objectName="classifyBtn")
         
         stagesLayout = QGridLayout()
         stagesLayout.addWidget(downloadBtn, 1, 0)
@@ -61,8 +76,8 @@ class MainWindow(QMainWindow):
 
         image = QLabel(objectName="image")
         image.setAlignment(Qt.AlignCenter)
-        frontalBtn = QPushButton('Frontal', objectName="frontalBtn", clicked=self.controller.labelStage.labeler.frontal)
-        lateralBtn = QPushButton('Lateral', objectName="lateralBtn", clicked=self.controller.labelStage.labeler.lateral)
+        frontalBtn = QPushButton('Frontal', objectName="frontalBtn")
+        lateralBtn = QPushButton('Lateral', objectName="lateralBtn")
 
         labelLayout = QGridLayout()
         labelLayout.addWidget(image, 1, 0, 1, 2)
@@ -87,18 +102,18 @@ class MainWindow(QMainWindow):
 
     ### STAGES UI
     def initGuiState(self):
-        self.setWindowIcon(QIcon(self.controller.configHandler.getParentFolder() + '/' + 'icon.jpg'))
+        self.setWindowIcon(QIcon(self.configHandler.getParentFolder() + '/' + 'icon.jpg'))
 
         # Initialize in right stage
-        if self.controller.dbHandler.tableExists(self.controller.configHandler.getTableName("label")):
+        if self.dbHandler.tableExists(self.configHandler.getTableName("label")):
             self.trainStageUi()
-        elif self.controller.dbHandler.tableExists(self.controller.configHandler.getTableName("features")):
+        elif self.dbHandler.tableExists(self.configHandler.getTableName("features")):
             self.labelStageUi()
-        elif self.controller.dbHandler.tableExists(self.controller.configHandler.getTableName("metadata")):
+        elif self.dbHandler.tableExists(self.configHandler.getTableName("metadata")):
             self.calcFeatStageUi()
-        elif os.path.isdir(self.controller.configHandler.getDatasetName()):
+        elif os.path.isdir(self.configHandler.getDatasetName()):
             self.storeStageUi()
-        elif os.path.exists(self.controller.configHandler.getTgzFilename()):
+        elif os.path.exists(self.configHandler.getTgzFilename()):
             self.unpackStageUi()
         else:
             self.downloadStageUi()
@@ -106,72 +121,92 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def downloadStageUi(self):
         logging.info('Window initializing in Download phase')
+        self.currentStage = DownloadStage(self.configHandler)
+
         self.disableAllStageButtons()
         self.enableStageButton(0)
 
-        self.connectToDashboard(self.controller.downloadStage.downloader.signals)
-
-        self.controller.downloadStage.downloader.signals.finished.connect(self.unpackStageUi)
+        self.connectToDashboard(self.currentStage.downloader.signals)
+        
+        self.centralWidget().findChild(QPushButton, "downloadBtn").clicked.connect(self.currentStage.download)
+        self.currentStage.downloader.signals.finished.connect(self.unpackStageUi)
         logging.info('***Download phase initialized***')
 
     @pyqtSlot()
     def unpackStageUi(self):
         logging.info('Window initializing in Unpack phase')
+        self.currentStage = UnpackStage(self.configHandler)
+
         self.disableAllStageButtons()
         self.enableStageButton(1)
 
-        self.connectToDashboard(self.controller.unpackStage.unpackUpdater.signals)
+        self.connectToDashboard(self.currentStage.unpackUpdater.signals)
 
-        self.controller.unpackStage.unpackUpdater.signals.finished.connect(self.storeStageUi)
+        self.centralWidget().findChild(QPushButton, "unpackBtn").clicked.connect(self.currentStage.unpack)
+        self.currentStage.unpackUpdater.signals.finished.connect(self.storeStageUi)
         logging.info('***Unpack phase initialized***')
         
     @pyqtSlot()
     def storeStageUi(self):
         logging.info('Window initializing in Store phase')
+        self.currentStage = StoreStage(self.configHandler, self.dbHandler)
+
         self.disableAllStageButtons()
         self.enableStageButton(2)
 
-        self.connectToDashboard(self.controller.storeStage.storeUpdater.signals)
+        self.connectToDashboard(self.currentStage.storeUpdater.signals)
 
-        self.controller.storeStage.storeUpdater.signals.finished.connect(self.calcFeatStageUi)
+        self.centralWidget().findChild(QPushButton, "storeBtn").clicked.connect(self.currentStage.store)
+        self.currentStage.storeUpdater.signals.finished.connect(self.calcFeatStageUi)
         logging.info('***Store phase initialized***')
 
     @pyqtSlot()
     def calcFeatStageUi(self):
         logging.info('Window initializing in Feature Calculation phase')
+        self.currentStage = FeatCalcStage(self.configHandler, self.dbHandler)
+
         self.disableAllStageButtons()
         self.enableStageButton(3)
 
-        self.connectToDashboard(self.controller.featCalcStage.featureCalculator.signals)
+        self.connectToDashboard(self.currentStage.featureCalculator.signals)
 
-        self.controller.featCalcStage.featureCalculator.signals.finished.connect(self.labelStageUi)
+        self.centralWidget().findChild(QPushButton, "featureBtn").clicked.connect(self.currentStage.calculateFeatures)
+        self.currentStage.featureCalculator.signals.finished.connect(self.labelStageUi)
         logging.info('***Feature Calculation phase initialized***')
 
     @pyqtSlot()
     def labelStageUi(self):
         logging.info('Window initializing in Labeling phase')
+        self.currentStage = LabelStage(self.configHandler, self.dbHandler)
+        
         self.disableAllStageButtons()
         self.enableStageButton(4)
 
-        self.connectToDashboard(self.controller.labelStage.labeler.signals)
+        self.connectToDashboard(self.currentStage.labeler.signals)
 
-        if self.controller.configHandler.getDatasetType() == 'subset':
+        if self.configHandler.getDatasetType() == 'subset':
             self.centralWidget().findChild(QPushButton, "labelBtn").clicked.connect(lambda: self.widgetStack.setCurrentIndex(1))
-            self.controller.labelStage.labeler.signals.finished.connect(lambda: self.widgetStack.setCurrentIndex(0))
+            self.widgetStack.findChild(QPushButton, "frontalBtn").clicked.connect(self.currentStage.labeler.frontal)
+            self.widgetStack.findChild(QPushButton, "lateralBtn").clicked.connect(self.currentStage.labeler.lateral)
+            self.currentStage.labeler.signals.finished.connect(lambda: self.widgetStack.setCurrentIndex(0))
 
-        self.controller.labelStage.labeler.signals.finished.connect(self.trainStageUi)
+        self.centralWidget().findChild(QPushButton, "labelBtn").clicked.connect(self.currentStage.label)
+        self.currentStage.labeler.signals.finished.connect(self.trainStageUi)
         logging.info('***Labeling phase initialized***')
 
     @pyqtSlot()
     def trainStageUi(self):
         logging.info('Window initializing in Training phase')
+        self.currentStage = TrainStage(self.configHandler, self.dbHandler)
+        
         self.widgetStack.setFixedSize(self.widgetStack.currentWidget().layout().sizeHint())
         self.setFixedSize(self.centralWidget().layout().sizeHint())
 
         self.disableAllStageButtons()
         self.enableStageButton(5)
 
-        self.connectToDashboard(self.controller.trainStage.trainer.signals)
+        self.centralWidget().findChild(QPushButton, "classifyBtn").clicked.connect(self.currentStage.train)
+        self.connectToDashboard(self.currentStage.trainer.signals)
         logging.info('***Training phase initialized***')
 
     ### HELPERS
@@ -222,3 +257,20 @@ class MainWindow(QMainWindow):
         pixmap = QPixmap.fromImage(qImage)
 
         return pixmap
+
+    def configureLogging(self):
+        # Get log level from config file
+        logLevel = self.configHandler.getSetting(sectionName='logging', settingName='level')
+        if logLevel == 'debug':
+            logLevelObj = logging.DEBUG
+        elif logLevel == 'info':
+            logLevelObj = logging.INFO
+        
+        # Remove any log handlers to make way for our logger
+        for handler in logging.root.handlers[:]:
+            logging.root.removeHandler(handler)
+        
+        # Set the logging
+        logging.basicConfig(filename='CXR_Classification.log', level=logLevelObj,
+                            format='%(asctime)s %(levelname)-8s: %(message)s', datefmt='%Y-%m-%d|%H:%M:%S')
+
