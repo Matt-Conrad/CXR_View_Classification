@@ -43,7 +43,7 @@ public slots:
     void firstPage();
     void secondPage();
 
-    void connectToDashBoard1(Signals *);
+    void connectToDashboard(Signals *);
     void disableAllStageButtons();
     void enableStageButton(quint64);
     void updateProBarBounds(quint64, quint64);
