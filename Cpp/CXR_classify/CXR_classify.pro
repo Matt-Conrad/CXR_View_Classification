@@ -34,7 +34,6 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
         runnable.cpp \
-        signals.cpp \
         stage.cpp \
         storer.cpp \
         storestage.cpp \
@@ -62,7 +61,6 @@ HEADERS += \
     labelstage.h \
     mainwindow.h \
     runnable.h \
-    signals.h \
     stage.h \
     storer.h \
     storestage.h \

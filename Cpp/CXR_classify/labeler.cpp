@@ -1,6 +1,6 @@
 #include "labeler.h"
 
-Labeler::Labeler(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : QObject(), Runnable(configHandler, dbHandler)
+Labeler::Labeler(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Runnable(configHandler, dbHandler)
 {
     Labeler::labelTableName = configHandler->getTableName("label");
 }
@@ -8,8 +8,8 @@ Labeler::Labeler(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Q
 void Labeler::run()
 {
     queryImageList();
-    emit signalOptions->attemptUpdateText("Please manually label images");
-    emit signalOptions->attemptUpdateProBarBounds(0, expected_num_files);
+    emit attemptUpdateText("Please manually label images");
+    emit attemptUpdateProBarBounds(0, expected_num_files);
 
     dbHandler->addTableToDb(configHandler->getColumnsInfoPath(), "labels", labelTableName);
 
@@ -19,8 +19,8 @@ void Labeler::run()
         ;
     }
 
-    emit signalOptions->attemptUpdateText("Image labeling complete");
-    emit signalOptions->finished();
+    emit attemptUpdateText("Image labeling complete");
+    emit finished();
 }
 
 void Labeler::frontal()
@@ -39,8 +39,8 @@ void Labeler::lateral()
 
 void Labeler::displayNextImage()
 {
-    emit signalOptions->attemptUpdateText("Image count: " + QString::number(count));
-    emit signalOptions->attemptUpdateProBarValue(count);
+    emit attemptUpdateText("Image count: " + QString::number(count));
+    emit attemptUpdateProBarValue(count);
 
     if (count < expected_num_files) {
         const char * filePath = record["file_path"].c_str();
@@ -57,7 +57,7 @@ void Labeler::displayNextImage()
         QImage qImage(imageSquare.data, 300, 300, QImage::Format_Grayscale8);
         QPixmap pixmap = QPixmap::fromImage(qImage);
 
-        emit signalOptions->attemptUpdateImage(pixmap);
+        emit attemptUpdateImage(pixmap);
     }
 }
 

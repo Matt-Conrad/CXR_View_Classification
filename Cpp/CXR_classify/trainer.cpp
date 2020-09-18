@@ -7,7 +7,7 @@ Trainer::Trainer(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : R
 
 void Trainer::run()
 {
-    emit signalOptions->attemptUpdateText("Training classifier");
+    emit attemptUpdateText("Training classifier");
     try
     {
         // Connect to the database
@@ -90,7 +90,7 @@ void Trainer::run()
         }
 
         std::string result("KFoldCV Accuracy: " + std::to_string(cvAcc));
-        emit signalOptions->attemptUpdateText(result.c_str());
+        emit attemptUpdateText(result.c_str());
 
         w.commit();
         dbHandler->deleteConnection(connection);
@@ -100,5 +100,5 @@ void Trainer::run()
     {
         std::cout << e.what() << std::endl;
     }
-    emit signalOptions->finished();
+    emit finished();
 }

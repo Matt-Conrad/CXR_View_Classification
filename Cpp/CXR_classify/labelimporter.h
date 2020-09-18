@@ -9,7 +9,7 @@
 #include "databasehandler.h"
 #include "runnable.h"
 
-class LabelImporter : public QObject, public Runnable
+class LabelImporter : public Runnable
 {
     Q_OBJECT
 public:

@@ -77,7 +77,7 @@ int Unpacker::extract(const char * filename, std::string destination)
             fprintf(stderr, "%s\n", archive_error_string(ext));
         if (r < ARCHIVE_WARN)
             return 1;
-        emit signalOptions->attemptUpdateProBarValue(countDcms());
+        emit attemptUpdateProBarValue(countDcms());
     }
     archive_read_close(a);
     archive_read_free(a);
@@ -90,19 +90,19 @@ void Unpacker::run()
 {
     std::string filenameRelPath = "./" + configHandler->getTgzFilename();
 
-    emit signalOptions->attemptUpdateText("Unpacking images");
-    emit signalOptions->attemptUpdateProBarBounds(0, expected_num_files);
-    emit signalOptions->attemptUpdateProBarValue(0);
+    emit attemptUpdateText("Unpacking images");
+    emit attemptUpdateProBarBounds(0, expected_num_files);
+    emit attemptUpdateProBarValue(0);
     if (configHandler->getDatasetType() == "full_set") {
         std::filesystem::create_directory(folderRelPath);
         extract(filenameRelPath.c_str(), folderRelPath);
-        emit signalOptions->attemptUpdateProBarValue(countDcms());
+        emit attemptUpdateProBarValue(countDcms());
     } else {
         extract(filenameRelPath.c_str(), "./");
     }
-    emit signalOptions->attemptUpdateProBarValue(countDcms());
-    emit signalOptions->attemptUpdateText("Images unpacked");
-    emit signalOptions->finished();
+    emit attemptUpdateProBarValue(countDcms());
+    emit attemptUpdateText("Images unpacked");
+    emit finished();
 }
 
 quint64 Unpacker::countDcms()

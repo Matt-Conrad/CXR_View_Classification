@@ -1,6 +1,7 @@
 #ifndef LABELER_H
 #define LABELER_H
 
+#include <QObject>
 #include <QWidget>
 #include <QPushButton>
 #include <QGridLayout>
@@ -14,7 +15,7 @@
 #include "runnable.h"
 #include <string>
 
-class Labeler : public QObject, public Runnable
+class Labeler : public Runnable
 {
     Q_OBJECT
 public:

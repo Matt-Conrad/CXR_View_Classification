@@ -14,8 +14,7 @@ class LabelStage : public Stage
     Q_OBJECT
 public:
     LabelStage(ConfigHandler *, DatabaseHandler *);
-    Labeler * labeler;
-    LabelImporter * labelImporter;
+    Runnable * labeler;
 
 public slots:
     void label();

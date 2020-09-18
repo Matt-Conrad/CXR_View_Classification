@@ -1,6 +1,6 @@
 #include "labelimporter.h"
 
-LabelImporter::LabelImporter(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : QObject(), Runnable(configHandler, dbHandler)
+LabelImporter::LabelImporter(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Runnable(configHandler, dbHandler)
 {
 
 }
@@ -10,7 +10,7 @@ void LabelImporter::run()
     std::string elementsJson = configHandler->getColumnsInfoPath();
     std::string labelTableName = configHandler->getTableName("label");
 
-    emit signalOptions->attemptUpdateText("Attempting to import image labels");
+    emit attemptUpdateText("Attempting to import image labels");
     dbHandler->addTableToDb(elementsJson, "labels", labelTableName);
 
     // Open the json with the list of elements we're interested in
@@ -47,6 +47,6 @@ void LabelImporter::run()
     {
         // log e.what()
     }
-    emit signalOptions->attemptUpdateText("Finished importing image labels");
-    emit signalOptions->finished();
+    emit attemptUpdateText("Finished importing image labels");
+    emit finished();
 }

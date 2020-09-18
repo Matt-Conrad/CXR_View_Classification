@@ -10,7 +10,8 @@
 #include <QStackedWidget>
 #include <QVBoxLayout>
 #include <QString>
-#include <signals.h>
+#include <stage.h>
+#include <runnable.h>
 
 class AppController;
 
@@ -42,7 +43,7 @@ public slots:
     void firstPage();
     void secondPage();
 
-    void connectToDashboard(Signals *);
+    void connectToDashboard(Runnable *);
     void disableAllStageButtons();
     void enableStageButton(quint64);
     void updateProBarBounds(quint64, quint64);

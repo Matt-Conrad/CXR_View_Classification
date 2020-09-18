@@ -18,15 +18,15 @@ void Downloader::run()
     } else {
         download();
     }
-    emit signalOptions->attemptUpdateProBarValue(getTgzSize());
-    emit signalOptions->attemptUpdateText("Image download complete");
-    emit signalOptions->finished();
+    emit attemptUpdateProBarValue(getTgzSize());
+    emit attemptUpdateText("Image download complete");
+    emit finished();
 }
 
 int Downloader::download()
 {
-    emit signalOptions->attemptUpdateText("Downloading images");
-    emit signalOptions->attemptUpdateProBarBounds(0, getTgzMax());
+    emit attemptUpdateText("Downloading images");
+    emit attemptUpdateProBarBounds(0, getTgzMax());
 
     QNetworkAccessManager nam;
     QFile file(filenameRelPath.c_str());
@@ -40,7 +40,7 @@ int Downloader::download()
     QObject::connect(reply, &QNetworkReply::readyRead, [&]{
         //this will be called every time a chunk of data is received
         QByteArray data= reply->readAll();
-        emit signalOptions->attemptUpdateProBarValue(getTgzSize());
+        emit attemptUpdateProBarValue(getTgzSize());
         file.write(data);
     });
 

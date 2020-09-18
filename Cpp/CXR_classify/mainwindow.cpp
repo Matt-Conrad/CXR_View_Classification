@@ -117,8 +117,8 @@ void MainWindow::downloadStageUi()
     enableStageButton(0);
 
     connect(mainWidget->findChild<QPushButton *>("downloadBtn"), SIGNAL (clicked()), controller->downloadStage, SLOT (download()));
-    connectToDashboard(controller->downloadStage->downloader->signalOptions);
-    connect(controller->downloadStage->downloader->signalOptions, SIGNAL (finished()), this, SLOT(unpackStageUi()));
+    connectToDashboard(controller->downloadStage->downloader);
+    connect(controller->downloadStage->downloader, SIGNAL (finished()), this, SLOT(unpackStageUi()));
 }
 
 void MainWindow::unpackStageUi()
@@ -127,8 +127,8 @@ void MainWindow::unpackStageUi()
     enableStageButton(1);
 
     connect(mainWidget->findChild<QPushButton *>("unpackBtn"), SIGNAL (clicked()), controller->unpackStage, SLOT (unpack()));
-    connectToDashboard(controller->unpackStage->unpacker->signalOptions);
-    connect(controller->unpackStage->unpacker->signalOptions, SIGNAL (finished()), this, SLOT(storeStageUi()));
+    connectToDashboard(controller->unpackStage->unpacker);
+    connect(controller->unpackStage->unpacker, SIGNAL (finished()), this, SLOT(storeStageUi()));
 }
 
 void MainWindow::storeStageUi()
@@ -137,8 +137,8 @@ void MainWindow::storeStageUi()
     enableStageButton(2);
 
     connect(mainWidget->findChild<QPushButton *>("storeBtn"), SIGNAL (clicked()), controller->storeStage, SLOT (store()));
-    connectToDashboard(controller->storeStage->storer->signalOptions);
-    connect(controller->storeStage->storer->signalOptions, SIGNAL (finished()), this, SLOT(calcFeatStageUi()));
+    connectToDashboard(controller->storeStage->storer);
+    connect(controller->storeStage->storer, SIGNAL (finished()), this, SLOT(calcFeatStageUi()));
 }
 
 void MainWindow::calcFeatStageUi()
@@ -147,8 +147,8 @@ void MainWindow::calcFeatStageUi()
     enableStageButton(3);
 
     connect(mainWidget->findChild<QPushButton *>("featureBtn"), SIGNAL (clicked()), controller->featureCalculatorStage, SLOT (calculateFeatures()));
-    connectToDashboard(controller->featureCalculatorStage->featureCalculator->signalOptions);
-    connect(controller->featureCalculatorStage->featureCalculator->signalOptions, SIGNAL (finished()), this, SLOT(labelStageUi()));
+    connectToDashboard(controller->featureCalculatorStage->featureCalculator);
+    connect(controller->featureCalculatorStage->featureCalculator, SIGNAL (finished()), this, SLOT(labelStageUi()));
 }
 
 void MainWindow::labelStageUi()
@@ -159,16 +159,14 @@ void MainWindow::labelStageUi()
     connect(mainWidget->findChild<QPushButton *>("labelBtn"), SIGNAL (clicked()), controller->labelStage, SLOT (label()));
 
     if (controller->configHandler->getDatasetType() == "subset") {
-        connectToDashboard(controller->labelStage->labeler->signalOptions);
+        connectToDashboard(controller->labelStage->labeler);
         connect(mainWidget->findChild<QPushButton *>("labelBtn"), SIGNAL (clicked()), this, SLOT (secondPage()));
-        connect(controller->labelStage->labeler->signalOptions, SIGNAL (finished()), this, SLOT (firstPage()));
-        connect(controller->labelStage->labeler->signalOptions, SIGNAL (finished()), this, SLOT (trainStageUi()));
+        connect(controller->labelStage->labeler, SIGNAL (finished()), this, SLOT (firstPage()));
+        connect(controller->labelStage->labeler, SIGNAL (finished()), this, SLOT (trainStageUi()));
     } else {
-        connectToDashboard(controller->labelStage->labelImporter->signalOptions);
-        connect(controller->labelStage->labelImporter->signalOptions, SIGNAL (finished()), this, SLOT (trainStageUi()));
+        connectToDashboard(controller->labelStage->labeler);
+        connect(controller->labelStage->labeler, SIGNAL (finished()), this, SLOT (trainStageUi()));
     }
-
-
 }
 
 void MainWindow::trainStageUi()
@@ -180,7 +178,7 @@ void MainWindow::trainStageUi()
     enableStageButton(5);
 
     connect(mainWidget->findChild<QPushButton *>("trainBtn"), SIGNAL (clicked()), controller->trainStage, SLOT (train()));
-    connectToDashboard(controller->trainStage->trainer->signalOptions);
+    connectToDashboard(controller->trainStage->trainer);
 }
 
 void MainWindow::firstPage()
@@ -193,12 +191,12 @@ void MainWindow::secondPage()
     widgetStack->setCurrentIndex(1);
 }
 
-void MainWindow::connectToDashboard(Signals * sigs)
+void MainWindow::connectToDashboard(Runnable * stage)
 {
-    connect(sigs, SIGNAL (attemptUpdateProBarBounds(quint64, quint64)), this, SLOT (updateProBarBounds(quint64, quint64)));
-    connect(sigs, SIGNAL (attemptUpdateProBarValue(quint64)), this, SLOT (updateProBarValue(quint64)));
-    connect(sigs, SIGNAL (attemptUpdateText(QString)), this, SLOT (updateText(QString)));
-    connect(sigs, SIGNAL (attemptUpdateImage(QPixmap)), this, SLOT (updateImage(QPixmap)));
+    connect(stage, SIGNAL (attemptUpdateProBarBounds(quint64, quint64)), this, SLOT (updateProBarBounds(quint64, quint64)));
+    connect(stage, SIGNAL (attemptUpdateProBarValue(quint64)), this, SLOT (updateProBarValue(quint64)));
+    connect(stage, SIGNAL (attemptUpdateText(QString)), this, SLOT (updateText(QString)));
+    connect(stage, SIGNAL (attemptUpdateImage(QPixmap)), this, SLOT (updateImage(QPixmap)));
 }
 
 void MainWindow::disableAllStageButtons()

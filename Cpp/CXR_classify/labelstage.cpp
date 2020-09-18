@@ -3,15 +3,14 @@
 LabelStage::LabelStage(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Stage()
 {
     LabelStage::configHandler = configHandler;
-    labeler = new Labeler(configHandler, dbHandler);
-    labelImporter = new LabelImporter(configHandler, dbHandler);
+    if (configHandler->getDatasetType() == "subset") {
+        labeler = new Labeler(configHandler, dbHandler);
+    } else if (configHandler->getDatasetType() == "full_set") {
+        labeler = new LabelImporter(configHandler, dbHandler);
+    }
 }
 
 void LabelStage::label()
 {
-    if (configHandler->getDatasetType() == "subset") {
-        threadpool->start(labeler);
-    } else if (configHandler->getDatasetType() == "full_set") {
-        threadpool->start(labelImporter);
-    }
+    threadpool->start(labeler);
 }
