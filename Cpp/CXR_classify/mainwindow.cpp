@@ -65,9 +65,6 @@ void MainWindow::fillWindow()
     frontalBtn->setObjectName("frontalBtn");
     lateralBtn->setObjectName("lateralBtn");
 
-    connect(frontalBtn, SIGNAL (clicked()), controller->labelStage->labeler, SLOT (frontal()));
-    connect(lateralBtn, SIGNAL (clicked()), controller->labelStage->labeler, SLOT (lateral()));
-
     QGridLayout * labelLayout = new QGridLayout();
     labelLayout->addWidget(image, 1, 0, 1, 2);
     labelLayout->addWidget(frontalBtn, 2, 0);
@@ -160,6 +157,10 @@ void MainWindow::labelStageUi()
 
     if (controller->configHandler->getDatasetType() == "subset") {
         connectToDashboard(controller->labelStage->labeler);
+
+        connect(widgetStack->findChild<QPushButton *>("frontalBtn"), SIGNAL (clicked()), controller->labelStage->labeler, SLOT (frontal()));
+        connect(widgetStack->findChild<QPushButton *>("lateralBtn"), SIGNAL (clicked()), controller->labelStage->labeler, SLOT (lateral()));
+
         connect(mainWidget->findChild<QPushButton *>("labelBtn"), SIGNAL (clicked()), this, SLOT (secondPage()));
         connect(controller->labelStage->labeler, SIGNAL (finished()), this, SLOT (firstPage()));
         connect(controller->labelStage->labeler, SIGNAL (finished()), this, SLOT (trainStageUi()));
@@ -201,12 +202,10 @@ void MainWindow::connectToDashboard(Runnable * stage)
 
 void MainWindow::disableAllStageButtons()
 {
-    mainWidget->findChild<QPushButton *>("downloadBtn")->setDisabled(true);
-    mainWidget->findChild<QPushButton *>("unpackBtn")->setDisabled(true);
-    mainWidget->findChild<QPushButton *>("storeBtn")->setDisabled(true);
-    mainWidget->findChild<QPushButton *>("featureBtn")->setDisabled(true);
-    mainWidget->findChild<QPushButton *>("labelBtn")->setDisabled(true);
-    mainWidget->findChild<QPushButton *>("trainBtn")->setDisabled(true);
+    uint8_t numOfButtons = sizeof(buttonsList)/sizeof(buttonsList[0]);
+    for (int i = 0; i++; i < numOfButtons) {
+        mainWidget->findChild<QPushButton *>(buttonsList[i])->setDisabled(true);
+    }
 }
 
 void MainWindow::enableStageButton(quint64 stageIndex)
