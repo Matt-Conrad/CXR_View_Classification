@@ -110,79 +110,85 @@ void MainWindow::initGuiState()
 
 void MainWindow::downloadStageUi()
 {
-    DownloadStage * downloadStage = new DownloadStage(configHandler); // MAKE SURE TO DELETE THIS AFTERWARD
+    currentStage = new DownloadStage(configHandler); // MAKE SURE TO DELETE THIS AFTERWARD
 
     disableAllStageButtons();
     enableStageButton(0);
 
-    connect(mainWidget->findChild<QPushButton *>("downloadBtn"), SIGNAL (clicked()), downloadStage, SLOT (download()));
-    connectToDashboard(downloadStage->downloader);
-    connect(downloadStage->downloader, SIGNAL (finished()), this, SLOT(unpackStageUi()));
+    connect(mainWidget->findChild<QPushButton *>("downloadBtn"), SIGNAL (clicked()), static_cast<DownloadStage *>(currentStage), SLOT (download()));
+    connectToDashboard(static_cast<DownloadStage *>(currentStage)->downloader);
+    connect(static_cast<DownloadStage *>(currentStage)->downloader, SIGNAL (finished()), this, SLOT(clearCurrentStage()));
+    connect(static_cast<DownloadStage *>(currentStage)->downloader, SIGNAL (finished()), this, SLOT(unpackStageUi()));
 }
 
 void MainWindow::unpackStageUi()
 {
-    UnpackStage * unpackStage = new UnpackStage(configHandler); // MAKE SURE TO DELETE THIS AFTERWARD
+    currentStage = new UnpackStage(configHandler); // MAKE SURE TO DELETE THIS AFTERWARD
 
     disableAllStageButtons();
     enableStageButton(1);
 
-    connect(mainWidget->findChild<QPushButton *>("unpackBtn"), SIGNAL (clicked()), unpackStage, SLOT (unpack()));
-    connectToDashboard(unpackStage->unpacker);
-    connect(unpackStage->unpacker, SIGNAL (finished()), this, SLOT(storeStageUi()));
+    connect(mainWidget->findChild<QPushButton *>("unpackBtn"), SIGNAL (clicked()), static_cast<UnpackStage *>(currentStage), SLOT (unpack()));
+    connectToDashboard(static_cast<UnpackStage *>(currentStage)->unpacker);
+    connect(static_cast<DownloadStage *>(currentStage)->downloader, SIGNAL (finished()), this, SLOT(clearCurrentStage()));
+    connect(static_cast<UnpackStage *>(currentStage)->unpacker, SIGNAL (finished()), this, SLOT(storeStageUi()));
 }
 
 void MainWindow::storeStageUi()
 {
-    StoreStage * storeStage = new StoreStage(configHandler, dbHandler); // MAKE SURE TO DELETE THIS AFTERWARD
+    currentStage = new StoreStage(configHandler, dbHandler); // MAKE SURE TO DELETE THIS AFTERWARD
 
     disableAllStageButtons();
     enableStageButton(2);
 
-    connect(mainWidget->findChild<QPushButton *>("storeBtn"), SIGNAL (clicked()), storeStage, SLOT (store()));
-    connectToDashboard(storeStage->storer);
-    connect(storeStage->storer, SIGNAL (finished()), this, SLOT(calcFeatStageUi()));
+    connect(mainWidget->findChild<QPushButton *>("storeBtn"), SIGNAL (clicked()), static_cast<StoreStage *>(currentStage), SLOT (store()));
+    connectToDashboard(static_cast<StoreStage *>(currentStage)->storer);
+    connect(static_cast<DownloadStage *>(currentStage)->downloader, SIGNAL (finished()), this, SLOT(clearCurrentStage()));
+    connect(static_cast<StoreStage *>(currentStage)->storer, SIGNAL (finished()), this, SLOT(calcFeatStageUi()));
 }
 
 void MainWindow::calcFeatStageUi()
 {
-    FeatureCalculatorStage * featCalcStage = new FeatureCalculatorStage(configHandler, dbHandler); // MAKE SURE TO DELETE THIS AFTERWARD
+    currentStage = new FeatureCalculatorStage(configHandler, dbHandler); // MAKE SURE TO DELETE THIS AFTERWARD
 
     disableAllStageButtons();
     enableStageButton(3);
 
-    connect(mainWidget->findChild<QPushButton *>("featureBtn"), SIGNAL (clicked()), featCalcStage, SLOT (calculateFeatures()));
-    connectToDashboard(featCalcStage->featureCalculator);
-    connect(featCalcStage->featureCalculator, SIGNAL (finished()), this, SLOT(labelStageUi()));
+    connect(mainWidget->findChild<QPushButton *>("featureBtn"), SIGNAL (clicked()), static_cast<FeatureCalculatorStage *>(currentStage), SLOT (calculateFeatures()));
+    connectToDashboard(static_cast<FeatureCalculatorStage *>(currentStage)->featureCalculator);
+    connect(static_cast<DownloadStage *>(currentStage)->downloader, SIGNAL (finished()), this, SLOT(clearCurrentStage()));
+    connect(static_cast<FeatureCalculatorStage *>(currentStage)->featureCalculator, SIGNAL (finished()), this, SLOT(labelStageUi()));
 }
 
 void MainWindow::labelStageUi()
 {
-    LabelStage * labelStage = new LabelStage(configHandler, dbHandler); // MAKE SURE TO DELETE THIS AFTERWARD
+    currentStage = new LabelStage(configHandler, dbHandler); // MAKE SURE TO DELETE THIS AFTERWARD
 
     disableAllStageButtons();
     enableStageButton(4);
 
-    connect(mainWidget->findChild<QPushButton *>("labelBtn"), SIGNAL (clicked()), labelStage, SLOT (label()));
+    connect(mainWidget->findChild<QPushButton *>("labelBtn"), SIGNAL (clicked()), static_cast<LabelStage *>(currentStage), SLOT (label()));
 
     if (configHandler->getDatasetType() == "subset") {
-        connectToDashboard(labelStage->labeler);
+        connectToDashboard(static_cast<LabelStage *>(currentStage)->labeler);
 
-        connect(widgetStack->findChild<QPushButton *>("frontalBtn"), SIGNAL (clicked()), labelStage->labeler, SLOT (frontal()));
-        connect(widgetStack->findChild<QPushButton *>("lateralBtn"), SIGNAL (clicked()), labelStage->labeler, SLOT (lateral()));
+        connect(widgetStack->findChild<QPushButton *>("frontalBtn"), SIGNAL (clicked()), static_cast<LabelStage *>(currentStage)->labeler, SLOT (frontal()));
+        connect(widgetStack->findChild<QPushButton *>("lateralBtn"), SIGNAL (clicked()), static_cast<LabelStage *>(currentStage)->labeler, SLOT (lateral()));
 
         connect(mainWidget->findChild<QPushButton *>("labelBtn"), SIGNAL (clicked()), this, SLOT (secondPage()));
-        connect(labelStage->labeler, SIGNAL (finished()), this, SLOT (firstPage()));
-        connect(labelStage->labeler, SIGNAL (finished()), this, SLOT (trainStageUi()));
+        connect(static_cast<LabelStage *>(currentStage)->labeler, SIGNAL (finished()), this, SLOT (firstPage()));
+        connect(static_cast<DownloadStage *>(currentStage)->downloader, SIGNAL (finished()), this, SLOT(clearCurrentStage()));
+        connect(static_cast<LabelStage *>(currentStage)->labeler, SIGNAL (finished()), this, SLOT (trainStageUi()));
     } else {
-        connectToDashboard(labelStage->labeler);
-        connect(labelStage->labeler, SIGNAL (finished()), this, SLOT (trainStageUi()));
+        connectToDashboard(static_cast<LabelStage *>(currentStage)->labeler);
+        connect(static_cast<DownloadStage *>(currentStage)->downloader, SIGNAL (finished()), this, SLOT(clearCurrentStage()));
+        connect(static_cast<LabelStage *>(currentStage)->labeler, SIGNAL (finished()), this, SLOT (trainStageUi()));
     }
 }
 
 void MainWindow::trainStageUi()
 {
-    TrainStage * trainStage = new TrainStage(configHandler, dbHandler); // MAKE SURE TO DELETE THIS AFTERWARD
+    currentStage = new TrainStage(configHandler, dbHandler); // MAKE SURE TO DELETE THIS AFTERWARD
 
     widgetStack->setFixedSize(widgetStack->currentWidget()->layout()->sizeHint());
     setFixedSize(centralWidget()->layout()->sizeHint());
@@ -190,8 +196,13 @@ void MainWindow::trainStageUi()
     disableAllStageButtons();
     enableStageButton(5);
 
-    connect(mainWidget->findChild<QPushButton *>("trainBtn"), SIGNAL (clicked()), trainStage, SLOT (train()));
-    connectToDashboard(trainStage->trainer);
+    connect(mainWidget->findChild<QPushButton *>("trainBtn"), SIGNAL (clicked()), static_cast<TrainStage *>(currentStage), SLOT (train()));
+    connectToDashboard(static_cast<TrainStage *>(currentStage)->trainer);
+}
+
+void MainWindow::clearCurrentStage()
+{
+    delete currentStage;
 }
 
 void MainWindow::firstPage()

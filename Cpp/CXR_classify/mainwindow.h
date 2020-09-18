@@ -40,6 +40,8 @@ private:
     QStackedWidget * widgetStack;
     QWidget * mainWidget = nullptr;
 
+    Stage * currentStage;
+
     void fillWindow();
     void initGuiState();
 
@@ -51,6 +53,7 @@ public slots:
     void labelStageUi();
     void trainStageUi();
 
+    void clearCurrentStage();
     void firstPage();
     void secondPage();
 
