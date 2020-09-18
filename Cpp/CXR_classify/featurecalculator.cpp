@@ -1,8 +1,4 @@
 ﻿#include "featurecalculator.h"
-#include <chrono>
-#include <vector>
-#include <algorithm>
-#include <functional>
 
 FeatureCalculator::FeatureCalculator(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Runnable(configHandler, dbHandler)
 {
@@ -11,9 +7,6 @@ FeatureCalculator::FeatureCalculator(ConfigHandler * configHandler, DatabaseHand
 
 void FeatureCalculator::run()
 {
-    auto start = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> elapsed;
-
     emit attemptUpdateText("Calculating features");
     emit attemptUpdateProBarBounds(0, expected_num_files);
 
@@ -94,10 +87,6 @@ void FeatureCalculator::run()
     emit attemptUpdateText("Done calculating features");
     emit attemptUpdateProBarValue(dbHandler->countRecords(featTableName));
     emit finished();
-
-    auto finish = std::chrono::high_resolution_clock::now();
-    elapsed = finish - start;
-    std::cout << "Elapsed time: " << elapsed.count() << " s\n";
 }
 
 void FeatureCalculator::store(std::string filePath, cv::Mat horProfile, cv::Mat vertProfile)

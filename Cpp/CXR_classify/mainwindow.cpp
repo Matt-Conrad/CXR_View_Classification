@@ -2,8 +2,8 @@
 
 MainWindow::MainWindow() : QMainWindow()
 {
-    std::string url = c_sourceUrl.at(configHandler->getDatasetType());
-    configHandler->setUrl(url);
+    configHandler->setUrl(c_sourceUrl.at(configHandler->getDatasetType()));
+
     fillWindow();
     initGuiState();
     show();
@@ -110,7 +110,7 @@ void MainWindow::initGuiState()
 
 void MainWindow::downloadStageUi()
 {
-    currentStage = new DownloadStage(configHandler); // MAKE SURE TO DELETE THIS AFTERWARD
+    currentStage = new DownloadStage(configHandler);
 
     disableAllStageButtons();
     enableStageButton(0);
@@ -123,7 +123,7 @@ void MainWindow::downloadStageUi()
 
 void MainWindow::unpackStageUi()
 {
-    currentStage = new UnpackStage(configHandler); // MAKE SURE TO DELETE THIS AFTERWARD
+    currentStage = new UnpackStage(configHandler);
 
     disableAllStageButtons();
     enableStageButton(1);
@@ -136,7 +136,7 @@ void MainWindow::unpackStageUi()
 
 void MainWindow::storeStageUi()
 {
-    currentStage = new StoreStage(configHandler, dbHandler); // MAKE SURE TO DELETE THIS AFTERWARD
+    currentStage = new StoreStage(configHandler, dbHandler);
 
     disableAllStageButtons();
     enableStageButton(2);
@@ -149,7 +149,7 @@ void MainWindow::storeStageUi()
 
 void MainWindow::calcFeatStageUi()
 {
-    currentStage = new FeatureCalculatorStage(configHandler, dbHandler); // MAKE SURE TO DELETE THIS AFTERWARD
+    currentStage = new FeatureCalculatorStage(configHandler, dbHandler);
 
     disableAllStageButtons();
     enableStageButton(3);
@@ -162,7 +162,7 @@ void MainWindow::calcFeatStageUi()
 
 void MainWindow::labelStageUi()
 {
-    currentStage = new LabelStage(configHandler, dbHandler); // MAKE SURE TO DELETE THIS AFTERWARD
+    currentStage = new LabelStage(configHandler, dbHandler);
 
     disableAllStageButtons();
     enableStageButton(4);
@@ -188,7 +188,7 @@ void MainWindow::labelStageUi()
 
 void MainWindow::trainStageUi()
 {
-    currentStage = new TrainStage(configHandler, dbHandler); // MAKE SURE TO DELETE THIS AFTERWARD
+    currentStage = new TrainStage(configHandler, dbHandler);
 
     widgetStack->setFixedSize(widgetStack->currentWidget()->layout()->sizeHint());
     setFixedSize(centralWidget()->layout()->sizeHint());

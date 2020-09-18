@@ -1,11 +1,11 @@
-#include "labeler.h"
+#include "manuallabeler.h"
 
-Labeler::Labeler(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Runnable(configHandler, dbHandler)
+ManualLabeler::ManualLabeler(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Runnable(configHandler, dbHandler)
 {
-    Labeler::labelTableName = configHandler->getTableName("label");
+    ManualLabeler::labelTableName = configHandler->getTableName("label");
 }
 
-void Labeler::run()
+void ManualLabeler::run()
 {
     queryImageList();
     emit attemptUpdateText("Please manually label images");
@@ -24,21 +24,21 @@ void Labeler::run()
     emit finished();
 }
 
-void Labeler::frontal()
+void ManualLabeler::frontal()
 {
     storeLabel("F");
     count++;
     displayNextImage();
 }
 
-void Labeler::lateral()
+void ManualLabeler::lateral()
 {
     storeLabel("L");
     count++;
     displayNextImage();
 }
 
-void Labeler::displayNextImage()
+void ManualLabeler::displayNextImage()
 {
     emit attemptUpdateText("Image count: " + QString::number(count));
     emit attemptUpdateProBarValue(dbHandler->countRecords(configHandler->getTableName("label")));
@@ -62,7 +62,7 @@ void Labeler::displayNextImage()
     }
 }
 
-void Labeler::storeLabel(std::string decision)
+void ManualLabeler::storeLabel(std::string decision)
 {
     std::string filePath = record["file_path"].c_str();
     std::string fileName = filePath.substr(filePath.find_last_of("/") + 1);
@@ -83,7 +83,7 @@ void Labeler::storeLabel(std::string decision)
     record++;
 }
 
-void Labeler::queryImageList()
+void ManualLabeler::queryImageList()
 {
     std::string sqlQuery = "SELECT file_path, bits_stored FROM " + configHandler->getTableName("metadata") + " ORDER BY file_path;";
     try

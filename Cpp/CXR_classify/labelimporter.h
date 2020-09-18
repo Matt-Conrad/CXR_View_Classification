@@ -11,7 +11,7 @@
 
 class LabelImporter : public Runnable
 {
-    Q_OBJECT
+    Q_OBJECT // This Q_OBJECT is necessary for the MOC compilation
 public:
     LabelImporter(ConfigHandler *, DatabaseHandler *);
 

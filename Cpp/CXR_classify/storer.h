@@ -1,7 +1,6 @@
 #ifndef STORER_H
 #define STORER_H
 
-#include <QObject>
 #include <string>
 #include <pqxx/pqxx>
 #include <boost/property_tree/ptree.hpp>

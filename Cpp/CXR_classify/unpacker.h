@@ -1,7 +1,6 @@
 #ifndef UNPACKER_H
 #define UNPACKER_H
 
-#include <QObject>
 #include <string>
 #include <filesystem>
 #include <archive.h>

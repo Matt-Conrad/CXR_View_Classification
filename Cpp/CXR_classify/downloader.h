@@ -1,7 +1,6 @@
 #ifndef DOWNLOADER_H
 #define DOWNLOADER_H
 
-#include <QObject>
 #include <string>
 #include <filesystem>
 #include <QtNetwork>

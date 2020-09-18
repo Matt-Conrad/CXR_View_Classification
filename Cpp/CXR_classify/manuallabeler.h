@@ -2,24 +2,20 @@
 #define LABELER_H
 
 #include <QObject>
-#include <QWidget>
-#include <QPushButton>
-#include <QGridLayout>
-#include <QLabel>
 #include <pqxx/pqxx>
 #include <dcmtk/dcmimgle/dcmimage.h>
 #include <dcmtk/dcmdata/dcfilefo.h>
+#include <string>
 #include "opencv2/imgproc.hpp"
 #include "confighandler.h"
 #include "databasehandler.h"
 #include "runnable.h"
-#include <string>
 
-class Labeler : public Runnable
+class ManualLabeler : public Runnable
 {
-    Q_OBJECT
+    Q_OBJECT // This Q_OBJECT is necessary for the MOC compilation
 public:
-    Labeler(ConfigHandler *, DatabaseHandler *);
+    ManualLabeler(ConfigHandler *, DatabaseHandler *);
 
 private:
     unsigned count = 0;

@@ -1,7 +1,6 @@
 #ifndef FEATURECALCULATOR_H
 #define FEATURECALCULATOR_H
 
-#include <QObject>
 #include <pqxx/pqxx>
 #include <boost/algorithm/string/join.hpp>
 #include <dcmtk/dcmimgle/dcmimage.h>

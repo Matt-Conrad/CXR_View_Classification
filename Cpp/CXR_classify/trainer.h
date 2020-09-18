@@ -1,7 +1,6 @@
 #ifndef TRAINER_H
 #define TRAINER_H
 
-#include <QObject>
 #include <pqxx/pqxx>
 #include <pqxx/array.hxx>
 #include "mlpack/methods/linear_svm/linear_svm.hpp"

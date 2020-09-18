@@ -27,11 +27,11 @@ SOURCES += \
         downloadstage.cpp \
         featurecalculator.cpp \
         featurecalculatorstage.cpp \
-        labeler.cpp \
         labelimporter.cpp \
         labelstage.cpp \
         main.cpp \
         mainwindow.cpp \
+        manuallabeler.cpp \
         runnable.cpp \
         stage.cpp \
         storer.cpp \
@@ -54,10 +54,10 @@ HEADERS += \
     expectedsizes.h \
     featurecalculator.h \
     featurecalculatorstage.h \
-    labeler.h \
     labelimporter.h \
     labelstage.h \
     mainwindow.h \
+    manuallabeler.h \
     runnable.h \
     stage.h \
     storer.h \

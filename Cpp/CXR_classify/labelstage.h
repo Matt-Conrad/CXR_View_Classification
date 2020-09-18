@@ -5,7 +5,7 @@
 #include "databasehandler.h"
 #include "confighandler.h"
 #include "stage.h"
-#include "labeler.h"
+#include "manuallabeler.h"
 #include "labelimporter.h"
 #include "runnable.h"
 
@@ -18,9 +18,6 @@ public:
 
 public slots:
     void label();
-
-private:
-    ConfigHandler * configHandler;
 };
 
 #endif // LABELSTAGE_H

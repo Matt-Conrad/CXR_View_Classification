@@ -13,7 +13,6 @@
 #include <stage.h>
 #include <runnable.h>
 
-#include <string>
 #include <filesystem>
 #include "downloadstage.h"
 #include "unpackstage.h"
