@@ -8,6 +8,9 @@ Trainer::Trainer(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : R
 void Trainer::run()
 {
     emit attemptUpdateText("Training classifier");
+    emit attemptUpdateProBarBounds(0, expected_num_files);
+    emit attemptUpdateProBarValue(0);
+
     try
     {
         // Connect to the database
@@ -22,7 +25,7 @@ void Trainer::run()
         pqxx::result r = w.exec(sqlQuery);
 
         std::vector<std::string> fileNames = {};
-        static double X[numSamples][400]; // MAKE THIS MORE FLEXIBLE
+        double X[expected_num_files][400];
 
         for (int rownum = 0; rownum < r.size(); rownum++) {
             // Filenames
@@ -70,7 +73,7 @@ void Trainer::run()
         }
 
         // First, load the data.
-        arma::mat xArma(&X[0][0], 400, numSamples); // transpose because Armadillo stores data column-by-column (for compatibility with LAPACK)
+        arma::mat xArma(&X[0][0], 400, expected_num_files); // transpose because Armadillo stores data column-by-column (for compatibility with LAPACK)
         arma::Row yArma(y);
         arma::mat xTrain, xTest;
         arma::Row<size_t> yTrain, yTest;
@@ -91,6 +94,7 @@ void Trainer::run()
 
         std::string result("KFoldCV Accuracy: " + std::to_string(cvAcc));
         emit attemptUpdateText(result.c_str());
+        emit attemptUpdateProBarValue(expected_num_files);
 
         w.commit();
         dbHandler->deleteConnection(connection);
