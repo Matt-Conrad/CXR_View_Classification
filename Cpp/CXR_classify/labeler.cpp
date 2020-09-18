@@ -20,6 +20,7 @@ void Labeler::run()
     }
 
     emit attemptUpdateText("Image labeling complete");
+    emit attemptUpdateProBarValue(dbHandler->countRecords(configHandler->getTableName("label")));
     emit finished();
 }
 
@@ -40,7 +41,7 @@ void Labeler::lateral()
 void Labeler::displayNextImage()
 {
     emit attemptUpdateText("Image count: " + QString::number(count));
-    emit attemptUpdateProBarValue(count);
+    emit attemptUpdateProBarValue(dbHandler->countRecords(configHandler->getTableName("label")));
 
     if (count < expected_num_files) {
         const char * filePath = record["file_path"].c_str();

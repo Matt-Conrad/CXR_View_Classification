@@ -13,16 +13,27 @@
 #include <stage.h>
 #include <runnable.h>
 
-class AppController;
+#include <string>
+#include <filesystem>
+#include "downloadstage.h"
+#include "unpackstage.h"
+#include "storestage.h"
+#include "featurecalculatorstage.h"
+#include "labelstage.h"
+#include "trainstage.h"
+#include "confighandler.h"
+#include "databasehandler.h"
+#include "expectedsizes.h"
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 public:
-    MainWindow(AppController * controller);
+    MainWindow();
 
 private:
-    AppController * controller;
+    ConfigHandler * configHandler = new ConfigHandler("../CXR_classify/config.ini");
+    DatabaseHandler * dbHandler = new DatabaseHandler(configHandler);
 
     QString buttonsList[6] = {"downloadBtn", "unpackBtn", "storeBtn", "featureBtn", "labelBtn", "trainBtn"};
 

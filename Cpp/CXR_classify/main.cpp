@@ -1,10 +1,10 @@
 #include <QApplication>
-#include "appcontroller.h"
+#include "mainwindow.h"
 
 int main(int argc, char **argv) {
     QApplication app(argc, argv);
 
-    AppController appController = AppController();
+    MainWindow mainWindow = MainWindow();
 
     return app.exec();
 }
