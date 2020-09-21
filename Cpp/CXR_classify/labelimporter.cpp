@@ -27,26 +27,8 @@ void LabelImporter::run()
     }
     sqlQuery = sqlQuery.substr(0, sqlQuery.length() - 1) + ") FROM '" + configHandler->getParentFolder() + "/" + configHandler->getCsvPath() + "' DELIMITER ',' CSV HEADER;";
 
-    try
-    {
-        // Connect to the database
-        pqxx::connection * connection = dbHandler->openConnection();
+    dbHandler->executeQuery(dbHandler->connection, sqlQuery);
 
-        // Start a transaction
-        pqxx::work w(*connection);
-
-        // Execute query
-        pqxx::result r = w.exec(sqlQuery);
-
-        // Commit your transaction
-        w.commit();
-
-        dbHandler->closeConnection(connection);
-    }
-    catch (std::exception const &e)
-    {
-        // log e.what()
-    }
     emit attemptUpdateText("Finished importing image labels");
     emit finished();
 }

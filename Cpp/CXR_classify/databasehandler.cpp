@@ -106,7 +106,7 @@ void DatabaseHandler::addTableToDb(std::string columnsInfo, std::string section,
     }
     sqlQuery += ");";
 
-    executeNonTransQuery(connection, sqlQuery);
+    executeQuery(connection, sqlQuery);
 }
 
 int DatabaseHandler::countRecords(std::string tableName) {
