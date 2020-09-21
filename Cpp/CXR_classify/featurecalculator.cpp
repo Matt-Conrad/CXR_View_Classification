@@ -13,75 +13,63 @@ void FeatureCalculator::run()
     dbHandler->addTableToDb(configHandler->getColumnsInfoPath(), "features_list", featTableName);
 
     emit attemptUpdateProBarValue(0);
-    try
+
+    pqxx::result result = dbHandler->executeQuery(dbHandler->connection, "SELECT * FROM " + configHandler->getTableName("metadata") + ";");
+
+    int count = 0;
+    for (int rownum=0; rownum < result.size(); ++rownum)
     {
-        // Start a transaction
-        pqxx::work w(*(dbHandler->getOutputConnection()));
+        // Read in the image
+        const pqxx::row row = result[rownum];
+        const char * filePath = row["file_path"].c_str();
+        count++;
 
-        // Execute query
-        pqxx::result r = w.exec("SELECT * FROM " + configHandler->getTableName("metadata") + ";");
+        std::cout << "Image " << count << " " << filePath << std::endl;
 
-        int count = 0;
-        for (int rownum=0; rownum < r.size(); ++rownum)
-        {
-            // Read in the image
-            const pqxx::row row = r[rownum];
-            const char * filePath = row["file_path"].c_str();
-            count++;
+        DicomImage * dcmImage = new DicomImage(filePath);
+        uint16_t * pixelData = (uint16_t *) (dcmImage->getOutputData(16)); // This scales the pixel values so that the intensity range is 0 - 2^16 instead of 0 - 2^bits_stored
 
-            std::cout << "Image " << count << " " << filePath << std::endl;
+        // Convert the image from uint16 to double
+        uint64_t height = dcmImage->getHeight();
+        uint64_t width = dcmImage->getWidth();
 
-            DicomImage * dcmImage = new DicomImage(filePath);
-            uint16_t * pixelData = (uint16_t *) (dcmImage->getOutputData(16)); // This scales the pixel values so that the intensity range is 0 - 2^16 instead of 0 - 2^bits_stored
+        imageUnsigned = cv::Mat(height, width, CV_16U, pixelData);
+        imageUnsigned.convertTo(imageFloat, CV_64F);
 
-            // Convert the image from uint16 to double
-            uint64_t height = dcmImage->getHeight();
-            uint64_t width = dcmImage->getWidth();
+        // Get the bits_stored for scaling intensities back down from 16 bits to their bits_stored value
+        DcmFileFormat file_format;
+        file_format.loadFile(filePath);
 
-            imageUnsigned = cv::Mat(height, width, CV_16U, pixelData);
-            imageUnsigned.convertTo(imageFloat, CV_64F);
+        DcmTagKey bitsStoredKey(40, 257); // bits stored
+        OFString bitsStoredValue;
+        file_format.getDataset()->findAndGetOFString(bitsStoredKey, bitsStoredValue);
 
-            // Get the bits_stored for scaling intensities back down from 16 bits to their bits_stored value
-            DcmFileFormat file_format;
-            file_format.loadFile(filePath);
-
-            DcmTagKey bitsStoredKey(40, 257); // bits stored
-            OFString bitsStoredValue;
-            file_format.getDataset()->findAndGetOFString(bitsStoredKey, bitsStoredValue);
-
-            if (bitsStoredValue == "12") {
-                imageFloat = imageFloat / 16.0; // 16 - 12 = 4 bits = 2^4 = 16
-            } else if (bitsStoredValue == "15") {
-                imageFloat = imageFloat / 2.0; // 16 - 15 = 1 bit = 2^1 = 2
-            } else if (bitsStoredValue == "10") {
-                imageFloat = imageFloat / 64.0; // 16 - 10 = 6 bits = 2^6 = 64
-            } else if (bitsStoredValue == "14") {
-                imageFloat = imageFloat / 2.0; // 16 - 14 = 2 bits = 2^2 = 4
-            } else {
-                // log "BITS STORED NOT EXPECTED"
-            }
-
-            imageFloat.convertTo(imageUnsigned, CV_16U, 1, -0.5); // This rounding might cause inconsistencies
-
-            imageFloat = preprocessing(atoi(bitsStoredValue.c_str()));
-
-            cv::resize(imageFloat, imageResize, cv::Size(200, 200), 0, 0, cv::INTER_AREA);
-
-            horProfile = calcHorProf();
-            vertProfile = calcVertProf();
-
-            store(filePath, horProfile, vertProfile);
-
-            delete dcmImage;
-
-            emit attemptUpdateProBarValue(count);
+        if (bitsStoredValue == "12") {
+            imageFloat = imageFloat / 16.0; // 16 - 12 = 4 bits = 2^4 = 16
+        } else if (bitsStoredValue == "15") {
+            imageFloat = imageFloat / 2.0; // 16 - 15 = 1 bit = 2^1 = 2
+        } else if (bitsStoredValue == "10") {
+            imageFloat = imageFloat / 64.0; // 16 - 10 = 6 bits = 2^6 = 64
+        } else if (bitsStoredValue == "14") {
+            imageFloat = imageFloat / 2.0; // 16 - 14 = 2 bits = 2^2 = 4
+        } else {
+            // log "BITS STORED NOT EXPECTED"
         }
 
-        w.commit();
-    }
-    catch (std::exception const &e)
-    {
-        std::cerr << e.what() << std::endl;
+        imageFloat.convertTo(imageUnsigned, CV_16U, 1, -0.5); // This rounding might cause inconsistencies
+
+        imageFloat = preprocessing(atoi(bitsStoredValue.c_str()));
+
+        cv::resize(imageFloat, imageResize, cv::Size(200, 200), 0, 0, cv::INTER_AREA);
+
+        horProfile = calcHorProf();
+        vertProfile = calcVertProf();
+
+        store(filePath, horProfile, vertProfile);
+
+        delete dcmImage;
+
+        emit attemptUpdateProBarValue(count);
     }
 
     emit attemptUpdateText("Done calculating features");
@@ -91,34 +79,21 @@ void FeatureCalculator::run()
 
 void FeatureCalculator::store(std::string filePath, cv::Mat horProfile, cv::Mat vertProfile)
 {
-    try
-    {
-        // Create SQL query
-        std::vector<double> horVec(horProfile.begin<double>(), horProfile.end<double>());
-        std::vector<double> vertVec(vertProfile.begin<double>(), vertProfile.end<double>());
+    // Create SQL query
+    std::vector<double> horVec(horProfile.begin<double>(), horProfile.end<double>());
+    std::vector<double> vertVec(vertProfile.begin<double>(), vertProfile.end<double>());
 
-        std::vector<std::string> horVecString(horVec.size());
-        std::transform(horVec.begin(), horVec.end(), horVecString.begin(), [](const double& val){return std::to_string(val);});
+    std::vector<std::string> horVecString(horVec.size());
+    std::transform(horVec.begin(), horVec.end(), horVecString.begin(), [](const double& val){return std::to_string(val);});
 
-        std::vector<std::string> vertVecString(vertVec.size());
-        std::transform(vertVec.begin(), vertVec.end(), vertVecString.begin(), [](const double& val){return std::to_string(val);});
+    std::vector<std::string> vertVecString(vertVec.size());
+    std::transform(vertVec.begin(), vertVec.end(), vertVecString.begin(), [](const double& val){return std::to_string(val);});
 
-        std::string sqlQuery = "INSERT INTO " + featTableName + " (file_name, file_path, hor_profile, vert_profile) VALUES ('" +
-                filePath.substr(filePath.find_last_of("/") + 1) + "', '" + filePath + "', '{" + boost::algorithm::join(horVecString, ", ") +
-                "}', '{" + boost::algorithm::join(vertVecString, ", ") + "}');";
+    std::string sqlQuery = "INSERT INTO " + featTableName + " (file_name, file_path, hor_profile, vert_profile) VALUES ('" +
+            filePath.substr(filePath.find_last_of("/") + 1) + "', '" + filePath + "', '{" + boost::algorithm::join(horVecString, ", ") +
+            "}', '{" + boost::algorithm::join(vertVecString, ", ") + "}');";
 
-        // Start a transaction
-        pqxx::work w(*(dbHandler->getInputConnection()));
-
-        // Execute query
-        pqxx::result r = w.exec(sqlQuery);
-
-        w.commit();
-    }
-    catch (std::exception const &e)
-    {
-        std::cerr << e.what() << std::endl;
-    }
+    dbHandler->executeQuery(dbHandler->connection, sqlQuery);
 }
 
 cv::Mat FeatureCalculator::calcHorProf()

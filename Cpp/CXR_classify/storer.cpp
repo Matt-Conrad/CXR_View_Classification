@@ -28,26 +28,9 @@ void Storer::run()
     quint64 storeCount = 0;
     for (auto & p : std::filesystem::recursive_directory_iterator("./" + configHandler->getDatasetName())) {
         if (p.path().extension() == ".dcm") {
-            try
-            {
-                // Create SQL query
-                std::string sqlQuery = createSqlQuery(metadataTableName, elements, p.path().string());
-
-                // Start a transaction
-                pqxx::work w(*(dbHandler->getInputConnection()));
-
-                // Execute query
-                pqxx::result r = w.exec(sqlQuery);
-
-                w.commit();
-
-                storeCount++;
-                emit attemptUpdateProBarValue(storeCount);
-            }
-            catch (std::exception const &e)
-            {
-              std::cerr << e.what() << std::endl;
-            }
+            pqxx::result result = dbHandler->executeQuery(dbHandler->connection, createSqlQuery(metadataTableName, elements, p.path().string()));
+            storeCount++;
+            emit attemptUpdateProBarValue(storeCount);
         }
     }
     emit attemptUpdateText("Done storing metadata");

@@ -18,16 +18,12 @@ DatabaseHandler::DatabaseHandler(ConfigHandler * configHandler)
         createNewDb();
     }
 
-    inputConnection = openConnection();
-    outputConnection = openConnection();
-
     connection = openConnection();
 }
 
 DatabaseHandler::~DatabaseHandler()
 {
-    closeConnection(inputConnection);
-    closeConnection(outputConnection);
+
 }
 
 pqxx::connection * DatabaseHandler::openConnection(bool openDefault)
@@ -116,14 +112,6 @@ void DatabaseHandler::addTableToDb(std::string columnsInfo, std::string section,
 int DatabaseHandler::countRecords(std::string tableName) {
     pqxx::result result = executeQuery(connection, "SELECT COUNT(*) FROM " + tableName + ";");
     return result[0][0].as<int>();
-}
-
-pqxx::connection * DatabaseHandler::getInputConnection() {
-    return inputConnection;
-}
-
-pqxx::connection * DatabaseHandler::getOutputConnection() {
-    return outputConnection;
 }
 
 pqxx::result DatabaseHandler::executeQuery(pqxx::connection * connection, std::string query)

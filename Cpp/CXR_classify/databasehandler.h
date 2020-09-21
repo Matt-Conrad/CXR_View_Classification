@@ -25,9 +25,6 @@ public:
     void closeCursor(pqxx::work * cursor);
     void checkServerConnection();
 
-    pqxx::connection * getInputConnection();
-    pqxx::connection * getOutputConnection();
-
     pqxx::result executeQuery(pqxx::connection * connection, std::string query);
     pqxx::result executeNonTransQuery(pqxx::connection * connection, std::string query);
 
@@ -35,9 +32,6 @@ public:
     pqxx::connection * defaultConnection;
 private:
     ConfigHandler * configHandler;
-
-    pqxx::connection * inputConnection;
-    pqxx::connection * outputConnection;
 
     std::string host;
     std::string port;
