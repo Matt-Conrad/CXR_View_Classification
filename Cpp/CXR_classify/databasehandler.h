@@ -18,12 +18,21 @@ public:
     bool tableExists(std::string);
     void addTableToDb(std::string, std::string, std::string);
     int countRecords(std::string);
-    pqxx::connection * openConnection();
-    void deleteConnection(pqxx::connection * &);
+    pqxx::connection * openConnection(bool openDefault = false);
+    void closeConnection(pqxx::connection * &);
+    pqxx::work * openCursor(pqxx::connection &);
+    pqxx::nontransaction * openNonTransCursor(pqxx::connection &);
+    void closeCursor(pqxx::work * cursor);
+    void checkServerConnection();
 
     pqxx::connection * getInputConnection();
     pqxx::connection * getOutputConnection();
 
+    pqxx::result executeQuery(pqxx::connection * connection, std::string query);
+    pqxx::result executeNonTransQuery(pqxx::connection * connection, std::string query);
+
+    pqxx::connection * connection;
+    pqxx::connection * defaultConnection;
 private:
     ConfigHandler * configHandler;
 

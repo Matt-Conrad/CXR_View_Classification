@@ -20,7 +20,7 @@ void ManualLabeler::run()
     }
 
     emit attemptUpdateText("Image labeling complete");
-    emit attemptUpdateProBarValue(dbHandler->countRecords(configHandler->getTableName("label")));
+    emit attemptUpdateProBarValue(count);
     emit finished();
 }
 
@@ -68,42 +68,17 @@ void ManualLabeler::storeLabel(std::string decision)
     std::string fileName = filePath.substr(filePath.find_last_of("/") + 1);
     std::string sqlQuery = "INSERT INTO " + labelTableName + "  (file_name, file_path, image_view) VALUES ('" + fileName + "', '" +
             filePath + "', '" + decision + "');";
-    try
-    {
-        // Start a transaction
-        pqxx::work storeTransaction(*connection);
-        storeTransaction.exec(sqlQuery);
-        storeTransaction.commit();
-    }
-    catch (std::exception const &e)
-    {
-        std::cerr << e.what() << std::endl;
-    }
 
+    dbHandler->executeQuery(dbHandler->connection, sqlQuery);
     record++;
 }
 
 void ManualLabeler::queryImageList()
 {
     std::string sqlQuery = "SELECT file_path, bits_stored FROM " + configHandler->getTableName("metadata") + " ORDER BY file_path;";
-    try
-    {
-        // Connect to the database
-        connection = dbHandler->openConnection();
 
-        // Start a transaction
-        pqxx::work imageListTransaction(*connection);
-
-        // Execute query
-        imageList = imageListTransaction.exec(sqlQuery);
-        record = imageList.begin();
-
-        imageListTransaction.commit();
-    }
-    catch (std::exception const &e)
-    {
-        // log "error"
-    }
+    imageList = dbHandler->executeQuery(dbHandler->connection, sqlQuery);
+    record = imageList.begin();
 }
 
 

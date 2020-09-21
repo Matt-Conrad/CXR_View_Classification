@@ -2,106 +2,98 @@
 
 DatabaseHandler::DatabaseHandler(ConfigHandler * configHandler)
 {
-    DatabaseHandler::configHandler = configHandler;
+    configHandler = configHandler;
     boost::property_tree::ptree dbInfo = configHandler->getDbInfo();
 
-    DatabaseHandler::host = dbInfo.get<std::string>("host");
-    DatabaseHandler::port = dbInfo.get<std::string>("port");
-    DatabaseHandler::database = dbInfo.get<std::string>("database");
-    DatabaseHandler::user = dbInfo.get<std::string>("user");
-    DatabaseHandler::password = dbInfo.get<std::string>("password");
+    host = dbInfo.get<std::string>("host");
+    port = dbInfo.get<std::string>("port");
+    database = dbInfo.get<std::string>("database");
+    user = dbInfo.get<std::string>("user");
+    password = dbInfo.get<std::string>("password");
+
+    defaultConnection = openConnection(true);
 
     // Create the database if it isn't already there
     if (!dbExists()){
         createNewDb();
     }
 
-    DatabaseHandler::inputConnection = openConnection();
-    DatabaseHandler::outputConnection = openConnection();
+    inputConnection = openConnection();
+    outputConnection = openConnection();
+
+    connection = openConnection();
 }
 
 DatabaseHandler::~DatabaseHandler()
 {
-    deleteConnection(inputConnection);
-    deleteConnection(outputConnection);
+    closeConnection(inputConnection);
+    closeConnection(outputConnection);
 }
 
-bool DatabaseHandler::dbExists()
+pqxx::connection * DatabaseHandler::openConnection(bool openDefault)
 {
-    try
-    {
-        // Connect to the database
-        pqxx::connection c("host=" + host + " port=" + port + " dbname=postgres user=" + user + " password=" + password);
-
-        // Start a transaction
-        pqxx::work w(c);
-
-        // Execute query
-        pqxx::result r = w.exec("SELECT datname FROM pg_catalog.pg_database WHERE datname=\'" + database + "\'");
-
-        // Return based on result
-        if (r.size() == 0) {
-            return false;
-        } else {
-            return true;
-        }
-
+    pqxx::connection * connection;
+    if (openDefault) {
+        connection = new pqxx::connection("host=" + host + " port=" + port + " dbname=postgres" " user=" + user + " password=" + password);
+    } else {
+        connection = new pqxx::connection("host=" + host + " port=" + port + " dbname=" + database + " user=" + user + " password=" + password);
     }
-    catch (std::exception const &e)
-    {
-        // log e.what()
-    }
+    return connection;
+}
+
+void DatabaseHandler::closeConnection(pqxx::connection * & connection)
+{
+    delete connection;
+}
+
+pqxx::work * DatabaseHandler::openCursor(pqxx::connection & connection)
+{
+    return (new pqxx::work(connection));
+}
+
+pqxx::nontransaction * DatabaseHandler::openNonTransCursor(pqxx::connection & connection)
+{
+    return (new pqxx::nontransaction(connection));
+}
+
+void DatabaseHandler::closeCursor(pqxx::work * cursor)
+{
+    delete cursor;
+}
+
+void DatabaseHandler::checkServerConnection()
+{
+    ;
 }
 
 void DatabaseHandler::createNewDb()
 {
-    try
-    {
-        // Connect to the database
-        pqxx::connection c("host=" + host + " port=" + port + " dbname=postgres user=postgres password=postgres");
+    executeNonTransQuery(defaultConnection, "CREATE DATABASE " + database + ';');
+}
 
-        // Start a transaction
-        pqxx::nontransaction w(c);
+bool DatabaseHandler::dbExists()
+{
+    std::string sqlQuery = "SELECT datname FROM pg_catalog.pg_database WHERE datname=\'" + database + "\'";
 
-        // Execute query
-        pqxx::result r = w.exec("CREATE DATABASE " + database + ';');
+    pqxx::result result = executeQuery(defaultConnection, sqlQuery);
 
-        // Commit your transaction
-        w.commit();
-    }
-    catch (std::exception const &e)
-    {
-        // log e.what()
+    if (result.size() == 0) {
+        return false;
+    } else {
+        return true;
     }
 }
 
 bool DatabaseHandler::tableExists(std::string tableName)
 {
-    if (dbExists()) {
-        try
-        {
-            // Connect to the database
-            pqxx::connection c("host=" + host + " port=" + port + " dbname=" + database + " user=" + user + " password=" + password);
+    std::string sqlQuery = "SELECT * FROM information_schema.tables WHERE table_name=\'" + tableName + "\';";
 
-            // Start a transaction
-            pqxx::work w(c);
+    pqxx::result queryResult = executeQuery(connection, sqlQuery);
 
-            // Execute query
-            pqxx::result r = w.exec("SELECT * FROM information_schema.tables WHERE table_name=\'" + tableName + "\';");
-
-            // Return based on result
-            if (r.size() == 0) {
-                return false;
-            } else {
-                return true;
-            }
-        }
-        catch (std::exception const &e)
-        {
-            return false;
-        }
-    } else {
+    if (queryResult.size() == 0) {
         return false;
+    } else {
+        return true;
     }
 }
 
@@ -118,57 +110,12 @@ void DatabaseHandler::addTableToDb(std::string columnsInfo, std::string section,
     }
     sqlQuery += ");";
 
-    try
-    {
-        // Connect to the database
-        pqxx::connection c("host=" + host + " port=" + port + " dbname=" + database + " user=" + user + " password=" + password);
-
-        // Start a transaction
-        pqxx::nontransaction w(c);
-
-        // Execute query
-        pqxx::result r = w.exec(sqlQuery);
-
-        // Commit your transaction
-        w.commit();
-    }
-    catch (std::exception const &e)
-    {
-        // log e.what()
-    }
+    executeNonTransQuery(connection, sqlQuery);
 }
 
 int DatabaseHandler::countRecords(std::string tableName) {
-    try
-    {
-        // Connect to the database
-        pqxx::connection c("host=" + host + " port=" + port + " dbname=" + database + " user=" + user + " password=" + password);
-
-        // Start a transaction
-        pqxx::work w(c);
-
-        // Execute query
-        pqxx::result r = w.exec("SELECT COUNT(*) FROM " + tableName + ";");
-
-        w.commit();
-
-        // Return based on result
-        return r[0][0].as<int>();
-    }
-    catch (std::exception const &e)
-    {
-        // log e.what()
-    }
-}
-
-pqxx::connection * DatabaseHandler::openConnection() {
-    pqxx::connection * connection = new pqxx::connection("host=" + host + " port=" + port + " dbname=" + database + " user=" + user + " password=" + password);
-
-    return connection;
-}
-
-void DatabaseHandler::deleteConnection(pqxx::connection * & connection) {
-    delete connection;
+    pqxx::result result = executeQuery(connection, "SELECT COUNT(*) FROM " + tableName + ";");
+    return result[0][0].as<int>();
 }
 
 pqxx::connection * DatabaseHandler::getInputConnection() {
@@ -179,3 +126,28 @@ pqxx::connection * DatabaseHandler::getOutputConnection() {
     return outputConnection;
 }
 
+pqxx::result DatabaseHandler::executeQuery(pqxx::connection * connection, std::string query)
+{
+    pqxx::work * cursor = openCursor(*connection);
+    pqxx::result result;
+    try {
+        result = cursor->exec(query);
+    } catch (std::exception const &e) {
+
+    }
+    cursor->commit();
+    return result;
+}
+
+pqxx::result DatabaseHandler::executeNonTransQuery(pqxx::connection * connection, std::string query)
+{
+    pqxx::nontransaction * cursor = openNonTransCursor(*connection);
+    pqxx::result result;
+    try {
+        result = cursor->exec(query);
+    } catch (std::exception const &e) {
+
+    }
+    cursor->commit();
+    return result;
+}

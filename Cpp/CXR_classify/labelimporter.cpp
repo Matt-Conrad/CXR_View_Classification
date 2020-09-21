@@ -41,7 +41,7 @@ void LabelImporter::run()
         // Commit your transaction
         w.commit();
 
-        dbHandler->deleteConnection(connection);
+        dbHandler->closeConnection(connection);
     }
     catch (std::exception const &e)
     {

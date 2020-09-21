@@ -97,7 +97,7 @@ void Trainer::run()
         emit attemptUpdateProBarValue(expected_num_files);
 
         w.commit();
-        dbHandler->deleteConnection(connection);
+        dbHandler->closeConnection(connection);
 
     }
     catch (std::exception const &e)
