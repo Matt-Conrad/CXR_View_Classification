@@ -22,7 +22,7 @@ public:
     void closeConnection(pqxx::connection * &);
     pqxx::work * openCursor(pqxx::connection &);
     pqxx::nontransaction * openNonTransCursor(pqxx::connection &);
-    void closeCursor(pqxx::work * cursor);
+    void closeCursor(pqxx::work *);
     void checkServerConnection();
 
     pqxx::result executeQuery(pqxx::connection * connection, std::string query);

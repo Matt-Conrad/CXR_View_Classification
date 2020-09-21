@@ -44,6 +44,15 @@ private:
     void fillWindow();
     void initGuiState();
 
+    void connectToDashboard(Runnable *);
+    void disableAllStageButtons();
+    void enableStageButton(quint64);
+
+private slots:
+    void clearCurrentStage();
+    void firstPage();
+    void secondPage();
+
 public slots:
     void downloadStageUi();
     void unpackStageUi();
@@ -52,13 +61,6 @@ public slots:
     void labelStageUi();
     void trainStageUi();
 
-    void clearCurrentStage();
-    void firstPage();
-    void secondPage();
-
-    void connectToDashboard(Runnable *);
-    void disableAllStageButtons();
-    void enableStageButton(quint64);
     void updateProBarBounds(quint64, quint64);
     void updateProBarValue(quint64);
     void updateText(QString);

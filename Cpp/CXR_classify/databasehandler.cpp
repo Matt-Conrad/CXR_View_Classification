@@ -23,7 +23,8 @@ DatabaseHandler::DatabaseHandler(ConfigHandler * configHandler)
 
 DatabaseHandler::~DatabaseHandler()
 {
-
+    closeConnection(defaultConnection);
+    closeConnection(connection);
 }
 
 pqxx::connection * DatabaseHandler::openConnection(bool openDefault)

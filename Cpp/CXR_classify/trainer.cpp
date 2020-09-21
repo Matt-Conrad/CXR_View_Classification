@@ -18,6 +18,12 @@ void Trainer::run()
     std::vector<std::string> fileNames = {};
     double X[expected_num_files][400];
 
+    // Put all labels into a list
+    sqlQuery = "SELECT image_view FROM " + configHandler->getTableName("label") + " ORDER BY file_path ASC;";
+    // Execute query
+    std::vector<size_t> y = {};
+    pqxx::result labelsResult = dbHandler->executeQuery(dbHandler->connection, sqlQuery);
+
     for (int rownum = 0; rownum < profileResults.size(); rownum++) {
         // Filenames
         std::string filename(profileResults[rownum]["file_name"].c_str());
@@ -46,14 +52,7 @@ void Trainer::run()
             }
             currentObject = vert_parser.get_next();
         }
-    }
 
-    // Put all labels into a list
-    sqlQuery = "SELECT image_view FROM " + configHandler->getTableName("label") + " ORDER BY file_path ASC;";
-    // Execute query
-    std::vector<size_t> y = {};
-    pqxx::result labelsResult = dbHandler->executeQuery(dbHandler->connection, sqlQuery);
-    for (int rownum = 0; rownum < profileResults.size(); rownum++) {
         // Filenames
         std::string label(labelsResult[rownum]["image_view"].c_str());
         if (label == "F") {

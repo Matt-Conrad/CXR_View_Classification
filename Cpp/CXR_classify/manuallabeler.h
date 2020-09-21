@@ -24,7 +24,6 @@ private:
 
     pqxx::result imageList;
     pqxx::result::const_iterator record;
-    pqxx::connection * connection;
 
     void queryImageList();
     void displayNextImage();
