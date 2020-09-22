@@ -10,7 +10,7 @@ const std::unordered_map<std::string, uint64_t> expected_sizes = {
 
 const std::unordered_map<std::string, uint16_t> expected_num_files_in_dataset = {
         {"subset", 10},
-        {"full_set", 7470}
+        {"full_set", 7468}
     };
 
 const std::unordered_map<std::string, std::string> c_sourceUrl = {

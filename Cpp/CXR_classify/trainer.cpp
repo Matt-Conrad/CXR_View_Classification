@@ -16,7 +16,7 @@ void Trainer::run()
     pqxx::result profileResults = dbHandler->executeQuery(dbHandler->connection, sqlQuery);
 
     std::vector<std::string> fileNames = {};
-    double X[expected_num_files][400];
+    static double X[numSamples][400];
 
     // Put all labels into a list
     sqlQuery = "SELECT image_view FROM " + configHandler->getTableName("label") + " ORDER BY file_path ASC;";
@@ -63,7 +63,7 @@ void Trainer::run()
     }
 
     // First, load the data.
-    arma::mat xArma(&X[0][0], 400, expected_num_files); // transpose because Armadillo stores data column-by-column (for compatibility with LAPACK)
+    arma::mat xArma(&X[0][0], 400, numSamples); // transpose because Armadillo stores data column-by-column (for compatibility with LAPACK)
     arma::Row yArma(y);
     arma::mat xTrain, xTest;
     arma::Row<size_t> yTrain, yTest;
@@ -82,7 +82,6 @@ void Trainer::run()
         cvAcc = cv.Evaluate();
     }
 
-    std::string result("KFoldCV Accuracy: " + std::to_string(cvAcc));
     emit attemptUpdateText(result.c_str());
     emit attemptUpdateProBarValue(expected_num_files);
 

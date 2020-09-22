@@ -1,0 +1,10 @@
+Full Set Performance,,,
+,,Python Implementation,C++ Implementation
+Download (over powerline adapter),09:39:01 EST,17123.4918754101,
+,,,
+Unpack,,1374.56424236298,915.011
+Store,,122.585897445679,11.3736
+Feature Calculation,,3441.9971511364,5988.43
+Label,,0.053811311721802,0.044466
+Train,,10.5402135848999,190.77
+Accuracy,,98.4738955823293,98.1816

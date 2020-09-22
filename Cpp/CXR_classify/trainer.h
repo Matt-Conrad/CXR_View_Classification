@@ -18,6 +18,9 @@ public:
 
 public slots:
     void run();
+
+private:
+    static const int numSamples = 7468;
 };
 
 #endif // TRAINER_H
