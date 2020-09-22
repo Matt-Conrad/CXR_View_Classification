@@ -82,6 +82,7 @@ void Trainer::run()
         cvAcc = cv.Evaluate();
     }
 
+    std::string result("KFoldCV Accuracy: " + std::to_string(cvAcc));
     emit attemptUpdateText(result.c_str());
     emit attemptUpdateProBarValue(expected_num_files);
 
