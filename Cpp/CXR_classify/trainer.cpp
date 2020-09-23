@@ -16,13 +16,14 @@ void Trainer::run()
     pqxx::result profileResults = dbHandler->executeQuery(dbHandler->connection, sqlQuery);
 
     std::vector<std::string> fileNames = {};
-    static double X[numSamples][400];
 
     // Put all labels into a list
     sqlQuery = "SELECT image_view FROM " + configHandler->getTableName("label") + " ORDER BY file_path ASC;";
     // Execute query
     std::vector<size_t> y = {};
     pqxx::result labelsResult = dbHandler->executeQuery(dbHandler->connection, sqlQuery);
+
+    arma::mat xArma(400, expected_num_files, arma::fill::zeros); // transpose because Armadillo stores data column-by-column (for compatibility with LAPACK)
 
     for (int rownum = 0; rownum < profileResults.size(); rownum++) {
         // Filenames
@@ -35,7 +36,7 @@ void Trainer::run()
         int featureIndex = 0;
         while (currentObject.first != pqxx::array_parser::juncture::done) {
             if (currentObject.second != "") {
-                X[rownum][featureIndex] = std::stod(currentObject.second);
+                xArma(featureIndex, rownum) = std::stod(currentObject.second);
                 featureIndex++;
             }
             currentObject = hor_parser.get_next();
@@ -47,7 +48,7 @@ void Trainer::run()
         featureIndex = 200;
         while (currentObject.first != pqxx::array_parser::juncture::done) {
             if (currentObject.second != "") {
-                X[rownum][featureIndex] = std::stod(currentObject.second);
+                xArma(featureIndex, rownum) = std::stod(currentObject.second);
                 featureIndex++;
             }
             currentObject = vert_parser.get_next();
@@ -63,7 +64,6 @@ void Trainer::run()
     }
 
     // First, load the data.
-    arma::mat xArma(&X[0][0], 400, numSamples); // transpose because Armadillo stores data column-by-column (for compatibility with LAPACK)
     arma::Row yArma(y);
     arma::mat xTrain, xTest;
     arma::Row<size_t> yTrain, yTest;
