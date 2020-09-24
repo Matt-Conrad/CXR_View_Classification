@@ -28,7 +28,7 @@ class FeatCalcStage(Stage):
             
             sqlQuery = 'SELECT * FROM ' + self.configHandler.getTableName("metadata") + ';'
             records = self.dbHandler.executeQuery(self.dbHandler.connection, sqlQuery).fetchall()
-            self.dbHandler.addTableToDb(self.featTableName, self.configHandler.getColumnsInfoPath(), 'features_list')
+            self.dbHandler.addTableToDb(self.featTableName, self.configHandler.getColumnsInfoPath(), "nonElementColumns", 'features_list')
 
             self.signals.attemptUpdateText.emit('Calculating features')
             self.signals.attemptUpdateProBarBounds.emit(0, self.expectedNumFiles)

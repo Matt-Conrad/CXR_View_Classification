@@ -1,8 +1,7 @@
 import logging
 import os
-import psycopg2
 import json
-from PyQt5.QtCore import pyqtSignal, pyqtSlot
+from PyQt5.QtCore import pyqtSlot
 from stage import Stage, Runnable
 
 class LabelStage(Stage):
@@ -32,7 +31,7 @@ class LabelStage(Stage):
             self.signals.attemptUpdateProBarValue.emit(0)
             self.signals.attemptUpdateText.emit("Importing label data")
 
-            self.dbHandler.addTableToDb(self.configHandler.getTableName('label'), self.configHandler.getColumnsInfoPath(), 'labels')
+            self.dbHandler.addTableToDb(self.configHandler.getTableName('label'), self.configHandler.getColumnsInfoPath(), "nonElementColumns", 'labels')
             self.importImageLabelData()
             
             self.signals.attemptUpdateProBarValue.emit(1)
@@ -71,7 +70,7 @@ class LabelStage(Stage):
             self.signals.attemptUpdateText.emit("Please manually label images")
             self.signals.attemptUpdateProBarBounds.emit(0, self.expectedNumFiles)
 
-            self.dbHandler.addTableToDb(self.configHandler.getTableName('label'), self.configHandler.getColumnsInfoPath(), 'labels')
+            self.dbHandler.addTableToDb(self.configHandler.getTableName('label'), self.configHandler.getColumnsInfoPath(), "nonElementColumns", 'labels')
             
             self.displayNextImage()
 

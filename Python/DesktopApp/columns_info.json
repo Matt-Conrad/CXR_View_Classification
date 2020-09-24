@@ -1,4 +1,14 @@
 {
+    "nonElementColumns": {
+        "file_name": {
+            "db_datatype": "VARCHAR(255)",
+            "constraints": "PRIMARY KEY"
+        },
+        "file_path": {
+            "db_datatype": "VARCHAR(255)",
+            "constraints": ""
+        }
+    },
     "elements": {
         "patient_orientation": {
             "tag": "0x0020, 0x0020",

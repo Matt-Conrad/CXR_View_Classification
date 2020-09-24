@@ -24,7 +24,7 @@ class StoreStage(Stage):
             columnsInfoPath = self.configHandler.getColumnsInfoPath()
 
             if not self.dbHandler.tableExists(metaTableName):
-                self.dbHandler.addTableToDb(metaTableName, columnsInfoPath, "elements")
+                self.dbHandler.addTableToDb(metaTableName, columnsInfoPath, "nonElementColumns", "elements")
 
             self.dicomToDatabase.dicomToDb(self.dbHandler.dbInfo['database'], metaTableName, columnsInfoPath)
 
