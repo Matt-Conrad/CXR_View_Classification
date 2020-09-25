@@ -20,7 +20,7 @@ from metadata_to_db.databaseHandler import DatabaseHandler
 class MainWindow(QMainWindow):
     """Contains GUI code for the application."""
     def __init__(self):
-        self.configHandler = CxrConfigHandler("./config.ini")
+        self.configHandler = CxrConfigHandler("../../miscellaneous/config.ini")
         self.configureLogging()
 
         logging.info('Constructing Main app')

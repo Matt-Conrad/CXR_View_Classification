@@ -51,7 +51,7 @@ class CxrConfigHandler(ConfigHandler):
         self.setSetting("misc", "parent_folder", os.getcwd())
 
     def setCsvPath(self):
-        self.setSetting("misc", "csv_relative_path", "./image_labels.csv")
+        self.setSetting("misc", "csv_relative_path", "../../miscellaneous/image_labels.csv")
 
     def setColumnsInfoPath(self):
-        self.setSetting("misc", "columns_info_relative_path", "./columns_info.json")
+        self.setSetting("misc", "columns_info_relative_path", "../../miscellaneous/columns_info.json")
