@@ -4,6 +4,7 @@ ConfigHandler::ConfigHandler(std::string configFilename)
 {
     ConfigHandler::configFilename = configFilename;
     boost::property_tree::ini_parser::read_ini(configFilename, configFile);
+    prepConfigIni();
 }
 
 ConfigHandler::~ConfigHandler()
@@ -27,9 +28,32 @@ void ConfigHandler::setSetting(std::string sectionName, std::string settingName,
     configFile.put(sectionName + "." + settingName, value);
 }
 
+void ConfigHandler::prepConfigIni()
+{
+    setUrl(sourceUrl.at(getDatasetType()));
+    setParentFolder();
+    setCsvPath();
+    setColumnsInfoPath();
+}
+
 void ConfigHandler::setUrl(std::string url)
 {
     setSetting("misc", "url", url);
+}
+
+void ConfigHandler::setParentFolder()
+{
+    setSetting("misc", "parent_folder", std::filesystem::current_path());
+}
+
+void ConfigHandler::setCsvPath()
+{
+    setSetting("misc", "csv_relative_path", "../../miscellaneous/image_labels.csv");
+}
+
+void ConfigHandler::setColumnsInfoPath()
+{
+    setSetting("misc", "columns_info_relative_path", "../../miscellaneous/columns_info.json");
 }
 
 boost::property_tree::ptree ConfigHandler::getDbInfo()

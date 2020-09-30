@@ -2,11 +2,14 @@
 
 MainWindow::MainWindow() : QMainWindow()
 {
-    configHandler->setUrl(c_sourceUrl.at(configHandler->getDatasetType()));
-
     fillWindow();
     initGuiState();
     show();
+}
+
+MainWindow::~MainWindow()
+{
+    delete configHandler;
 }
 
 void MainWindow::fillWindow()

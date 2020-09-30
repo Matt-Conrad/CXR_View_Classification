@@ -22,16 +22,16 @@
 #include "trainstage.h"
 #include "confighandler.h"
 #include "databasehandler.h"
-#include "expectedsizes.h"
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 public:
     MainWindow();
+    ~MainWindow();
 
 private:
-    ConfigHandler * configHandler = new ConfigHandler("../../miscellaneous/config.ini");
+    ConfigHandler * configHandler = new ConfigHandler("./config.ini");
     DatabaseHandler * dbHandler = new DatabaseHandler(configHandler);
 
     QString buttonsList[6] = {"downloadBtn", "unpackBtn", "storeBtn", "featureBtn", "labelBtn", "trainBtn"};

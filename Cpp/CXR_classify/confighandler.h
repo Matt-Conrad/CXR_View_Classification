@@ -5,6 +5,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/dll/runtime_symbol_info.hpp>
+#include <filesystem>
+#include "expectedsizes.h"
 
 class ConfigHandler
 {
@@ -12,7 +14,12 @@ public:
     ConfigHandler(std::string);
     ~ConfigHandler();
 
+    void prepConfigIni();
+
     void setUrl(std::string);
+    void setParentFolder();
+    void setCsvPath();
+    void setColumnsInfoPath();
 
     boost::property_tree::ptree getDbInfo();
     std::string getTableName(std::string);
