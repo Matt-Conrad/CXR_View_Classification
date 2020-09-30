@@ -31,7 +31,7 @@ public:
     MainWindow();
 
 private:
-    ConfigHandler * configHandler = new ConfigHandler("./config.ini");
+    ConfigHandler * configHandler = new ConfigHandler("../../miscellaneous/config.ini");
     DatabaseHandler * dbHandler = new DatabaseHandler(configHandler);
 
     QString buttonsList[6] = {"downloadBtn", "unpackBtn", "storeBtn", "featureBtn", "labelBtn", "trainBtn"};
