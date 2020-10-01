@@ -79,7 +79,8 @@ class TrainStage(Stage):
                 for row in fileNamesTest:
                     writer.writerow([row])
 
+            logging.info('Done training SVM. K-Fold Cross Validation Accuracy: %s', str(accuracy))
             self.signals.attemptUpdateText.emit('K-Fold Cross Validation Accuracy: ' + str(accuracy))
             self.signals.attemptUpdateProBarValue.emit(self.expectedNumFiles)
             self.signals.finished.emit()
-            logging.info('Done training SVM. K-Fold Cross Validation Accuracy: %s', str(accuracy))
+            

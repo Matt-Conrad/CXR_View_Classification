@@ -43,6 +43,9 @@ class CxrConfigHandler(ConfigHandler):
     def getDatasetType(self):
         return self.getSetting("dataset_info", "dataset")
 
+    def getLogLevel(self):
+        return self.getSetting("logging", "level")
+
     # Setters
     def setUrl(self, url):
         self.setSetting("misc", "url", url)

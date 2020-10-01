@@ -90,6 +90,8 @@ void Unpacker::run()
 {
     std::string filenameRelPath = "./" + configHandler->getTgzFilename();
 
+    logger->info("Unpacking dataset from {}", filenameRelPath);
+
     emit attemptUpdateText("Unpacking images");
     emit attemptUpdateProBarBounds(0, expected_num_files);
     emit attemptUpdateProBarValue(0);
@@ -103,6 +105,8 @@ void Unpacker::run()
     emit attemptUpdateProBarValue(countDcms());
     emit attemptUpdateText("Images unpacked");
     emit finished();
+
+    logger->info("Done unpacking");
 }
 
 quint64 Unpacker::countDcms()

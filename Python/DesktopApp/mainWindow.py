@@ -260,7 +260,7 @@ class MainWindow(QMainWindow):
 
     def configureLogging(self):
         # Get log level from config file
-        logLevel = self.configHandler.getSetting(sectionName='logging', settingName='level')
+        logLevel = self.configHandler.getLogLevel()
         if logLevel == 'debug':
             logLevelObj = logging.DEBUG
         elif logLevel == 'info':

@@ -18,6 +18,8 @@ void Storer::run()
         dbHandler->addTableToDb(columnsInfoPath, "elements", metadataTableName);
     }
 
+    logger->info("Attempting to store DICOM metadata from DCMs in a folder to Postgres DB");
+
     emit attemptUpdateProBarValue(0);
 
     // Open the json with the list of elements we're interested in
@@ -28,11 +30,15 @@ void Storer::run()
     quint64 storeCount = 0;
     for (auto & p : std::filesystem::recursive_directory_iterator("./" + configHandler->getDatasetName())) {
         if (p.path().extension() == ".dcm") {
+            logger->debug("Storing: {}", p.path().string());
             pqxx::result result = dbHandler->executeQuery(dbHandler->connection, createSqlQuery(metadataTableName, elements, p.path().string()));
             storeCount++;
             emit attemptUpdateProBarValue(storeCount);
         }
     }
+
+    logger->info("Done storing metadata");
+
     emit attemptUpdateText("Done storing metadata");
     emit finished();
 }

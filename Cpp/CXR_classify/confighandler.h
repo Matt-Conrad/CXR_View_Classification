@@ -7,19 +7,13 @@
 #include <boost/dll/runtime_symbol_info.hpp>
 #include <filesystem>
 #include "expectedsizes.h"
+#include "spdlog/spdlog.h"
 
 class ConfigHandler
 {
 public:
     ConfigHandler(std::string);
     ~ConfigHandler();
-
-    void prepConfigIni();
-
-    void setUrl(std::string);
-    void setParentFolder();
-    void setCsvPath();
-    void setColumnsInfoPath();
 
     boost::property_tree::ptree getDbInfo();
     std::string getTableName(std::string);
@@ -30,6 +24,8 @@ public:
     std::string getCsvPath();
     std::string getDatasetType();
     std::string getParentFolder();
+    std::string getLogLevel();
+    std::string getConfigFilename();
 
 private:
     std::string configFilename;
@@ -38,6 +34,15 @@ private:
     boost::property_tree::ptree getSection(std::string);
     std::string getSetting(std::string, std::string);
     void setSetting(std::string, std::string, std::string);
+
+    void prepConfigIni();
+
+    void setUrl(std::string);
+    void setParentFolder();
+    void setCsvPath();
+    void setColumnsInfoPath();
+
+    void readConfigFile();
 };
 
 #endif // CONFIGHANDLERS_H

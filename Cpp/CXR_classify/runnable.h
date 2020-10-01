@@ -8,6 +8,7 @@
 #include <expectedsizes.h>
 #include <QString>
 #include <QPixmap>
+#include "spdlog/spdlog.h"
 
 class Runnable: public QObject, public QRunnable
 {
@@ -18,6 +19,7 @@ public:
 protected:
     ConfigHandler * configHandler;
     DatabaseHandler * dbHandler;
+    std::shared_ptr<spdlog::logger> logger;
     quint64 expected_size;
     quint64 expected_num_files;
 

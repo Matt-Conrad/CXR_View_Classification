@@ -3,7 +3,7 @@
 ConfigHandler::ConfigHandler(std::string configFilename)
 {
     ConfigHandler::configFilename = configFilename;
-    boost::property_tree::ini_parser::read_ini(configFilename, configFile);
+    readConfigFile();
     prepConfigIni();
 }
 
@@ -34,6 +34,13 @@ void ConfigHandler::prepConfigIni()
     setParentFolder();
     setCsvPath();
     setColumnsInfoPath();
+}
+
+void ConfigHandler::readConfigFile()
+{
+    if (std::filesystem::exists(configFilename)) {
+        boost::property_tree::ini_parser::read_ini(configFilename, configFile);
+    }
 }
 
 void ConfigHandler::setUrl(std::string url)
@@ -101,4 +108,12 @@ std::string ConfigHandler::getParentFolder()
     return getSetting("misc", "parent_folder");
 }
 
+std::string ConfigHandler::getLogLevel()
+{
+    return getSetting("logging", "level");
+}
 
+std::string ConfigHandler::getConfigFilename()
+{
+    return configFilename;
+}

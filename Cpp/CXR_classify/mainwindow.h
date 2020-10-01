@@ -13,6 +13,7 @@
 #include <stage.h>
 #include <runnable.h>
 
+#include <string>
 #include <filesystem>
 #include "downloadstage.h"
 #include "unpackstage.h"
@@ -23,6 +24,9 @@
 #include "confighandler.h"
 #include "databasehandler.h"
 
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/basic_file_sink.h"
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -31,8 +35,9 @@ public:
     ~MainWindow();
 
 private:
-    ConfigHandler * configHandler = new ConfigHandler("./config.ini");
-    DatabaseHandler * dbHandler = new DatabaseHandler(configHandler);
+    std::shared_ptr<spdlog::logger> logger;
+    ConfigHandler * configHandler;
+    DatabaseHandler * dbHandler;
 
     QString buttonsList[6] = {"downloadBtn", "unpackBtn", "storeBtn", "featureBtn", "labelBtn", "trainBtn"};
 
@@ -47,6 +52,7 @@ private:
     void connectToDashboard(Runnable *);
     void disableAllStageButtons();
     void enableStageButton(quint64);
+    void configureLogging();
 
 private slots:
     void clearCurrentStage();

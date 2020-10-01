@@ -7,6 +7,8 @@ FeatureCalculator::FeatureCalculator(ConfigHandler * configHandler, DatabaseHand
 
 void FeatureCalculator::run()
 {
+    logger->info("Calculating features from images");
+
     emit attemptUpdateText("Calculating features");
     emit attemptUpdateProBarBounds(0, expected_num_files);
 
@@ -24,7 +26,7 @@ void FeatureCalculator::run()
         const char * filePath = row["file_path"].c_str();
         count++;
 
-        std::cout << "Image " << count << " " << filePath << std::endl;
+        logger->debug("Calculating for image number: {} File {}", count, filePath);
 
         DicomImage * dcmImage = new DicomImage(filePath);
         uint16_t * pixelData = (uint16_t *) (dcmImage->getOutputData(16)); // This scales the pixel values so that the intensity range is 0 - 2^16 instead of 0 - 2^bits_stored
@@ -72,6 +74,7 @@ void FeatureCalculator::run()
         emit attemptUpdateProBarValue(count);
     }
 
+    logger->info("Done calculating features from images");
     emit attemptUpdateText("Done calculating features");
     emit attemptUpdateProBarValue(dbHandler->countRecords(featTableName));
     emit finished();
@@ -79,6 +82,8 @@ void FeatureCalculator::run()
 
 void FeatureCalculator::store(std::string filePath, cv::Mat horProfile, cv::Mat vertProfile)
 {
+    logger->debug("Storing the calculated features into the database.");
+
     // Create SQL query
     std::vector<double> horVec(horProfile.begin<double>(), horProfile.end<double>());
     std::vector<double> vertVec(vertProfile.begin<double>(), vertProfile.end<double>());

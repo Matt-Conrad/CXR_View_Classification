@@ -6,6 +6,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include "confighandler.h"
+#include "spdlog/spdlog.h"
 
 class DatabaseHandler
 {
@@ -32,6 +33,8 @@ public:
     pqxx::connection * defaultConnection;
 private:
     ConfigHandler * configHandler;
+
+    std::shared_ptr<spdlog::logger> logger;
 
     std::string host;
     std::string port;

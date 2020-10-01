@@ -7,6 +7,8 @@ LabelImporter::LabelImporter(ConfigHandler * configHandler, DatabaseHandler * db
 
 void LabelImporter::run()
 {
+    logger->info("Importing label data from CSV");
+
     std::string elementsJson = configHandler->getColumnsInfoPath();
     std::string labelTableName = configHandler->getTableName("label");
 
@@ -28,6 +30,8 @@ void LabelImporter::run()
     sqlQuery = sqlQuery.substr(0, sqlQuery.length() - 1) + ") FROM '" + configHandler->getParentFolder() + "/" + configHandler->getCsvPath() + "' DELIMITER ',' CSV HEADER;";
 
     dbHandler->executeQuery(dbHandler->connection, sqlQuery);
+
+    logger->info("Done importing label data");
 
     emit attemptUpdateText("Finished importing image labels");
     emit finished();

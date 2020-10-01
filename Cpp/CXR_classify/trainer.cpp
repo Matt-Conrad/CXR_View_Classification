@@ -7,9 +7,13 @@ Trainer::Trainer(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : R
 
 void Trainer::run()
 {
+    logger->info("Training SVM");
+
     emit attemptUpdateText("Training classifier");
     emit attemptUpdateProBarBounds(0, expected_num_files);
     emit attemptUpdateProBarValue(0);
+
+    logger->debug("Extracting feature matrix and labels vector from DB");
 
     std::string sqlQuery = "SELECT file_name, hor_profile, vert_profile FROM " + configHandler->getTableName("features") + " ORDER BY file_path ASC;";
 
@@ -63,7 +67,7 @@ void Trainer::run()
         }
     }
 
-    // First, load the data.
+    logger->debug("Splitting dataset and cross validating SVM for accuracy of classifier");
     arma::Row yArma(y);
     arma::mat xTrain, xTest;
     arma::Row<size_t> yTrain, yTest;
@@ -71,7 +75,6 @@ void Trainer::run()
     mlpack::data::Split(xArma, yArma, xTrain, xTest, yTrain, yTest, 0.33, true);
 
     const size_t numClasses = 2;
-
     int nSplits = 10;
     double cvAcc;
     if (xTrain.n_cols < nSplits) {
@@ -83,8 +86,10 @@ void Trainer::run()
     }
 
     std::string result("KFoldCV Accuracy: " + std::to_string(cvAcc));
+
+    logger->info("Done training SVM. K-Fold Cross Validation Accuracy: {}", cvAcc);
+
     emit attemptUpdateText(result.c_str());
     emit attemptUpdateProBarValue(expected_num_files);
-
     emit finished();
 }

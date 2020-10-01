@@ -2,7 +2,8 @@
 
 DatabaseHandler::DatabaseHandler(ConfigHandler * configHandler)
 {
-    configHandler = configHandler;
+    DatabaseHandler::configHandler = configHandler;
+    logger = spdlog::get(loggerName);
     boost::property_tree::ptree dbInfo = configHandler->getDbInfo();
 
     host = dbInfo.get<std::string>("host");
@@ -29,17 +30,19 @@ DatabaseHandler::~DatabaseHandler()
 
 pqxx::connection * DatabaseHandler::openConnection(bool openDefault)
 {
-    pqxx::connection * connection;
+    std::string params;
     if (openDefault) {
-        connection = new pqxx::connection("host=" + host + " port=" + port + " dbname=postgres" " user=" + user + " password=" + password);
+        params = "host=" + host + " port=" + port + " dbname=postgres" " user=" + user + " password=" + password;
     } else {
-        connection = new pqxx::connection("host=" + host + " port=" + port + " dbname=" + database + " user=" + user + " password=" + password);
+        params = "host=" + host + " port=" + port + " dbname=" + database + " user=" + user + " password=" + password;
     }
-    return connection;
+    logger->info("Opening connection to DB: {}", params);
+    return new pqxx::connection(params.c_str());
 }
 
 void DatabaseHandler::closeConnection(pqxx::connection * & connection)
 {
+    logger->info("Closing connection");
     delete connection;
 }
 
@@ -55,16 +58,23 @@ pqxx::nontransaction * DatabaseHandler::openNonTransCursor(pqxx::connection & co
 
 void DatabaseHandler::closeCursor(pqxx::work * cursor)
 {
+    logger->debug("Closing cursor");
     delete cursor;
 }
 
 void DatabaseHandler::checkServerConnection()
 {
-    ;
+    logger->info("Checking connection to Postgres server");
+    if (executeQuery(connection, "SELECT version();").size() != 0) {
+        logger->info("Server is connected");
+    } else {
+        logger->info("Server is not connected");
+    }
 }
 
 void DatabaseHandler::createNewDb()
 {
+    logger->info("Attempting to create a new DB");
     executeNonTransQuery(defaultConnection, "CREATE DATABASE " + database + ';');
 }
 
@@ -73,12 +83,14 @@ bool DatabaseHandler::dbExists()
     std::string sqlQuery = "SELECT datname FROM pg_catalog.pg_database WHERE datname=\'" + database + "\'";
 
     pqxx::result result = executeQuery(defaultConnection, sqlQuery);
-
+    bool exists;
     if (result.size() == 0) {
-        return false;
+        exists = false;
     } else {
-        return true;
+        exists = true;
     }
+    logger->info("DB named {} exists: {}", database, exists);
+    return exists;
 }
 
 bool DatabaseHandler::tableExists(std::string tableName)
@@ -86,16 +98,20 @@ bool DatabaseHandler::tableExists(std::string tableName)
     std::string sqlQuery = "SELECT * FROM information_schema.tables WHERE table_name=\'" + tableName + "\';";
 
     pqxx::result queryResult = executeQuery(connection, sqlQuery);
-
+    bool exists;
     if (queryResult.size() == 0) {
-        return false;
+        exists = false;
     } else {
-        return true;
+        exists = true;
     }
+    logger->info("Table named {} exists: {}", tableName, exists);
+    return exists;
 }
 
 void DatabaseHandler::addTableToDb(std::string columnsInfo, std::string section, std::string tableName)
 {
+    logger->info("Attempting to add table");
+
     boost::property_tree::ptree columnsJson;
     boost::property_tree::read_json(columnsInfo, columnsJson);
     boost::property_tree::ptree elements = columnsJson.get_child(section);

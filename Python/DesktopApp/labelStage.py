@@ -64,7 +64,7 @@ class LabelStage(Stage):
         @pyqtSlot()
         def run(self):
             """Displays the content into the window."""
-            logging.debug('Filling window')
+            logging.info('Filling window')
             self.queryImageList()
             
             self.signals.attemptUpdateText.emit("Please manually label images")
@@ -94,7 +94,7 @@ class LabelStage(Stage):
             self.displayNextImage()
 
         def displayNextImage(self):
-            logging.debug('Image Count: ' + str(self.count))
+            logging.debug('Image count: ' + str(self.count))
             self.signals.attemptUpdateText.emit('Image Count: ' + str(self.count))
             self.signals.attemptUpdateProBarValue.emit(self.dbHandler.countRecords(self.configHandler.getTableName('label')))
 

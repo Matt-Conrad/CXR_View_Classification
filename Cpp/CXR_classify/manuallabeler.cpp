@@ -7,6 +7,8 @@ ManualLabeler::ManualLabeler(ConfigHandler * configHandler, DatabaseHandler * db
 
 void ManualLabeler::run()
 {
+    logger->info("Filling window");
+
     queryImageList();
     emit attemptUpdateText("Please manually label images");
     emit attemptUpdateProBarBounds(0, expected_num_files);
@@ -19,6 +21,7 @@ void ManualLabeler::run()
         ;
     }
 
+    logger->info("End of query");
     emit attemptUpdateText("Image labeling complete");
     emit attemptUpdateProBarValue(count);
     emit finished();
@@ -26,6 +29,7 @@ void ManualLabeler::run()
 
 void ManualLabeler::frontal()
 {
+    logger->debug("Front");
     storeLabel("F");
     count++;
     displayNextImage();
@@ -33,6 +37,7 @@ void ManualLabeler::frontal()
 
 void ManualLabeler::lateral()
 {
+    logger->debug("Lateral");
     storeLabel("L");
     count++;
     displayNextImage();
@@ -40,6 +45,7 @@ void ManualLabeler::lateral()
 
 void ManualLabeler::displayNextImage()
 {
+    logger->debug("Image count: {}", count);
     emit attemptUpdateText("Image count: " + QString::number(count));
     emit attemptUpdateProBarValue(dbHandler->countRecords(configHandler->getTableName("label")));
 
@@ -64,6 +70,7 @@ void ManualLabeler::displayNextImage()
 
 void ManualLabeler::storeLabel(std::string decision)
 {
+    logger->debug("Storing label");
     std::string filePath = record["file_path"].c_str();
     std::string fileName = filePath.substr(filePath.find_last_of("/") + 1);
     std::string sqlQuery = "INSERT INTO " + labelTableName + "  (file_name, file_path, image_view) VALUES ('" + fileName + "', '" +
@@ -75,6 +82,7 @@ void ManualLabeler::storeLabel(std::string decision)
 
 void ManualLabeler::queryImageList()
 {
+    logger->debug("Getting the image list");
     std::string sqlQuery = "SELECT file_path, bits_stored FROM " + configHandler->getTableName("metadata") + " ORDER BY file_path;";
 
     imageList = dbHandler->executeQuery(dbHandler->connection, sqlQuery);

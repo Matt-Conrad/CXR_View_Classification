@@ -8,14 +8,21 @@ Downloader::Downloader(ConfigHandler * configHandler) : Runnable(configHandler)
 
 void Downloader::run()
 {
+    logger->info("Checking if {} already exists", filenameRelPath);
     if (std::filesystem::exists(filenameRelPath) && !std::filesystem::is_directory(filenameRelPath)) {
-        if (std::filesystem::file_size(filenameRelPath) == expected_size) { // replace hard code with expected size
-            // log "File  was downloaded properly"
+        logger->info("{} already exists", filenameRelPath);
+        logger->info("Checking if {} was downloaded properly", filenameRelPath);
+        if (std::filesystem::file_size(filenameRelPath) == expected_size) {
+            logger->info("{} was downloaded properly", filenameRelPath);
         } else {
+            logger->warn("{} was not downloaded properly", filenameRelPath);
+            logger->info("Removing {}", filenameRelPath);
             std::filesystem::remove(filenameRelPath);
+            logger->info("Successfully removed {}", filenameRelPath);
             download();
         }
     } else {
+        logger->info("{} does not exist", filenameRelPath);
         download();
     }
     emit attemptUpdateProBarValue(getTgzSize());
@@ -25,6 +32,8 @@ void Downloader::run()
 
 int Downloader::download()
 {
+    logger->info("Downloading dataset from {}", configHandler->getUrl());
+
     emit attemptUpdateText("Downloading images");
     emit attemptUpdateProBarBounds(0, getTgzMax());
 
@@ -55,6 +64,9 @@ int Downloader::download()
     });
 
     event.exec();
+
+    // At some point should call run again, similar to python implementation
+
     return 0;
 }
 

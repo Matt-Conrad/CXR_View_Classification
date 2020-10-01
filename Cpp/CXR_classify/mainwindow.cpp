@@ -2,9 +2,20 @@
 
 MainWindow::MainWindow() : QMainWindow()
 {
+    configHandler = new ConfigHandler("./config.ini");
+
+    configureLogging();
+    logger->info("Constructing Main app");
+
+    dbHandler = new DatabaseHandler(configHandler);
+
+    setWindowTitle("CXR Classifier Training Walkthrough");
+
     fillWindow();
     initGuiState();
     show();
+
+    logger->info("Done constructing Main app");
 }
 
 MainWindow::~MainWindow()
@@ -113,6 +124,7 @@ void MainWindow::initGuiState()
 
 void MainWindow::downloadStageUi()
 {
+    logger->info("Window initializing in Download phase");
     currentStage = new DownloadStage(configHandler);
 
     disableAllStageButtons();
@@ -122,10 +134,12 @@ void MainWindow::downloadStageUi()
     connectToDashboard(static_cast<DownloadStage *>(currentStage)->downloader);
     connect(static_cast<DownloadStage *>(currentStage)->downloader, SIGNAL (finished()), this, SLOT(clearCurrentStage()));
     connect(static_cast<DownloadStage *>(currentStage)->downloader, SIGNAL (finished()), this, SLOT(unpackStageUi()));
+    logger->info("***Download phase initialized***");
 }
 
 void MainWindow::unpackStageUi()
 {
+    logger->info("Window initializing in Unpack phase");
     currentStage = new UnpackStage(configHandler);
 
     disableAllStageButtons();
@@ -135,10 +149,12 @@ void MainWindow::unpackStageUi()
     connectToDashboard(static_cast<UnpackStage *>(currentStage)->unpacker);
     connect(static_cast<DownloadStage *>(currentStage)->downloader, SIGNAL (finished()), this, SLOT(clearCurrentStage()));
     connect(static_cast<UnpackStage *>(currentStage)->unpacker, SIGNAL (finished()), this, SLOT(storeStageUi()));
+    logger->info("***Unpack phase initialized***");
 }
 
 void MainWindow::storeStageUi()
 {
+    logger->info("Window initializing in Store phase");
     currentStage = new StoreStage(configHandler, dbHandler);
 
     disableAllStageButtons();
@@ -148,10 +164,12 @@ void MainWindow::storeStageUi()
     connectToDashboard(static_cast<StoreStage *>(currentStage)->storer);
     connect(static_cast<DownloadStage *>(currentStage)->downloader, SIGNAL (finished()), this, SLOT(clearCurrentStage()));
     connect(static_cast<StoreStage *>(currentStage)->storer, SIGNAL (finished()), this, SLOT(calcFeatStageUi()));
+    logger->info("***Store phase initialized***");
 }
 
 void MainWindow::calcFeatStageUi()
 {
+    logger->info("Window initializing in Feature Calculation phase");
     currentStage = new FeatureCalculatorStage(configHandler, dbHandler);
 
     disableAllStageButtons();
@@ -161,10 +179,12 @@ void MainWindow::calcFeatStageUi()
     connectToDashboard(static_cast<FeatureCalculatorStage *>(currentStage)->featureCalculator);
     connect(static_cast<DownloadStage *>(currentStage)->downloader, SIGNAL (finished()), this, SLOT(clearCurrentStage()));
     connect(static_cast<FeatureCalculatorStage *>(currentStage)->featureCalculator, SIGNAL (finished()), this, SLOT(labelStageUi()));
+    logger->info("***Feature Calculation phase initialized***");
 }
 
 void MainWindow::labelStageUi()
 {
+    logger->info("Window initializing in Labeling phase");
     currentStage = new LabelStage(configHandler, dbHandler);
 
     disableAllStageButtons();
@@ -187,10 +207,12 @@ void MainWindow::labelStageUi()
         connect(static_cast<DownloadStage *>(currentStage)->downloader, SIGNAL (finished()), this, SLOT(clearCurrentStage()));
         connect(static_cast<LabelStage *>(currentStage)->labeler, SIGNAL (finished()), this, SLOT (trainStageUi()));
     }
+    logger->info("***Labeling phase initialized***");
 }
 
 void MainWindow::trainStageUi()
 {
+    logger->info("Window initializing in Training phase");
     currentStage = new TrainStage(configHandler, dbHandler);
 
     widgetStack->setFixedSize(widgetStack->currentWidget()->layout()->sizeHint());
@@ -201,6 +223,7 @@ void MainWindow::trainStageUi()
 
     connect(mainWidget->findChild<QPushButton *>("trainBtn"), SIGNAL (clicked()), static_cast<TrainStage *>(currentStage), SLOT (train()));
     connectToDashboard(static_cast<TrainStage *>(currentStage)->trainer);
+    logger->info("***Training phase initialized***");
 }
 
 void MainWindow::clearCurrentStage()
@@ -237,6 +260,23 @@ void MainWindow::disableAllStageButtons()
 void MainWindow::enableStageButton(quint64 stageIndex)
 {
     mainWidget->findChild<QPushButton *>(buttonsList[stageIndex])->setDisabled(false);
+}
+
+void MainWindow::configureLogging()
+{
+    try {
+        logger = spdlog::basic_logger_mt(loggerName, "CXR_Classification.log");
+    }
+    catch (const spdlog::spdlog_ex &ex) {
+        std::cout << "Log init failed: " << ex.what() << std::endl;
+    }
+
+    std::string logLevel = configHandler->getLogLevel();
+    if (logLevel == "debug") {
+        logger->set_level(spdlog::level::debug);
+    } else if (logLevel == "info") {
+        logger->set_level(spdlog::level::info);
+    }
 }
 
 void MainWindow::updateText(QString text)

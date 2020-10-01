@@ -48,9 +48,9 @@ class FeatCalcStage(Stage):
                 self.store(filePath, horProfile, vertProfile)
                 self.signals.attemptUpdateProBarValue.emit(self.dbHandler.countRecords(self.featTableName))
 
+            logging.info('Done calculating features from images')
             self.signals.attemptUpdateText.emit('Done calculating features')
             self.signals.finished.emit()
-            logging.info('Done calculating features from images')
 
         def store(self, filePath, horProfile, vertProfile):
             logging.debug('Storing the calculated features into the database.')
