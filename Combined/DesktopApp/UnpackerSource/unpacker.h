@@ -10,12 +10,12 @@ class Unpacker{
         Unpacker(const char *, const char *);
         void run();
 
+        std::string fileRelPathStr;
+        std::string folderRelPathStr;
+
     private: 
         int extract(const char *, std::string);
         int copy_data(struct archive *, struct archive *);
-
-        std::string fileRelPath;
-        std::string folderRelPath;
 };
 
 // These functions can be called from "C" 

@@ -2,13 +2,13 @@
 
 Unpacker::Unpacker(const char * fileRelPath, const char * folderRelPath)
 {
-    Unpacker::fileRelPath = fileRelPath;
-    Unpacker::folderRelPath = folderRelPath;
+    Unpacker::fileRelPathStr = fileRelPath;
+    Unpacker::folderRelPathStr = folderRelPath;
 }
 
 void Unpacker::run() 
-{   
-    extract(fileRelPath.c_str(), "./");
+{      
+    extract(fileRelPathStr.c_str(), "./");
 }
 
 int Unpacker::copy_data(struct archive * ar, struct archive * aw)
@@ -60,7 +60,6 @@ int Unpacker::extract(const char * filename, std::string destination)
         if (r == ARCHIVE_EOF)
             break;
         if (r < ARCHIVE_OK)
-            fprintf(stderr, "%s\n", archive_error_string(a));
         if (r < ARCHIVE_WARN)
             return 1;
         // This is for the full set

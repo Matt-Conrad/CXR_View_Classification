@@ -31,6 +31,9 @@ class MainWindow(QMainWindow):
         self.buttonsList = ["downloadBtn", "unpackBtn", "storeBtn", "featureBtn", "labelBtn", "classifyBtn"]
         self.currentStage = None
 
+        # Research as to why this is needed for C++ integration
+        self.unpackStage = UnpackStage(self.configHandler)
+
         self.fillWindow()
         self.initGuiState()
         self.show()
@@ -135,15 +138,15 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def unpackStageUi(self):
         logging.info('Window initializing in Unpack phase')
-        self.currentStage = UnpackStage(self.configHandler)
+        # self.currentStage = UnpackStage(self.configHandler)
 
         self.disableAllStageButtons()
         self.enableStageButton(1)
 
-        self.connectToDashboard(self.currentStage.unpackUpdater.signals)
+        self.connectToDashboard(self.unpackStage.unpackUpdater.signals)
+        self.centralWidget().findChild(QPushButton, "unpackBtn").clicked.connect(self.unpackStage.unpack)
+        self.unpackStage.unpackUpdater.signals.finished.connect(self.storeStageUi)
 
-        self.centralWidget().findChild(QPushButton, "unpackBtn").clicked.connect(self.currentStage.unpack)
-        self.currentStage.unpackUpdater.signals.finished.connect(self.storeStageUi)
         logging.info('***Unpack phase initialized***')
         
     @pyqtSlot()

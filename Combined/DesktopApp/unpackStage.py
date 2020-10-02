@@ -13,8 +13,8 @@ class UnpackStage(Stage):
 
     @pyqtSlot()
     def unpack(self):
-        self.threadpool.start(self.unpackUpdater)
         self.threadpool.start(self.unpacker)
+        self.threadpool.start(self.unpackUpdater)
 
     class Unpacker(Runnable):
         def __init__(self, configHandler):
@@ -27,7 +27,7 @@ class UnpackStage(Stage):
 
             fileRelPathPtr = c_char_p(fileRelPath.encode("UTF-8"))
             folderRelPathPtr = c_char_p(folderRelPath.encode("UTF-8"))
-
+            
             self.obj = self.lib.Unpacker_new(fileRelPathPtr.value, folderRelPathPtr.value)
 
         def run(self): 
