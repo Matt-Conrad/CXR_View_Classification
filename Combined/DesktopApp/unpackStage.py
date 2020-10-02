@@ -3,34 +3,35 @@ from PyQt5.QtCore import pyqtSlot
 import tarfile
 import logging
 import os
+from ctypes import cdll, c_char_p
 
 class UnpackStage(Stage):
     def __init__(self, configHandler):
         Stage.__init__(self)
-        self.unpacker = self.Unpacker(configHandler)
+        self.unpacker = self.Unpacker(configHandler) 
         self.unpackUpdater = self.UnpackUpdater(configHandler)
 
     @pyqtSlot()
     def unpack(self):
-        self.threadpool.start(self.unpacker)
         self.threadpool.start(self.unpackUpdater)
+        self.threadpool.start(self.unpacker)
 
     class Unpacker(Runnable):
-        """Controls logic of getting the dataset from online sources."""
         def __init__(self, configHandler):
             Runnable.__init__(self, configHandler)
-            self.folderRelPath = "./" + configHandler.getDatasetName()
 
-        @pyqtSlot()
-        def run(self):
-            filenameRelPath = "./" + self.configHandler.getTgzFilename()
+            self.lib = cdll.LoadLibrary("./libunpacker.so")
 
-            logging.info('Unpacking dataset from %s', filenameRelPath)
+            fileRelPath = "./" + configHandler.getTgzFilename()
+            folderRelPath = "./" + configHandler.getDatasetName()
 
-            tf = tarfile.open(filenameRelPath)
-            tf.extractall(path=self.folderRelPath)
+            fileRelPathPtr = c_char_p(fileRelPath.encode("UTF-8"))
+            folderRelPathPtr = c_char_p(folderRelPath.encode("UTF-8"))
 
-            logging.info('Done unpacking')
+            self.obj = self.lib.Unpacker_new(fileRelPathPtr.value, folderRelPathPtr.value)
+
+        def run(self): 
+            self.lib.Unpacker_run(self.obj)
 
     class UnpackUpdater(Runnable):
         """Controls logic of getting the dataset from online sources."""
