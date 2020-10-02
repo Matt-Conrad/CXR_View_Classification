@@ -1,14 +1,14 @@
 #include "unpacker.h"
 
-Unpacker::Unpacker(const char * fileRelPath, const char * folderRelPath)
+Unpacker::Unpacker()
 {
-    Unpacker::fileRelPathStr = fileRelPath;
-    Unpacker::folderRelPathStr = folderRelPath;
+    
 }
 
 void Unpacker::run() 
 {      
-    extract(fileRelPathStr.c_str(), "./");
+    std::string fileRelPath = configHandler->getTgzFilename();
+    extract(fileRelPath.c_str(), "./");
 }
 
 int Unpacker::copy_data(struct archive * ar, struct archive * aw)
@@ -92,8 +92,8 @@ int Unpacker::extract(const char * filename, std::string destination)
 
 
 
-Unpacker * Unpacker_new(const char * fileRelPath, const char * folderRelPath) { 
-    return new Unpacker(fileRelPath, folderRelPath); 
+Unpacker * Unpacker_new() { 
+    return new Unpacker(); 
 }
 
 void Unpacker_run(Unpacker * unpacker) {

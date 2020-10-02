@@ -21,14 +21,8 @@ class UnpackStage(Stage):
             Runnable.__init__(self, configHandler)
 
             self.lib = cdll.LoadLibrary("./libunpacker.so")
-
-            fileRelPath = "./" + configHandler.getTgzFilename()
-            folderRelPath = "./" + configHandler.getDatasetName()
-
-            fileRelPathPtr = c_char_p(fileRelPath.encode("UTF-8"))
-            folderRelPathPtr = c_char_p(folderRelPath.encode("UTF-8"))
             
-            self.obj = self.lib.Unpacker_new(fileRelPathPtr.value, folderRelPathPtr.value)
+            self.obj = self.lib.Unpacker_new()
 
         def run(self): 
             self.lib.Unpacker_run(self.obj)
