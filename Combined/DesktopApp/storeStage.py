@@ -1,6 +1,7 @@
 from stage import Stage, Runnable
 from PyQt5.QtCore import pyqtSlot
 from metadata_to_db.dicomToDb import DicomToDatabase
+from ctypes import cdll, c_char_p
 
 class StoreStage(Stage):
     def __init__(self, configHandler, dbHandler):
@@ -16,17 +17,14 @@ class StoreStage(Stage):
     class Storer(Runnable):
         def __init__(self, configHandler, dbHandler):
             Runnable.__init__(self, configHandler, dbHandler)
-            self.dicomToDatabase = DicomToDatabase(configHandler, dbHandler)
+
+            self.lib = cdll.LoadLibrary("./src/libstorer.so")
+            
+            self.obj = self.lib.Storer_new()
 
         @pyqtSlot()
         def run(self):
-            metaTableName = self.configHandler.getTableName("metadata")
-            columnsInfoPath = self.configHandler.getColumnsInfoPath()
-
-            if not self.dbHandler.tableExists(metaTableName):
-                self.dbHandler.addTableToDb(metaTableName, columnsInfoPath, "nonElementColumns", "elements")
-
-            self.dicomToDatabase.dicomToDb(self.dbHandler.dbInfo['database'], metaTableName, columnsInfoPath)
+            self.lib.Storer_run(self.obj)
 
     class StoreUpdater(Runnable):
         def __init__(self, configHandler, dbHandler):

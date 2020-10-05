@@ -33,6 +33,7 @@ class MainWindow(QMainWindow):
 
         # Research as to why this is needed for C++ integration
         self.unpackStage = UnpackStage(self.configHandler)
+        self.storeStage = StoreStage(self.configHandler, self.dbHandler)
 
         self.fillWindow()
         self.initGuiState()
@@ -152,15 +153,15 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def storeStageUi(self):
         logging.info('Window initializing in Store phase')
-        self.currentStage = StoreStage(self.configHandler, self.dbHandler)
+        self.storeStage = StoreStage(self.configHandler, self.dbHandler)
 
         self.disableAllStageButtons()
         self.enableStageButton(2)
 
-        self.connectToDashboard(self.currentStage.storeUpdater.signals)
+        self.connectToDashboard(self.storeStage.storeUpdater.signals)
 
-        self.centralWidget().findChild(QPushButton, "storeBtn").clicked.connect(self.currentStage.store)
-        self.currentStage.storeUpdater.signals.finished.connect(self.calcFeatStageUi)
+        self.centralWidget().findChild(QPushButton, "storeBtn").clicked.connect(self.storeStage.store)
+        self.storeStage.storeUpdater.signals.finished.connect(self.calcFeatStageUi)
         logging.info('***Store phase initialized***')
 
     @pyqtSlot()

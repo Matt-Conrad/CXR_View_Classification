@@ -6,7 +6,7 @@
 #include <archive_entry.h>
 #include "confighandler.h"
 
-class Unpacker{
+class Unpacker {
     public:
         Unpacker();
         void run();

@@ -20,7 +20,7 @@ class UnpackStage(Stage):
         def __init__(self, configHandler):
             Runnable.__init__(self, configHandler)
 
-            self.lib = cdll.LoadLibrary("./libunpacker.so")
+            self.lib = cdll.LoadLibrary("./src/libunpacker.so")
             
             self.obj = self.lib.Unpacker_new()
 
