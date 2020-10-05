@@ -153,7 +153,7 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def storeStageUi(self):
         logging.info('Window initializing in Store phase')
-        self.storeStage = StoreStage(self.configHandler, self.dbHandler)
+        # self.currentStage = StoreStage(self.configHandler, self.dbHandler)
 
         self.disableAllStageButtons()
         self.enableStageButton(2)
