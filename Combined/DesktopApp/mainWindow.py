@@ -32,6 +32,7 @@ class MainWindow(QMainWindow):
         self.currentStage = None
 
         # Research as to why this is needed for C++ integration
+        self.downloadStage = DownloadStage(self.configHandler)
         self.unpackStage = UnpackStage(self.configHandler)
         self.storeStage = StoreStage(self.configHandler, self.dbHandler)
 
@@ -125,15 +126,15 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def downloadStageUi(self):
         logging.info('Window initializing in Download phase')
-        self.currentStage = DownloadStage(self.configHandler)
+        # self.currentStage = DownloadStage(self.configHandler)
 
         self.disableAllStageButtons()
         self.enableStageButton(0)
 
-        self.connectToDashboard(self.currentStage.downloader.signals)
+        self.connectToDashboard(self.downloadStage.downloadUpdater.signals)
         
-        self.centralWidget().findChild(QPushButton, "downloadBtn").clicked.connect(self.currentStage.download)
-        self.currentStage.downloader.signals.finished.connect(self.unpackStageUi)
+        self.centralWidget().findChild(QPushButton, "downloadBtn").clicked.connect(self.downloadStage.download)
+        self.downloadStage.downloadUpdater.signals.finished.connect(self.unpackStageUi)
         logging.info('***Download phase initialized***')
 
     @pyqtSlot()
