@@ -14,3 +14,4 @@ Release
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
 resetApp.py
+.pytest_cache
