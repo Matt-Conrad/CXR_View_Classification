@@ -1,4 +1,5 @@
 import pytest
+from pytest_postgresql import factories
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from cxrConfigHandler import CxrConfigHandler
@@ -18,13 +19,29 @@ tgzRelPath = testDataRelPath + os.path.sep + tgzFilename
 dcmFolderRelPath = testDataRelPath + os.path.sep + dcmFolderName
 homePath = os.getcwd()
 
-@pytest.fixture(scope="class")
-def cxrConfigHandler():
-    return CxrConfigHandler(configRelPath)
+postgresql_my_proc = factories.postgresql_noproc(host="127.0.0.1", port=5432, user="postgres", password="postgres")
+postgresql_my = factories.postgresql('postgresql_my_proc', db_name="testDb")
 
 @pytest.fixture(scope="class")
-def databaseHandler():
-    configHandler = CxrConfigHandler(configRelPath)
+def cxrConfigHandler(tmpdir_factory):
+    os.chdir(homePath)
+    direct = tmpdir_factory.mktemp("cxrConfigHandler")
+    directPath = str(direct)
+    testConfigFullPath = directPath + os.path.sep + configFilename
+    shutil.copyfile(configRelPath, testConfigFullPath)
+    os.chdir(str(direct))
+    return CxrConfigHandler(testConfigFullPath)
+
+@pytest.fixture(scope="function")
+def databaseHandler(tmpdir_factory, postgresql_my): # Creates a new database for each test function
+    pgtest = postgresql_my
+    os.chdir(homePath)
+    direct = tmpdir_factory.mktemp("databaseHandler")
+    directPath = str(direct)
+    testConfigFullPath = directPath + os.path.sep + configFilename
+    shutil.copyfile(configRelPath, testConfigFullPath)
+    os.chdir(str(direct))
+    configHandler = CxrConfigHandler(testConfigFullPath)
     return DatabaseHandler(configHandler)
 
 @pytest.fixture(scope="class")

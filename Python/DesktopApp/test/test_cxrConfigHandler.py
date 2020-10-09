@@ -24,7 +24,7 @@ class TestCxrConfigHandler:
         expectedDbInfo = {
             "host": "127.0.0.1",
             "port": "5432",
-            "database": "db",
+            "database": "testDb",
             "user": "postgres",
             "password": "postgres",
         }
