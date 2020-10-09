@@ -6,8 +6,8 @@ class TestUnpackStage:
     @pytest.fixture(autouse=True)
     def initUnpackStage(self, unpackStage):
         self.unpackStage = unpackStage
+        os.chdir(self.unpackStage.unpacker.configHandler.getParentFolder())
 
-    # Test get functions
     def test_tgzExistsBeforeUnpack(self):
         assert os.path.isfile(self.unpackStage.unpacker.configHandler.getTgzFilename())
     
