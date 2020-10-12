@@ -15,10 +15,10 @@ class TestCxrConfigHandler:
         assert self.cxrConfigHandler.getParentFolder() == os.getcwd()
 
     def test_getCsvPath(self):
-        assert self.cxrConfigHandler.getCsvPath() == "../../miscellaneous/image_labels.csv"
+        assert self.cxrConfigHandler.getCsvPath() == "./image_labels.csv"
 
     def test_getColumnsInfoPath(self):
-        assert self.cxrConfigHandler.getColumnsInfoPath() == "../../miscellaneous/columns_info.json"
+        assert self.cxrConfigHandler.getColumnsInfoPath() == "./columns_info.json"
 
     def test_getDbInfo(self):
         expectedDbInfo = {
@@ -57,8 +57,8 @@ class TestCxrConfigHandler:
 
     def test_setCsvPath(self):
         self.cxrConfigHandler.setCsvPath()
-        assert self.cxrConfigHandler.getCsvPath() == "../../miscellaneous/image_labels.csv"
+        assert self.cxrConfigHandler.getCsvPath() == "./image_labels.csv"
 
     def test_setColumnsInfoPath(self):
         self.cxrConfigHandler.setColumnsInfoPath()
-        assert self.cxrConfigHandler.getColumnsInfoPath() == "../../miscellaneous/columns_info.json"
+        assert self.cxrConfigHandler.getColumnsInfoPath() == "./columns_info.json"

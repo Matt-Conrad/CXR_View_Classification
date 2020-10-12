@@ -1,5 +1,7 @@
 import logging
 import os
+import shutil
+import atexit
 import pydicom as pdm
 import cv2
 import numpy as np
@@ -20,7 +22,11 @@ from metadata_to_db.databaseHandler import DatabaseHandler
 class MainWindow(QMainWindow):
     """Contains GUI code for the application."""
     def __init__(self):
-        self.configHandler = CxrConfigHandler("../../miscellaneous/config.ini")
+        self.miscFiles = ["config.ini", "columns_info.json", "image_labels.csv"]
+        self.copyMiscFiles()
+        atexit.register(self.removeMiscFiles)
+
+        self.configHandler = CxrConfigHandler("./config.ini")
         self.configureLogging()
 
         logging.info('Constructing Main app')
@@ -36,6 +42,15 @@ class MainWindow(QMainWindow):
         self.show()
         
         logging.info('Done constructing Main app')
+
+    def copyMiscFiles(self):
+        miscFolderRelPath ="../../miscellaneous"
+        for miscFile in self.miscFiles:
+            shutil.copyfile(miscFolderRelPath + os.path.sep + miscFile, miscFile)
+
+    def removeMiscFiles(self):
+        for miscFile in self.miscFiles:
+            os.remove(miscFile)
 
     def fillWindow(self):
         """Fills the window with buttons."""

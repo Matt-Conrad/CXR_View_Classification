@@ -17,6 +17,8 @@ testDataRelPath = "./testData"
 configRelPath = testDataRelPath + os.path.sep + configFilename
 tgzRelPath = testDataRelPath + os.path.sep + tgzFilename
 dcmFolderRelPath = testDataRelPath + os.path.sep + dcmFolderName
+columnsInfoFilename = "columns_info.json"
+columnsInfoRelPath = testDataRelPath + os.path.sep + columnsInfoFilename
 homePath = os.getcwd()
 
 postgresql_my_proc = factories.postgresql_noproc(host="127.0.0.1", port=5432, user="postgres", password="postgres")
@@ -29,7 +31,7 @@ def cxrConfigHandler(tmpdir_factory):
     directPath = str(direct)
     testConfigFullPath = directPath + os.path.sep + configFilename
     shutil.copyfile(configRelPath, testConfigFullPath)
-    os.chdir(str(direct))
+    os.chdir(str(directPath))
     return CxrConfigHandler(testConfigFullPath)
 
 @pytest.fixture(scope="function")
@@ -40,7 +42,7 @@ def databaseHandler(tmpdir_factory, postgresql_my): # Creates a new database for
     directPath = str(direct)
     testConfigFullPath = directPath + os.path.sep + configFilename
     shutil.copyfile(configRelPath, testConfigFullPath)
-    os.chdir(str(direct))
+    os.chdir(str(directPath))
     configHandler = CxrConfigHandler(testConfigFullPath)
     return DatabaseHandler(configHandler)
 
@@ -51,7 +53,7 @@ def downloadStage(tmpdir_factory):
     directPath = str(direct)
     testConfigFullPath = directPath + os.path.sep + configFilename
     shutil.copyfile(configRelPath, testConfigFullPath)
-    os.chdir(str(direct))
+    os.chdir(str(directPath))
     configHandler = CxrConfigHandler(testConfigFullPath)
     return DownloadStage(configHandler)
 
@@ -67,15 +69,19 @@ def unpackStage(tmpdir_factory):
     configHandler = CxrConfigHandler(testConfigFullPath)
     return UnpackStage(configHandler)
 
-@pytest.fixture(scope="class")
-def storeStage():
-    configHandler = CxrConfigHandler(configRelPath)
+@pytest.fixture(scope="function")
+def storeStage(tmpdir_factory, postgresql_my):
+    pgtest = postgresql_my
+    os.chdir(homePath)
+    direct = tmpdir_factory.mktemp("storeStage")
+    directPath = str(direct)
+    testConfigFullPath = directPath + os.path.sep + configFilename
+    testColumnsInfoFullPath = directPath + os.path.sep + columnsInfoFilename
+    testDcmFolderFullPath = directPath + os.path.sep + dcmFolderName
+    shutil.copyfile(configRelPath, testConfigFullPath)
+    shutil.copyfile(columnsInfoRelPath, testColumnsInfoFullPath)
+    shutil.copytree(dcmFolderRelPath, testDcmFolderFullPath)
+    os.chdir(directPath)
+    configHandler = CxrConfigHandler(testConfigFullPath)
     dbHandler = DatabaseHandler(configHandler)
     return StoreStage(configHandler, dbHandler)
-
-# @pytest.fixture(scope="session")
-# def image_file(tmpdir_factory):
-#     img = compute_expensive_image()
-#     fn = tmpdir_factory.mktemp("data").join("img.png")
-#     img.save(str(fn))
-#     return fn
