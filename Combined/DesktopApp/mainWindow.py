@@ -36,6 +36,7 @@ class MainWindow(QMainWindow):
         self.unpackStage = UnpackStage(self.configHandler)
         self.storeStage = StoreStage(self.configHandler, self.dbHandler)
         self.featCalcStage = FeatCalcStage(self.configHandler, self.dbHandler)
+        self.trainStage = TrainStage(self.configHandler, self.dbHandler)
 
         self.fillWindow()
         self.initGuiState()
@@ -203,7 +204,7 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def trainStageUi(self):
         logging.info('Window initializing in Training phase')
-        self.currentStage = TrainStage(self.configHandler, self.dbHandler)
+        # self.currentStage = TrainStage(self.configHandler, self.dbHandler)
         
         self.widgetStack.setFixedSize(self.widgetStack.currentWidget().layout().sizeHint())
         self.setFixedSize(self.centralWidget().layout().sizeHint())
@@ -211,8 +212,8 @@ class MainWindow(QMainWindow):
         self.disableAllStageButtons()
         self.enableStageButton(5)
 
-        self.centralWidget().findChild(QPushButton, "classifyBtn").clicked.connect(self.currentStage.train)
-        self.connectToDashboard(self.currentStage.trainer.signals)
+        self.centralWidget().findChild(QPushButton, "classifyBtn").clicked.connect(self.trainStage.train)
+        self.connectToDashboard(self.trainStage.trainUpdater.signals)
         logging.info('***Training phase initialized***')
 
     ### HELPERS
