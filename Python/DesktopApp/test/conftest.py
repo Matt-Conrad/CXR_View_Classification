@@ -1,5 +1,8 @@
 import pytest
 from pytest_postgresql import factories
+import psycopg2
+import psycopg2.extras
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from cxrConfigHandler import CxrConfigHandler
@@ -7,18 +10,28 @@ from metadata_to_db.databaseHandler import DatabaseHandler
 from downloadStage import DownloadStage
 from unpackStage import UnpackStage
 from storeStage import StoreStage
+from featureCalculatorStage import FeatCalcStage
+from labelStage import LabelStage
 import shutil
 
 
 configFilename = "config.ini"
 tgzFilename = "NLMCXR_subset_dataset.tgz"
 dcmFolderName = tgzFilename.split(".")[0]
+columnsInfoFilename = "columns_info.json"
+imageMetadataBackupFilename = "image_metadata.sql"
+featuresBackupFilename = "features.sql"
+imageLabelsBackupFilename = "image_labels.sql"
 testDataRelPath = "./testData"
+
 configRelPath = testDataRelPath + os.path.sep + configFilename
 tgzRelPath = testDataRelPath + os.path.sep + tgzFilename
 dcmFolderRelPath = testDataRelPath + os.path.sep + dcmFolderName
-columnsInfoFilename = "columns_info.json"
 columnsInfoRelPath = testDataRelPath + os.path.sep + columnsInfoFilename
+imageMetadataBackupRelPath = testDataRelPath + os.path.sep + imageMetadataBackupFilename
+featuresBackupRelPath = testDataRelPath + os.path.sep + featuresBackupFilename
+imageLabelsBackupRelPath = testDataRelPath + os.path.sep + imageLabelsBackupFilename
+
 homePath = os.getcwd()
 
 postgresql_my_proc = factories.postgresql_noproc(host="127.0.0.1", port=5432, user="postgres", password="postgres")
@@ -85,3 +98,63 @@ def storeStage(tmpdir_factory, postgresql_my):
     configHandler = CxrConfigHandler(testConfigFullPath)
     dbHandler = DatabaseHandler(configHandler)
     return StoreStage(configHandler, dbHandler)
+
+@pytest.fixture(scope="function")
+def featCalcStage(tmpdir_factory, postgresql_my):
+    pgtest = postgresql_my
+    os.chdir(homePath)
+
+    params = {
+        "host": "127.0.0.1",
+        "port": 5432,
+        "database": "testDb",
+        "user": "postgres",
+        "password": "postgres"
+    }
+    connection = psycopg2.connect(**params)
+    connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+    cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cursor.execute(open(imageMetadataBackupRelPath, "r").read())
+
+    direct = tmpdir_factory.mktemp("featCalcStage")
+    directPath = str(direct)
+    testConfigFullPath = directPath + os.path.sep + configFilename
+    testColumnsInfoFullPath = directPath + os.path.sep + columnsInfoFilename
+    testDcmFolderFullPath = directPath + os.path.sep + dcmFolderName
+    shutil.copyfile(configRelPath, testConfigFullPath)
+    shutil.copyfile(columnsInfoRelPath, testColumnsInfoFullPath)
+    shutil.copytree(dcmFolderRelPath, testDcmFolderFullPath)
+    os.chdir(directPath)
+    configHandler = CxrConfigHandler(testConfigFullPath)
+    dbHandler = DatabaseHandler(configHandler)
+
+    return FeatCalcStage(configHandler, dbHandler)
+
+@pytest.fixture(scope="function")
+def labelStage(tmpdir_factory, postgresql_my):
+    pgtest = postgresql_my
+    os.chdir(homePath)
+
+    params = {
+        "host": "127.0.0.1",
+        "port": 5432,
+        "database": "testDb",
+        "user": "postgres",
+        "password": "postgres"
+    }
+    connection = psycopg2.connect(**params)
+    connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+    cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cursor.execute(open(imageMetadataBackupRelPath, "r").read())
+    cursor.execute(open(featuresBackupRelPath, "r").read())
+
+    direct = tmpdir_factory.mktemp("labelStage")
+    directPath = str(direct)
+    testConfigFullPath = directPath + os.path.sep + configFilename
+    testColumnsInfoFullPath = directPath + os.path.sep + columnsInfoFilename
+    shutil.copyfile(configRelPath, testConfigFullPath)
+    shutil.copyfile(columnsInfoRelPath, testColumnsInfoFullPath)
+    os.chdir(directPath)
+    configHandler = CxrConfigHandler(testConfigFullPath)
+    dbHandler = DatabaseHandler(configHandler)
+    return LabelStage(configHandler, dbHandler)

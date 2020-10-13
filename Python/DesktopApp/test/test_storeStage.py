@@ -1,7 +1,6 @@
 import pytest
 import os
 from expectedSizes import EXPECTED_SIZES, EXPECTED_NUM_FILES
-import time
     
 def countDcms(folderName):
     return sum([len(files) for r, d, files in os.walk(folderName) if any(item.endswith('.dcm') for item in files)])
