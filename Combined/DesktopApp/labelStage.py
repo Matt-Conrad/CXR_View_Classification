@@ -3,6 +3,7 @@ import os
 import json
 from PyQt5.QtCore import pyqtSlot
 from stage import Stage, Runnable
+from ctypes import cdll
 
 class LabelStage(Stage):
     """Downloads datasets from online sources."""
@@ -23,6 +24,10 @@ class LabelStage(Stage):
         """Class for importing image labels from CSV."""
         def __init__(self, configHandler, dbHandler):
             Runnable.__init__(self, configHandler, dbHandler)
+
+            self.lib = cdll.LoadLibrary("./src/liblabelimporter.so")
+            
+            self.obj = self.lib.LabelImporter_new()
         
         @pyqtSlot()
         def run(self):
@@ -31,26 +36,12 @@ class LabelStage(Stage):
             self.signals.attemptUpdateProBarValue.emit(0)
             self.signals.attemptUpdateText.emit("Importing label data")
 
-            self.dbHandler.addTableToDb(self.configHandler.getTableName('label'), self.configHandler.getColumnsInfoPath(), "nonElementColumns", 'labels')
-            self.importImageLabelData()
+            self.lib.LabelImporter_run(self.obj)
             
             self.signals.attemptUpdateProBarValue.emit(1)
             self.signals.attemptUpdateText.emit("Done importing")
             self.signals.finished.emit()
             logging.info("Done importing label data")
-
-        def importImageLabelData(self):
-            with open(self.configHandler.getColumnsInfoPath()) as fileReader:
-                elementsJson = json.load(fileReader)
-            elements = elementsJson['labels']
-
-            sqlQuery = 'COPY ' + self.configHandler.getTableName('label') + '(file_name, file_path, '
-            for elementName in elements:
-                if not elements[elementName]['calculation_only']:
-                    sqlQuery = sqlQuery + elementName + ','
-            sqlQuery = sqlQuery[:-1] + ') FROM \'' + self.configHandler.getParentFolder() + "/" + self.configHandler.getCsvPath() + '\' DELIMITER \',\' CSV HEADER;'
-            self.dbHandler.executeQuery(self.dbHandler.connection, sqlQuery)
-            self.dbHandler.countRecords(self.configHandler.getTableName('label'))
 
     class ManualLabeler(Runnable):
         """Class used to assist in labeling the data."""

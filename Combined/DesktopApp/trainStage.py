@@ -13,12 +13,10 @@ class TrainStage(Stage):
     def __init__(self, configHandler, dbHandler):
         Stage.__init__(self)
         self.trainer = self.Trainer(configHandler, dbHandler)
-        self.trainUpdater = self.TrainUpdater(configHandler, dbHandler)
 
     @pyqtSlot()
     def train(self):
         self.threadpool.start(self.trainer)
-        self.threadpool.start(self.trainUpdater)
 
     class Trainer(Runnable):
         """Class that trains a SVM using the feature vectors and labels, then calculates the accuracy using the test set."""
@@ -31,28 +29,15 @@ class TrainStage(Stage):
 
         @pyqtSlot()
         def run(self):
-            self.lib.Trainer_run(self.obj)
-            
-
-    class TrainUpdater(Runnable):
-        def __init__(self, configHandler, dbHandler):
-            Runnable.__init__(self, configHandler, dbHandler)
-            self.featTableName = self.configHandler.getTableName("features")
-
-        @pyqtSlot()
-        def run(self):
             self.signals.attemptUpdateText.emit("Training classifier")
             self.signals.attemptUpdateProBarBounds.emit(0, self.expectedNumFiles)
             self.signals.attemptUpdateProBarValue.emit(0)
 
-            # TODO: Have python update GUI somehow
+            self.lib.Trainer_run(self.obj)
 
-            # while not self.dbHandler.tableExists(self.featTableName):
-            #     pass
-
-            # while self.dbHandler.countRecords(self.featTableName) != self.expectedNumFiles:
-            #     self.signals.attemptUpdateProBarValue.emit(self.dbHandler.countRecords(self.featTableName))
+            self.signals.attemptUpdateText.emit('K-Fold Cross Validation Accuracy: Placeholder')
+            self.signals.attemptUpdateProBarValue.emit(self.expectedNumFiles)
+            self.signals.finished.emit()
+            
                 
-            # self.signals.attemptUpdateText.emit('K-Fold Cross Validation Accuracy: ' + str(accuracy))
-            # self.signals.attemptUpdateProBarValue.emit(self.expectedNumFiles)
-            # self.signals.finished.emit()
+            

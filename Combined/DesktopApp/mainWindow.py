@@ -36,6 +36,7 @@ class MainWindow(QMainWindow):
         self.unpackStage = UnpackStage(self.configHandler)
         self.storeStage = StoreStage(self.configHandler, self.dbHandler)
         self.featCalcStage = FeatCalcStage(self.configHandler, self.dbHandler)
+        self.labelStage = LabelStage(self.configHandler, self.dbHandler)
         self.trainStage = TrainStage(self.configHandler, self.dbHandler)
 
         self.fillWindow()
@@ -184,21 +185,21 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def labelStageUi(self):
         logging.info('Window initializing in Labeling phase')
-        self.currentStage = LabelStage(self.configHandler, self.dbHandler)
+        # self.currentStage = LabelStage(self.configHandler, self.dbHandler)
         
         self.disableAllStageButtons()
         self.enableStageButton(4)
 
-        self.connectToDashboard(self.currentStage.labeler.signals)
+        self.connectToDashboard(self.labelStage.labeler.signals)
 
         if self.configHandler.getDatasetType() == 'subset':
             self.centralWidget().findChild(QPushButton, "labelBtn").clicked.connect(lambda: self.widgetStack.setCurrentIndex(1))
-            self.widgetStack.findChild(QPushButton, "frontalBtn").clicked.connect(self.currentStage.labeler.frontal)
-            self.widgetStack.findChild(QPushButton, "lateralBtn").clicked.connect(self.currentStage.labeler.lateral)
-            self.currentStage.labeler.signals.finished.connect(lambda: self.widgetStack.setCurrentIndex(0))
+            self.widgetStack.findChild(QPushButton, "frontalBtn").clicked.connect(self.labelStage.labeler.frontal)
+            self.widgetStack.findChild(QPushButton, "lateralBtn").clicked.connect(self.labelStage.labeler.lateral)
+            self.labelStage.labeler.signals.finished.connect(lambda: self.widgetStack.setCurrentIndex(0))
 
-        self.centralWidget().findChild(QPushButton, "labelBtn").clicked.connect(self.currentStage.label)
-        self.currentStage.labeler.signals.finished.connect(self.trainStageUi)
+        self.centralWidget().findChild(QPushButton, "labelBtn").clicked.connect(self.labelStage.label)
+        self.labelStage.labeler.signals.finished.connect(self.trainStageUi)
         logging.info('***Labeling phase initialized***')
 
     @pyqtSlot()
@@ -213,7 +214,7 @@ class MainWindow(QMainWindow):
         self.enableStageButton(5)
 
         self.centralWidget().findChild(QPushButton, "classifyBtn").clicked.connect(self.trainStage.train)
-        self.connectToDashboard(self.trainStage.trainUpdater.signals)
+        self.connectToDashboard(self.trainStage.trainer.signals)
         logging.info('***Training phase initialized***')
 
     ### HELPERS
