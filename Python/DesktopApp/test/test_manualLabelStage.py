@@ -5,17 +5,17 @@ from labelStage import LabelStage
 from PyQt5.QtCore import QRunnable, QThreadPool
 import time
 
-def countDcms(folderName):
-    return sum([len(files) for r, d, files in os.walk(folderName) if any(item.endswith('.dcm') for item in files)])
-
 class TestManualLabelStage:
     threadpool = QThreadPool()
 
     @pytest.fixture(autouse=True)
-    def initLabelStageStage(self, labelStage):
-        self.labelStage = labelStage
+    def initLabelStage(self, manualLabelStage):
+        self.labelStage = manualLabelStage
         self.labelBot = LabelBot(self.labelStage)
         os.chdir(self.labelStage.labeler.configHandler.getParentFolder())
+
+    def test_labelerIsManualLabeler(self):
+        assert isinstance(self.labelStage.labeler, LabelStage.ManualLabeler)
 
     def test_dbExists(self):
         assert self.labelStage.labeler.dbHandler.dbExists(self.labelStage.labeler.configHandler.getDbInfo()["database"])
@@ -28,9 +28,6 @@ class TestManualLabelStage:
 
     def test_labelTableNotExists(self):
         assert not self.labelStage.labeler.dbHandler.tableExists(self.labelStage.labeler.configHandler.getTableName("label"))
-
-    def test_labelerIsManualLabeler(self):
-        assert isinstance(self.labelStage.labeler, LabelStage.ManualLabeler)
 
     def test_manualLabeler(self):
         self.threadpool.start(self.labelStage.labeler)
