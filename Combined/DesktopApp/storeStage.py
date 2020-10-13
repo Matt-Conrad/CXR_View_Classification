@@ -1,7 +1,7 @@
 from stage import Stage, Runnable
 from PyQt5.QtCore import pyqtSlot
 from metadata_to_db.dicomToDb import DicomToDatabase
-from ctypes import cdll, c_char_p
+from ctypes import cdll
 
 class StoreStage(Stage):
     def __init__(self, configHandler, dbHandler):

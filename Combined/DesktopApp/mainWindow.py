@@ -35,6 +35,7 @@ class MainWindow(QMainWindow):
         self.downloadStage = DownloadStage(self.configHandler)
         self.unpackStage = UnpackStage(self.configHandler)
         self.storeStage = StoreStage(self.configHandler, self.dbHandler)
+        self.featCalcStage = FeatCalcStage(self.configHandler, self.dbHandler)
 
         self.fillWindow()
         self.initGuiState()
@@ -168,15 +169,15 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def calcFeatStageUi(self):
         logging.info('Window initializing in Feature Calculation phase')
-        self.currentStage = FeatCalcStage(self.configHandler, self.dbHandler)
+        # self.currentStage = FeatCalcStage(self.configHandler, self.dbHandler)
 
         self.disableAllStageButtons()
         self.enableStageButton(3)
 
-        self.connectToDashboard(self.currentStage.featureCalculator.signals)
+        self.connectToDashboard(self.featCalcStage.featCalcUpdater.signals)
 
-        self.centralWidget().findChild(QPushButton, "featureBtn").clicked.connect(self.currentStage.calculateFeatures)
-        self.currentStage.featureCalculator.signals.finished.connect(self.labelStageUi)
+        self.centralWidget().findChild(QPushButton, "featureBtn").clicked.connect(self.featCalcStage.calculateFeatures)
+        self.featCalcStage.featCalcUpdater.signals.finished.connect(self.labelStageUi)
         logging.info('***Feature Calculation phase initialized***')
 
     @pyqtSlot()
