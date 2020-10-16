@@ -49,15 +49,30 @@ class TrainStage(Stage):
             
             logging.debug("Splitting dataset and cross validating SVM for accuracy of classifier")
 
-            XTrain, XTest, yTrain, yTest, fileNamesTrain, fileNamesTest = train_test_split(X, y, fileNames, test_size=1/3, shuffle=True)
+            numTrainSamples = round(2/3 * len(y))
+            numTestSamples = len(y) - numTrainSamples
 
+            XTrain, XTest, yTrain, yTest, fileNamesTest = None, None, None, None, None
+            flag = True
+            while flag:
+                XTrain, XTest, yTrain, yTest, _, fileNamesTest = train_test_split(X, y, fileNames, test_size=numTestSamples, shuffle=True)
+                # For the subset dataset, if yTrain has only 1 of 'L' or 'F' in the set then the KFold will create a 
+                # training set that has only 1 class, which creates a score of NaN and therefore an accuracy of NaN.
+                # So here, I am reshuffling until yTrain has at least 2 of each class.
+                # TODO: Must try to avoid this 1-class training set with the full_set dataset to.
+                if yTrain.count('L') != 1 and yTrain.count('F') != 1: 
+                    flag = False
+                
             clf = svm.SVC(kernel='linear')
+
             nSplits = 10
-            if len(XTrain) < nSplits:
-                kf = KFold(n_splits=len(XTrain), shuffle=True)
-            else:
+            if numTrainSamples < nSplits: # Subset
+                kf = KFold(n_splits=numTrainSamples, shuffle=True)
+            else: # Full set
                 kf = KFold(n_splits=nSplits, shuffle=True)
-            scores = cross_val_score(clf, XTrain, yTrain, cv=kf, scoring='accuracy')
+
+            # TODO: Investigate why sometimes there's a NaN in scores
+            scores = cross_val_score(clf, XTrain, yTrain, cv=kf, scoring='accuracy') 
 
             accuracy = np.mean(scores)
 

@@ -12,7 +12,7 @@ class TestDownloadStage:
         assert not os.path.isfile(os.getcwd() + os.path.sep + self.downloadStage.downloader.configHandler.getTgzFilename())
 
     def test_getTgzSizeBeforeDownload(self):
-        assert self.downloadStage.downloader.getTgzSize() == 0
+        assert self.downloadStage.downloader.getTgzSize() is None
 
     def test_download(self):
         self.downloadStage.downloader.run()

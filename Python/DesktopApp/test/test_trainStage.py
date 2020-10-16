@@ -2,6 +2,7 @@ import pytest
 import os
 from expectedSizes import EXPECTED_SIZES, EXPECTED_NUM_FILES
 from PyQt5.QtCore import QObject, pyqtSlot
+import numpy as np
 
 class TestTrainStage:
     @pytest.fixture(autouse=True)

@@ -61,13 +61,16 @@ class DownloadStage(Stage):
 
         def getTgzSize(self):
             """Calculates the size of the TGZ file."""
+            try:
+                preAdjustedSize = os.path.getsize(self.filenameRelPath)
+            except FileNotFoundError:
+                return None
+
             if self.datasetType == 'full_set':
                 # Dividing by 100 because the expected size of this TGZ is larger than QProgressBar accepts
-                return int(os.path.getsize(self.filenameRelPath) / 100)
+                return int(preAdjustedSize / 100)
             elif self.datasetType == 'subset':
-                return os.path.getsize(self.filenameRelPath)
-            else:
-                raise ValueError('Value must be one of the keys in SOURCE_URL')
+                return preAdjustedSize
 
         def getTgzMax(self):
             """Calculates the size of the TGZ file max."""
@@ -76,5 +79,3 @@ class DownloadStage(Stage):
                 return int(self.expectedSize / 100)
             elif self.datasetType== 'subset':
                 return self.expectedSize
-            else:
-                raise ValueError('Value must be one of the keys in SOURCE_URL')
