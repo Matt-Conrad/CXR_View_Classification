@@ -6,17 +6,16 @@ class TestDownloadStage:
     @pytest.fixture(autouse=True)
     def initDownloadStage(self, downloadStage):
         self.downloadStage = downloadStage
-        os.chdir(self.downloadStage.downloader.configHandler.getParentFolder())
 
     def test_noTgzBeforeDownload(self):
-        assert not os.path.isfile(os.getcwd() + os.path.sep + self.downloadStage.downloader.configHandler.getTgzFilename())
+        assert not os.path.isfile(self.downloadStage.downloader.configHandler.getTgzFilePath())
 
     def test_getTgzSizeBeforeDownload(self):
         assert self.downloadStage.downloader.getTgzSize() is None
 
     def test_download(self):
         self.downloadStage.downloader.run()
-        assert os.path.isfile(self.downloadStage.downloader.configHandler.getTgzFilename())
+        assert os.path.isfile(self.downloadStage.downloader.configHandler.getTgzFilePath())
 
     def test_getTgzSizeAfterDownload(self):
         assert self.downloadStage.downloader.getTgzSize() == EXPECTED_SIZES["subset"]

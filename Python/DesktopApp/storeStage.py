@@ -21,7 +21,7 @@ class StoreStage(Stage):
         @pyqtSlot()
         def run(self):
             metaTableName = self.configHandler.getTableName("metadata")
-            columnsInfoPath = self.configHandler.getColumnsInfoPath()
+            columnsInfoPath = self.configHandler.getColumnsInfoFullPath()
 
             if not self.dbHandler.tableExists(metaTableName):
                 self.dbHandler.addTableToDb(metaTableName, columnsInfoPath, "nonElementColumns", "elements")
@@ -31,7 +31,6 @@ class StoreStage(Stage):
     class StoreUpdater(Runnable):
         def __init__(self, configHandler, dbHandler):
             Runnable.__init__(self, configHandler, dbHandler)
-            self.folderRelPath = "./" + configHandler.getDatasetName()
 
         @pyqtSlot()
         def run(self):

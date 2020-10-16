@@ -42,63 +42,48 @@ postgresql_my = factories.postgresql('postgresql_my_proc', db_name="testDb")
 
 @pytest.fixture(scope="class")
 def cxrConfigHandler(tmpdir_factory):
-    os.chdir(homePath)
     direct = tmpdir_factory.mktemp("cxrConfigHandler")
-    directPath = str(direct)
-    testConfigFullPath = directPath + os.path.sep + configFilename
+    testConfigFullPath = os.path.join(str(direct), configFilename)
     shutil.copyfile(configRelPath, testConfigFullPath)
-    os.chdir(str(directPath))
     return CxrConfigHandler(testConfigFullPath)
 
 @pytest.fixture(scope="function")
 def databaseHandler(tmpdir_factory, postgresql_my): # Creates a new database for each test function
     pgtest = postgresql_my
-    os.chdir(homePath)
     direct = tmpdir_factory.mktemp("databaseHandler")
-    directPath = str(direct)
-    testConfigFullPath = directPath + os.path.sep + configFilename
+    testConfigFullPath = os.path.join(str(direct), configFilename)
     shutil.copyfile(configRelPath, testConfigFullPath)
-    os.chdir(str(directPath))
     configHandler = CxrConfigHandler(testConfigFullPath)
     return DatabaseHandler(configHandler)
 
 @pytest.fixture(scope="class")
 def downloadStage(tmpdir_factory):
-    os.chdir(homePath)
     direct = tmpdir_factory.mktemp("downloadStage")
-    directPath = str(direct)
-    testConfigFullPath = directPath + os.path.sep + configFilename
+    testConfigFullPath = os.path.join(str(direct), configFilename)
     shutil.copyfile(configRelPath, testConfigFullPath)
-    os.chdir(str(directPath))
     configHandler = CxrConfigHandler(testConfigFullPath)
     return DownloadStage(configHandler)
 
 @pytest.fixture(scope="class")
 def unpackStage(tmpdir_factory):
-    os.chdir(homePath)
     direct = tmpdir_factory.mktemp("unpackStage")
-    directPath = str(direct)
-    testConfigFullPath = directPath + os.path.sep + configFilename
+    testConfigFullPath = os.path.join(str(direct), configFilename)
     shutil.copyfile(configRelPath, testConfigFullPath)
-    shutil.copyfile(tgzRelPath, directPath + os.path.sep + tgzFilename)
-    os.chdir(directPath)
     configHandler = CxrConfigHandler(testConfigFullPath)
+    shutil.copyfile(tgzRelPath, configHandler.getTgzFilePath())
     return UnpackStage(configHandler)
 
 @pytest.fixture(scope="function")
 def storeStage(tmpdir_factory, postgresql_my):
     pgtest = postgresql_my
-    os.chdir(homePath)
     direct = tmpdir_factory.mktemp("storeStage")
-    directPath = str(direct)
-    testConfigFullPath = directPath + os.path.sep + configFilename
-    testColumnsInfoFullPath = directPath + os.path.sep + columnsInfoFilename
-    testDcmFolderFullPath = directPath + os.path.sep + dcmFolderName
+    testConfigFullPath = os.path.join(str(direct), configFilename)
     shutil.copyfile(configRelPath, testConfigFullPath)
-    shutil.copyfile(columnsInfoRelPath, testColumnsInfoFullPath)
-    shutil.copytree(dcmFolderRelPath, testDcmFolderFullPath)
-    os.chdir(directPath)
     configHandler = CxrConfigHandler(testConfigFullPath)
+
+    shutil.copyfile(columnsInfoRelPath, configHandler.getColumnsInfoFullPath())
+    shutil.copytree(dcmFolderRelPath, configHandler.getUnpackFolderPath())
+    
     dbHandler = DatabaseHandler(configHandler)
     return StoreStage(configHandler, dbHandler)
 

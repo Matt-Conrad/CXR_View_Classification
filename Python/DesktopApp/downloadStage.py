@@ -17,29 +17,29 @@ class DownloadStage(Stage):
     class Downloader(Runnable):
         def __init__(self, configHandler):
             Runnable.__init__(self, configHandler)
-            self.filenameRelPath = "./" + configHandler.getTgzFilename()
+            self.tgzFilePath = configHandler.getTgzFilePath()
             self.datasetType = configHandler.getDatasetType()
 
         @pyqtSlot()
         def run(self):
-            logging.info('Checking if %s already exists', self.filenameRelPath)
-            if os.path.isfile(self.filenameRelPath):
-                logging.info('%s already exists', self.filenameRelPath)
-                logging.info('Checking if %s was downloaded properly', self.filenameRelPath)
+            logging.info('Checking if %s already exists', self.tgzFilePath)
+            if os.path.isfile(self.tgzFilePath):
+                logging.info('%s already exists', self.tgzFilePath)
+                logging.info('Checking if %s was downloaded properly', self.tgzFilePath)
                 
-                if os.path.getsize(self.filenameRelPath) == self.expectedSize:
-                    logging.info('%s was downloaded properly', self.filenameRelPath)
+                if os.path.getsize(self.tgzFilePath) == self.expectedSize:
+                    logging.info('%s was downloaded properly', self.tgzFilePath)
                     self.signals.attemptUpdateProBarValue.emit(self.getTgzSize())
                     self.signals.attemptUpdateText.emit("Image download complete")
                     self.signals.finished.emit()
                 else:
-                    logging.warning('%s was NOT downloaded properly', self.filenameRelPath)
-                    logging.info('Removing %s', self.filenameRelPath)
-                    os.remove(self.filenameRelPath)
-                    logging.info('Successfully removed %s', self.filenameRelPath)
+                    logging.warning('%s was NOT downloaded properly', self.tgzFilePath)
+                    logging.info('Removing %s', self.tgzFilePath)
+                    os.remove(self.tgzFilePath)
+                    logging.info('Successfully removed %s', self.tgzFilePath)
                     self.downloadDataset()
             else:
-                logging.info('%s does not exist', self.filenameRelPath)
+                logging.info('%s does not exist', self.tgzFilePath)
                 self.downloadDataset()
 
         def downloadDataset(self):
@@ -51,7 +51,7 @@ class DownloadStage(Stage):
 
             with requests.get(self.configHandler.getUrl(), stream=True) as r:
                 r.raise_for_status() # Raise error if something goes wrong with connection
-                with open(self.filenameRelPath, 'wb') as f:
+                with open(self.tgzFilePath, 'wb') as f:
                     for chunk in r.iter_content(chunk_size=8192):
                         if chunk: # filter out keep-alive new chunks
                             self.signals.attemptUpdateProBarValue.emit(self.getTgzSize())
@@ -62,7 +62,7 @@ class DownloadStage(Stage):
         def getTgzSize(self):
             """Calculates the size of the TGZ file."""
             try:
-                preAdjustedSize = os.path.getsize(self.filenameRelPath)
+                preAdjustedSize = os.path.getsize(self.tgzFilePath)
             except FileNotFoundError:
                 return None
 

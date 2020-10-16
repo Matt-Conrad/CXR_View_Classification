@@ -1,8 +1,6 @@
 import pytest
 import psycopg2
 import psycopg2.extensions
-import os, sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 class TestDatabaseHandler:
     @pytest.fixture(autouse=True)
