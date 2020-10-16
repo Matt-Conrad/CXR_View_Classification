@@ -12,7 +12,7 @@ class CxrConfigHandler(ConfigHandler):
     def prepConfigIni(self):
         self.setUrl(SOURCE_URL[self.getDatasetType()])
         self.setParentFolder()
-        self.setCsvPath()
+        self.setCsvName()
         self.setColumnsInfoName()
 
     # Getters 
@@ -22,8 +22,11 @@ class CxrConfigHandler(ConfigHandler):
     def getParentFolder(self):
         return self.getSetting('misc', "parent_folder")
 
+    def getCsvName(self):
+        return self.getSetting("misc","csv_filename")
+
     def getCsvPath(self):
-        return self.getSetting("misc","csv_relative_path")
+        return os.path.join(self.getParentFolder(), self.getCsvName())
 
     def getColumnsInfoName(self):
         return self.getSetting("misc", 'columns_info_name')
@@ -62,8 +65,8 @@ class CxrConfigHandler(ConfigHandler):
     def setParentFolder(self):
         self.setSetting("misc", "parent_folder", os.path.dirname(self.getConfigFilePath()))
 
-    def setCsvPath(self):
-        self.setSetting("misc", "csv_relative_path", "./image_labels.csv")
+    def setCsvName(self):
+        self.setSetting("misc", "csv_filename", "image_labels.csv")
 
     def setColumnsInfoName(self):
         self.setSetting("misc", "columns_info_name", "columns_info.json")

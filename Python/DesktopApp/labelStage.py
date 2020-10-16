@@ -27,11 +27,11 @@ class LabelStage(Stage):
         @pyqtSlot()
         def run(self):
             logging.info("Importing label data from CSV")
-            self.signals.attemptUpdateProBarBounds.emit(0,1)
+            self.signals.attemptUpdateProBarBounds.emit(0, 1)
             self.signals.attemptUpdateProBarValue.emit(0)
             self.signals.attemptUpdateText.emit("Importing label data")
 
-            self.dbHandler.addTableToDb(self.configHandler.getTableName('label'), self.configHandler.getColumnsInfoPath(), "nonElementColumns", 'labels')
+            self.dbHandler.addTableToDb(self.configHandler.getTableName('label'), self.configHandler.getColumnsInfoFullPath(), "nonElementColumns", 'labels')
             self.importImageLabelData()
             
             self.signals.attemptUpdateProBarValue.emit(1)
@@ -40,7 +40,7 @@ class LabelStage(Stage):
             logging.info("Done importing label data")
 
         def importImageLabelData(self):
-            with open(self.configHandler.getColumnsInfoPath()) as fileReader:
+            with open(self.configHandler.getColumnsInfoFullPath()) as fileReader:
                 elementsJson = json.load(fileReader)
             elements = elementsJson['labels']
 
@@ -48,7 +48,7 @@ class LabelStage(Stage):
             for elementName in elements:
                 if not elements[elementName]['calculation_only']:
                     sqlQuery = sqlQuery + elementName + ','
-            sqlQuery = sqlQuery[:-1] + ') FROM \'' + self.configHandler.getParentFolder() + "/" + self.configHandler.getCsvPath() + '\' DELIMITER \',\' CSV HEADER;'
+            sqlQuery = sqlQuery[:-1] + ') FROM \'' + self.configHandler.getCsvPath() + '\' DELIMITER \',\' CSV HEADER;'
             self.dbHandler.executeQuery(self.dbHandler.connection, sqlQuery)
             self.dbHandler.countRecords(self.configHandler.getTableName('label'))
 
@@ -70,7 +70,7 @@ class LabelStage(Stage):
             self.signals.attemptUpdateText.emit("Please manually label images")
             self.signals.attemptUpdateProBarBounds.emit(0, self.expectedNumFiles)
 
-            self.dbHandler.addTableToDb(self.configHandler.getTableName('label'), self.configHandler.getColumnsInfoPath(), "nonElementColumns", 'labels')
+            self.dbHandler.addTableToDb(self.configHandler.getTableName('label'), self.configHandler.getColumnsInfoFullPath(), "nonElementColumns", 'labels')
             
             self.displayNextImage()
 

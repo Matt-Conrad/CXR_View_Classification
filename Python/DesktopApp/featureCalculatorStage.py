@@ -28,7 +28,7 @@ class FeatCalcStage(Stage):
             
             sqlQuery = 'SELECT * FROM ' + self.configHandler.getTableName("metadata") + ';'
             records = self.dbHandler.executeQuery(self.dbHandler.connection, sqlQuery).fetchall()
-            self.dbHandler.addTableToDb(self.featTableName, self.configHandler.getColumnsInfoPath(), "nonElementColumns", 'features_list')
+            self.dbHandler.addTableToDb(self.featTableName, self.configHandler.getColumnsInfoFullPath(), "nonElementColumns", 'features_list')
 
             self.signals.attemptUpdateText.emit('Calculating features')
             self.signals.attemptUpdateProBarBounds.emit(0, self.expectedNumFiles)
@@ -37,9 +37,10 @@ class FeatCalcStage(Stage):
             count = 0
             for record in records:
                 filePath = record['file_path']
+                fileFullPath = os.path.join(self.configHandler.getParentFolder(), filePath)
                 count += 1
-                logging.debug('Calculating for image number: %s File: %s', str(count), filePath)
-                image = pdm.dcmread(filePath).pixel_array
+                logging.debug('Calculating for image number: %s File: %s', str(count), fileFullPath)
+                image = pdm.dcmread(fileFullPath).pixel_array
                 
                 image = preprocessing(image, record['bits_stored'], record['photometric_interpretation'])
 

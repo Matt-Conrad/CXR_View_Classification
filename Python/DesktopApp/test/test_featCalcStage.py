@@ -1,7 +1,6 @@
 import pytest
 import os
-from expectedSizes import EXPECTED_SIZES, EXPECTED_NUM_FILES
-import time
+from expectedSizes import EXPECTED_NUM_FILES
 
 def countDcms(folderName):
     return sum([len(files) for r, d, files in os.walk(folderName) if any(item.endswith('.dcm') for item in files)])
@@ -10,10 +9,9 @@ class TestFeatCalcStage:
     @pytest.fixture(autouse=True)
     def initFeatCalcStage(self, featCalcStage):
         self.featCalcStage = featCalcStage
-        os.chdir(self.featCalcStage.featureCalculator.configHandler.getParentFolder())
 
     def test_tgzUnpackedBeforeStore(self):
-        folderName = self.featCalcStage.featureCalculator.configHandler.getDatasetName()
+        folderName = self.featCalcStage.featureCalculator.configHandler.getUnpackFolderPath()
         assert countDcms(folderName) == EXPECTED_NUM_FILES["subset"]
 
     def test_dbExists(self):

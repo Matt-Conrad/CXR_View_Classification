@@ -14,7 +14,10 @@ class TestCxrConfigHandler:
         assert self.cxrConfigHandler.getParentFolder() == os.path.dirname(self.cxrConfigHandler.getConfigFilePath())
 
     def test_getCsvPath(self):
-        assert self.cxrConfigHandler.getCsvPath() == "./image_labels.csv"
+        assert self.cxrConfigHandler.getCsvPath() == os.path.join(self.cxrConfigHandler.getParentFolder(),"image_labels.csv")
+
+    def test_getCsvName(self):
+        assert self.cxrConfigHandler.getCsvName() == "image_labels.csv"
 
     def test_getColumnsInfoName(self):
         assert self.cxrConfigHandler.getColumnsInfoName() == "columns_info.json"
@@ -60,9 +63,9 @@ class TestCxrConfigHandler:
         self.cxrConfigHandler.setParentFolder()
         assert self.cxrConfigHandler.getParentFolder() == os.path.dirname(self.cxrConfigHandler.getConfigFilePath())
 
-    def test_setCsvPath(self):
-        self.cxrConfigHandler.setCsvPath()
-        assert self.cxrConfigHandler.getCsvPath() == "./image_labels.csv"
+    def test_setCsvName(self):
+        self.cxrConfigHandler.setCsvName()
+        assert self.cxrConfigHandler.getCsvName() == "image_labels.csv"
 
     def test_setColumnsInfoName(self):
         self.cxrConfigHandler.setColumnsInfoName()

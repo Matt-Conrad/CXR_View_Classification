@@ -1,6 +1,4 @@
 import pytest
-import psycopg2
-import psycopg2.extensions
 
 class TestDatabaseHandler:
     @pytest.fixture(autouse=True)

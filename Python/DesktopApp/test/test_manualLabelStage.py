@@ -1,6 +1,5 @@
 import pytest
-import os
-from expectedSizes import EXPECTED_SIZES, EXPECTED_NUM_FILES
+from expectedSizes import EXPECTED_NUM_FILES
 from labelStage import LabelStage
 from PyQt5.QtCore import QRunnable, QThreadPool
 import time
@@ -12,7 +11,6 @@ class TestManualLabelStage:
     def initLabelStage(self, manualLabelStage):
         self.labelStage = manualLabelStage
         self.labelBot = LabelBot(self.labelStage)
-        os.chdir(self.labelStage.labeler.configHandler.getParentFolder())
 
     def test_labelerIsManualLabeler(self):
         assert isinstance(self.labelStage.labeler, LabelStage.ManualLabeler)

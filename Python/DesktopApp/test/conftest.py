@@ -1,8 +1,5 @@
 import pytest
 from pytest_postgresql import factories
-import psycopg2
-import psycopg2.extras
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from cxrConfigHandler import CxrConfigHandler
@@ -26,16 +23,14 @@ featuresBackupFilename = "features.sql"
 imageLabelsBackupFilename = "image_labels.sql"
 testDataRelPath = "./testData"
 
-configRelPath = testDataRelPath + os.path.sep + configFilename
-tgzRelPath = testDataRelPath + os.path.sep + tgzFilename
-dcmFolderRelPath = testDataRelPath + os.path.sep + dcmFolderName
-columnsInfoRelPath = testDataRelPath + os.path.sep + columnsInfoFilename
-csvRelPath = testDataRelPath + os.path.sep + csvFilename
-imageMetadataBackupRelPath = testDataRelPath + os.path.sep + imageMetadataBackupFilename
-featuresBackupRelPath = testDataRelPath + os.path.sep + featuresBackupFilename
-imageLabelsBackupRelPath = testDataRelPath + os.path.sep + imageLabelsBackupFilename
-
-homePath = os.getcwd()
+configRelPath = os.path.join(testDataRelPath, configFilename)
+tgzRelPath = os.path.join(testDataRelPath, tgzFilename)
+dcmFolderRelPath = os.path.join(testDataRelPath, dcmFolderName)
+columnsInfoRelPath = os.path.join(testDataRelPath, columnsInfoFilename)
+csvRelPath = os.path.join(testDataRelPath, csvFilename)
+imageMetadataBackupRelPath = os.path.join(testDataRelPath, imageMetadataBackupFilename)
+featuresBackupRelPath = os.path.join(testDataRelPath, featuresBackupFilename)
+imageLabelsBackupRelPath = os.path.join(testDataRelPath, imageLabelsBackupFilename)
 
 postgresql_my_proc = factories.postgresql_noproc(host="127.0.0.1", port=5432, user="postgres", password="postgres")
 postgresql_my = factories.postgresql('postgresql_my_proc', db_name="testDb")
@@ -90,105 +85,66 @@ def storeStage(tmpdir_factory, postgresql_my):
 @pytest.fixture(scope="function")
 def featCalcStage(tmpdir_factory, postgresql_my):
     pgtest = postgresql_my
-    os.chdir(homePath)
-
-    params = {
-        "host": "127.0.0.1",
-        "port": 5432,
-        "database": "testDb",
-        "user": "postgres",
-        "password": "postgres"
-    }
-    connection = psycopg2.connect(**params)
-    connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-    cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    cursor.execute(open(imageMetadataBackupRelPath, "r").read())
 
     direct = tmpdir_factory.mktemp("featCalcStage")
-    directPath = str(direct)
-    testConfigFullPath = directPath + os.path.sep + configFilename
-    testColumnsInfoFullPath = directPath + os.path.sep + columnsInfoFilename
-    testDcmFolderFullPath = directPath + os.path.sep + dcmFolderName
+    testConfigFullPath = os.path.join(str(direct), configFilename)
     shutil.copyfile(configRelPath, testConfigFullPath)
-    shutil.copyfile(columnsInfoRelPath, testColumnsInfoFullPath)
-    shutil.copytree(dcmFolderRelPath, testDcmFolderFullPath)
-    os.chdir(directPath)
     configHandler = CxrConfigHandler(testConfigFullPath)
+
+    shutil.copyfile(columnsInfoRelPath, configHandler.getColumnsInfoFullPath())
+    shutil.copytree(dcmFolderRelPath, configHandler.getUnpackFolderPath())
+    
     dbHandler = DatabaseHandler(configHandler)
+    dbHandler.executeQuery(dbHandler.connection, open(imageMetadataBackupRelPath, "r").read())
 
     return FeatCalcStage(configHandler, dbHandler)
 
 @pytest.fixture(scope="function")
 def manualLabelStage(tmpdir_factory, postgresql_my):
     pgtest = postgresql_my
-    os.chdir(homePath)
-
-    params = {
-        "host": "127.0.0.1",
-        "port": 5432,
-        "database": "testDb",
-        "user": "postgres",
-        "password": "postgres"
-    }
-    connection = psycopg2.connect(**params)
-    connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-    cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    cursor.execute(open(imageMetadataBackupRelPath, "r").read())
-    cursor.execute(open(featuresBackupRelPath, "r").read())
 
     direct = tmpdir_factory.mktemp("manualLabelStage")
-    directPath = str(direct)
-    testConfigFullPath = directPath + os.path.sep + configFilename
-    testColumnsInfoFullPath = directPath + os.path.sep + columnsInfoFilename
+
+    testConfigFullPath = os.path.join(str(direct), configFilename)
     shutil.copyfile(configRelPath, testConfigFullPath)
-    shutil.copyfile(columnsInfoRelPath, testColumnsInfoFullPath)
-    os.chdir(directPath)
     configHandler = CxrConfigHandler(testConfigFullPath)
+
+    shutil.copyfile(columnsInfoRelPath, configHandler.getColumnsInfoFullPath())
+
     dbHandler = DatabaseHandler(configHandler)
+    dbHandler.executeQuery(dbHandler.connection, open(imageMetadataBackupRelPath, "r").read())
+    dbHandler.executeQuery(dbHandler.connection, open(featuresBackupRelPath, "r").read())
     return LabelStage(configHandler, dbHandler)
 
 @pytest.fixture(scope="function")
 def importLabelStage(tmpdir_factory, postgresql_my):
     pgtest = postgresql_my
-    os.chdir(homePath)
 
     direct = tmpdir_factory.mktemp("importLabelStage")
-    directPath = str(direct)
-    testConfigFullPath = directPath + os.path.sep + configFilename
-    testColumnsInfoFullPath = directPath + os.path.sep + columnsInfoFilename
-    testCsvFullPath = directPath + os.path.sep + csvFilename
+
+    testConfigFullPath = os.path.join(str(direct), configFilename)
     shutil.copyfile(configRelPath, testConfigFullPath)
-    shutil.copyfile(columnsInfoRelPath, testColumnsInfoFullPath)
-    shutil.copyfile(csvRelPath, testCsvFullPath)
-    os.chdir(directPath)
     configHandler = CxrConfigHandler(testConfigFullPath)
+
+    shutil.copyfile(columnsInfoRelPath, configHandler.getColumnsInfoFullPath())
+    shutil.copyfile(csvRelPath, configHandler.getCsvPath())
+
+    dbHandler = DatabaseHandler(configHandler)  
     configHandler.setSetting("dataset_info", "dataset", "full_set")
-    dbHandler = DatabaseHandler(configHandler)
     return LabelStage(configHandler, dbHandler)
 
 @pytest.fixture(scope="function")
 def trainStage(tmpdir_factory, postgresql_my):
     pgtest = postgresql_my
-    os.chdir(homePath)
-
-    params = {
-        "host": "127.0.0.1",
-        "port": 5432,
-        "database": "testDb",
-        "user": "postgres",
-        "password": "postgres"
-    }
-    connection = psycopg2.connect(**params)
-    connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-    cursor = connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    cursor.execute(open(imageLabelsBackupRelPath, "r").read())
-    cursor.execute(open(featuresBackupRelPath, "r").read())
 
     direct = tmpdir_factory.mktemp("trainStage")
-    directPath = str(direct)
-    testConfigFullPath = directPath + os.path.sep + configFilename
+
+    testConfigFullPath = os.path.join(str(direct), configFilename)
     shutil.copyfile(configRelPath, testConfigFullPath)
-    os.chdir(directPath)
     configHandler = CxrConfigHandler(testConfigFullPath)
     dbHandler = DatabaseHandler(configHandler)
+
+    dbHandler.executeQuery(dbHandler.connection, open(featuresBackupRelPath, "r").read())
+    dbHandler.executeQuery(dbHandler.connection, open(imageLabelsBackupRelPath, "r").read())
+
     return TrainStage(configHandler, dbHandler)

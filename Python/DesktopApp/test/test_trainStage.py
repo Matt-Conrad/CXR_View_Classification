@@ -1,15 +1,11 @@
 import pytest
-import os
-from expectedSizes import EXPECTED_SIZES, EXPECTED_NUM_FILES
 from PyQt5.QtCore import QObject, pyqtSlot
-import numpy as np
 
 class TestTrainStage:
     @pytest.fixture(autouse=True)
     def initTrainStage(self, trainStage):
         self.trainStage = trainStage
         self.listener = Listener()
-        os.chdir(self.trainStage.trainer.configHandler.getParentFolder())
 
     def test_dbExists(self):
         assert self.trainStage.trainer.dbHandler.dbExists(self.trainStage.trainer.configHandler.getDbInfo()["database"])

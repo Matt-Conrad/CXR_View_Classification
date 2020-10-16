@@ -1,13 +1,11 @@
 import pytest
-import os
-from expectedSizes import EXPECTED_SIZES, EXPECTED_NUM_FILES
+from expectedSizes import EXPECTED_NUM_FILES
 from labelStage import LabelStage
 
 class TestLabelImporter:
     @pytest.fixture(autouse=True)
     def initLabelStage(self, importLabelStage):
         self.labelStage = importLabelStage
-        os.chdir(self.labelStage.labeler.configHandler.getParentFolder())
 
     def test_labelerIsLabelImporter(self):
         assert isinstance(self.labelStage.labeler, LabelStage.LabelImporter)
