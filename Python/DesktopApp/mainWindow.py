@@ -46,7 +46,7 @@ class MainWindow(QMainWindow):
     def copyMiscFiles(self):
         miscFolderRelPath ="../../miscellaneous"
         for miscFile in self.miscFiles:
-            shutil.copyfile(miscFolderRelPath + os.path.sep + miscFile, miscFile)
+            shutil.copyfile(os.path.join(miscFolderRelPath, miscFile), miscFile)
 
     def removeMiscFiles(self):
         for miscFile in self.miscFiles:

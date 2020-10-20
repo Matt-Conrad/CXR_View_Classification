@@ -3,6 +3,9 @@ __pycache__
 NLMCXR_dcm.tgz
 NLMCXR_dcm
 NLMCXR_subset_dataset
+Python/DesktopApp/NLMCXR_subset_dataset.tgz
+Python/DesktopApp/test_images.csv
+Python/DesktopApp/full_set_classifier.joblib
 .pylintrc
 *.log
 build*
@@ -13,5 +16,4 @@ Release
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
-resetApp.py
 .pytest_cache

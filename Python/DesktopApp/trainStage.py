@@ -1,3 +1,4 @@
+import os
 from stage import Stage, Runnable
 from PyQt5.QtCore import pyqtSlot
 import logging
@@ -82,14 +83,14 @@ class TrainStage(Stage):
             logging.info('Test Set Accuracy: %s', str(testAccuracy))
             
             logging.debug("Saving classifier")
-            classifierFilename = 'full_set_classifier.joblib'
-            logging.info('Classifier saved as %s', classifierFilename)
-            dump(clf, classifierFilename)
+            classifierFullPath = os.path.join(self.configHandler.getParentFolder(), 'full_set_classifier.joblib')
+            logging.info('Classifier saved as %s', classifierFullPath)
+            dump(clf, classifierFullPath)
 
             # Save the list of images that are in the test set. You can send these over HTTP to the service.
-            imageListName = "test_images.csv"
-            logging.info('A list of images in the test set is saved in %s', imageListName)
-            with open("test_images.csv", "w") as f:
+            imageListFilePath = os.path.join(self.configHandler.getParentFolder(), "test_images.csv")
+            logging.info('A list of images in the test set is saved in %s', imageListFilePath)
+            with open(imageListFilePath, "w") as f:
                 writer = csv.writer(f)
                 for row in fileNamesTest:
                     writer.writerow([row])

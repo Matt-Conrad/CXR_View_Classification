@@ -1,4 +1,3 @@
-from PyQt5.QtCore import pyqtSlot
 from metadata_to_db.configHandler import ConfigHandler
 from expectedSizes import SOURCE_URL
 import os
