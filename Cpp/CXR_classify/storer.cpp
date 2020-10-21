@@ -11,11 +11,11 @@ void Storer::run()
     emit attemptUpdateProBarBounds(0, expected_num_files);
 
     std::string metadataTableName = configHandler->getTableName("metadata");
-    std::string columnsInfoPath = configHandler->getColumnsInfoPath();
+    std::string columnsInfoName = configHandler->getColumnsInfoName();
 
     // Create table if it isn't already there
     if (!dbHandler->tableExists(metadataTableName)) {
-        dbHandler->addTableToDb(columnsInfoPath, "elements", metadataTableName);
+        dbHandler->addTableToDb(columnsInfoName, "elements", metadataTableName);
     }
 
     logger->info("Attempting to store DICOM metadata from DCMs in a folder to Postgres DB");
@@ -24,11 +24,11 @@ void Storer::run()
 
     // Open the json with the list of elements we're interested in
     boost::property_tree::ptree columnsJson;
-    boost::property_tree::read_json(columnsInfoPath, columnsJson);
+    boost::property_tree::read_json(columnsInfoName, columnsJson);
     boost::property_tree::ptree elements = columnsJson.get_child("elements");
 
     quint64 storeCount = 0;
-    for (auto & p : std::filesystem::recursive_directory_iterator("./" + configHandler->getDatasetName())) {
+    for (auto & p : std::filesystem::recursive_directory_iterator(configHandler->getUnpackFolderPath())) {
         if (p.path().extension() == ".dcm") {
             logger->debug("Storing: {}", p.path().string());
             pqxx::result result = dbHandler->executeQuery(dbHandler->connection, createSqlQuery(metadataTableName, elements, p.path().string()));

@@ -13,7 +13,7 @@ public:
     Downloader(ConfigHandler *);
 
 private:
-    std::string filenameRelPath;
+    std::string filenameAbsPath;
     std::string datasetType;
 
     int download();

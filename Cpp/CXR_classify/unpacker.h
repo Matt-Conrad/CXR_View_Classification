@@ -17,7 +17,7 @@ private:
     int extract(const char *, std::string);
     int copy_data(struct archive *ar, struct archive *aw);
 
-    std::string folderRelPath;
+    std::string folderAbsPath;
 
     quint64 countDcms();
 

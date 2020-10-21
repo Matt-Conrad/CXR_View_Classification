@@ -103,9 +103,7 @@ void MainWindow::fillWindow()
 
 void MainWindow::initGuiState()
 {
-    setWindowIcon(QIcon("../../miscellaneous/icon.jpg"));
-
-    std::string folderRelPath = "./" + configHandler->getDatasetName();
+    setWindowIcon(QIcon(configHandler->prependParentPath("icon.jpg").c_str()));
 
     if (dbHandler->tableExists(configHandler->getTableName("label"))) {
         trainStageUi();
@@ -113,7 +111,7 @@ void MainWindow::initGuiState()
         labelStageUi();
     } else if (dbHandler->tableExists(configHandler->getTableName("metadata"))) {
         calcFeatStageUi();
-    } else if (std::filesystem::exists(folderRelPath)) {
+    } else if (std::filesystem::exists(configHandler->getUnpackFolderPath())) {
         storeStageUi();
     } else if (std::filesystem::exists(configHandler->getTgzFilename())) {
         unpackStageUi();

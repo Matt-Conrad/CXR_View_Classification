@@ -1,28 +1,30 @@
 #include "downloader.h"
 
+namespace fs = std::filesystem;
+
 Downloader::Downloader(ConfigHandler * configHandler) : Runnable(configHandler)
 {
-    filenameRelPath = "./" + configHandler->getTgzFilename();
+    filenameAbsPath = configHandler->getTgzFilePath();
     datasetType = configHandler->getDatasetType();
 }
 
 void Downloader::run()
 {
-    logger->info("Checking if {} already exists", filenameRelPath);
-    if (std::filesystem::exists(filenameRelPath) && !std::filesystem::is_directory(filenameRelPath)) {
-        logger->info("{} already exists", filenameRelPath);
-        logger->info("Checking if {} was downloaded properly", filenameRelPath);
-        if (std::filesystem::file_size(filenameRelPath) == expected_size) {
-            logger->info("{} was downloaded properly", filenameRelPath);
+    logger->info("Checking if {} already exists", filenameAbsPath);
+    if (fs::exists(filenameAbsPath) && !fs::is_directory(filenameAbsPath)) {
+        logger->info("{} already exists", filenameAbsPath);
+        logger->info("Checking if {} was downloaded properly", filenameAbsPath);
+        if (fs::file_size(filenameAbsPath) == expected_size) {
+            logger->info("{} was downloaded properly", filenameAbsPath);
         } else {
-            logger->warn("{} was not downloaded properly", filenameRelPath);
-            logger->info("Removing {}", filenameRelPath);
-            std::filesystem::remove(filenameRelPath);
-            logger->info("Successfully removed {}", filenameRelPath);
+            logger->warn("{} was not downloaded properly", filenameAbsPath);
+            logger->info("Removing {}", filenameAbsPath);
+            fs::remove(filenameAbsPath);
+            logger->info("Successfully removed {}", filenameAbsPath);
             download();
         }
     } else {
-        logger->info("{} does not exist", filenameRelPath);
+        logger->info("{} does not exist", filenameAbsPath);
         download();
     }
     emit attemptUpdateProBarValue(getTgzSize());
@@ -38,7 +40,7 @@ int Downloader::download()
     emit attemptUpdateProBarBounds(0, getTgzMax());
 
     QNetworkAccessManager nam;
-    QFile file(filenameRelPath.c_str());
+    QFile file(filenameAbsPath.c_str());
     if(!file.open(QIODevice::ReadWrite)) {
         // log "Can't open write file"
     }
@@ -73,9 +75,9 @@ int Downloader::download()
 quint64 Downloader::getTgzSize()
 {
     if (datasetType == "full_set") {
-        return quint64(std::filesystem::file_size(filenameRelPath) / 100);
+        return quint64(fs::file_size(filenameAbsPath) / 100);
     } else if (datasetType == "subset") {
-        return std::filesystem::file_size(filenameRelPath);
+        return fs::file_size(filenameAbsPath);
     } else {
         return 0;
     }

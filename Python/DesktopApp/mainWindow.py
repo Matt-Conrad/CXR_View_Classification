@@ -117,7 +117,7 @@ class MainWindow(QMainWindow):
 
     ### STAGES UI
     def initGuiState(self):
-        self.setWindowIcon(QIcon(self.configHandler.getParentFolder() + '/' + 'icon.jpg'))
+        self.setWindowIcon(QIcon(os.path.join(self.configHandler.getParentFolder(), 'icon.jpg')))
 
         # Initialize in right stage
         if self.dbHandler.tableExists(self.configHandler.getTableName("label")):

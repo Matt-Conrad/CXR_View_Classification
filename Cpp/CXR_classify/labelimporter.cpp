@@ -9,7 +9,7 @@ void LabelImporter::run()
 {
     logger->info("Importing label data from CSV");
 
-    std::string elementsJson = configHandler->getColumnsInfoPath();
+    std::string elementsJson = configHandler->getColumnsInfoName();
     std::string labelTableName = configHandler->getTableName("label");
 
     emit attemptUpdateText("Attempting to import image labels");

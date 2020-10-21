@@ -66,11 +66,14 @@ LIBS += -ldl -lboost_system -lstdc++fs -lz -lbz2 -larchive -lpqxx -lpq -pthread 
 copydata.commands = $(COPY_DIR) $$PWD/../../miscellaneous/config.ini $$OUT_PWD
 copydata2.commands = $(COPY_DIR) $$PWD/../../miscellaneous/columns_info.json $$OUT_PWD
 copydata3.commands = $(COPY_DIR) $$PWD/../../miscellaneous/image_labels.csv $$OUT_PWD
-first.depends = $(first) copydata copydata2 copydata3
+copydata4.commands = $(COPY_DIR) $$PWD/../../miscellaneous/icon.jpg $$OUT_PWD
+first.depends = $(first) copydata copydata2 copydata3 copydata4
 export(first.depends)
 export(copydata.commands)
 export(copydata2.commands)
 export(copydata3.commands)
+export(copydata4.commands)
 QMAKE_EXTRA_TARGETS += first copydata
 QMAKE_EXTRA_TARGETS += first copydata2
 QMAKE_EXTRA_TARGETS += first copydata3
+QMAKE_EXTRA_TARGETS += first copydata4

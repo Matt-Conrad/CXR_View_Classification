@@ -13,7 +13,7 @@ void ManualLabeler::run()
     emit attemptUpdateText("Please manually label images");
     emit attemptUpdateProBarBounds(0, expected_num_files);
 
-    dbHandler->addTableToDb(configHandler->getColumnsInfoPath(), "labels", labelTableName);
+    dbHandler->addTableToDb(configHandler->getColumnsInfoName(), "labels", labelTableName);
 
     displayNextImage();
 

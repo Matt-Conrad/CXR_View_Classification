@@ -12,7 +12,7 @@ void FeatureCalculator::run()
     emit attemptUpdateText("Calculating features");
     emit attemptUpdateProBarBounds(0, expected_num_files);
 
-    dbHandler->addTableToDb(configHandler->getColumnsInfoPath(), "features_list", featTableName);
+    dbHandler->addTableToDb(configHandler->getColumnsInfoName(), "features_list", featTableName);
 
     emit attemptUpdateProBarValue(0);
 
