@@ -2,6 +2,7 @@ from stage import Stage, Runnable
 from PyQt5.QtCore import pyqtSlot
 from metadata_to_db.dicomToDb import DicomToDatabase
 from ctypes import cdll
+import os
 
 class StoreStage(Stage):
     def __init__(self, configHandler, dbHandler):
@@ -18,7 +19,7 @@ class StoreStage(Stage):
         def __init__(self, configHandler, dbHandler):
             Runnable.__init__(self, configHandler, dbHandler)
 
-            self.lib = cdll.LoadLibrary("./src/libstorer.so")
+            self.lib = cdll.LoadLibrary(os.path.join(configHandler.getParentFolder(), "src", "libstorer.so"))
             
             self.obj = self.lib.Storer_new()
 
@@ -29,7 +30,6 @@ class StoreStage(Stage):
     class StoreUpdater(Runnable):
         def __init__(self, configHandler, dbHandler):
             Runnable.__init__(self, configHandler, dbHandler)
-            self.folderRelPath = "./" + configHandler.getDatasetName()
 
         @pyqtSlot()
         def run(self):

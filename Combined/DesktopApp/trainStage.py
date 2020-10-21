@@ -2,6 +2,7 @@ from stage import Stage, Runnable
 from PyQt5.QtCore import pyqtSlot
 import logging
 import csv
+import os
 import numpy as np
 from sklearn.model_selection import KFold, cross_val_score, train_test_split
 from sklearn import svm
@@ -23,7 +24,7 @@ class TrainStage(Stage):
         def __init__(self, configHandler, dbHandler):
             Runnable.__init__(self, configHandler, dbHandler)
 
-            self.lib = cdll.LoadLibrary("./src/libtrainer.so")
+            self.lib = cdll.LoadLibrary(os.path.join(configHandler.getParentFolder(), "src", "libtrainer.so"))
             
             self.obj = self.lib.Trainer_new()
 

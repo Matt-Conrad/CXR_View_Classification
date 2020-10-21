@@ -26,7 +26,8 @@ class MainWindow(QMainWindow):
         self.copyMiscFiles()
         atexit.register(self.removeMiscFiles)
 
-        self.configHandler = CxrConfigHandler("./config.ini")
+        parentFolder = os.path.dirname(os.path.abspath(__file__))
+        self.configHandler = CxrConfigHandler(os.path.join(parentFolder, "config.ini"))
         self.configureLogging()
 
         logging.info('Constructing Main app')
@@ -44,9 +45,10 @@ class MainWindow(QMainWindow):
         logging.info('Done constructing Main app')
 
     def copyMiscFiles(self):
-        miscFolderRelPath ="../../miscellaneous"
+        cxrRootFolder = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        miscFolderAbsPath = os.path.join(cxrRootFolder, "miscellaneous")
         for miscFile in self.miscFiles:
-            shutil.copyfile(os.path.join(miscFolderRelPath, miscFile), miscFile)
+            shutil.copyfile(os.path.join(miscFolderAbsPath, miscFile), miscFile)
 
     def removeMiscFiles(self):
         for miscFile in self.miscFiles:

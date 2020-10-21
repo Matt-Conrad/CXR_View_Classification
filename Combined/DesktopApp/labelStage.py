@@ -25,7 +25,7 @@ class LabelStage(Stage):
         def __init__(self, configHandler, dbHandler):
             Runnable.__init__(self, configHandler, dbHandler)
 
-            self.lib = cdll.LoadLibrary("./src/liblabelimporter.so")
+            self.lib = cdll.LoadLibrary(os.path.join(configHandler.getParentFolder(), "src", "liblabelimporter.so"))
             
             self.obj = self.lib.LabelImporter_new()
         
@@ -61,7 +61,7 @@ class LabelStage(Stage):
             self.signals.attemptUpdateText.emit("Please manually label images")
             self.signals.attemptUpdateProBarBounds.emit(0, self.expectedNumFiles)
 
-            self.dbHandler.addTableToDb(self.configHandler.getTableName('label'), self.configHandler.getColumnsInfoPath(), "nonElementColumns", 'labels')
+            self.dbHandler.addTableToDb(self.configHandler.getTableName('label'), self.configHandler.getColumnsInfoFullPath(), "nonElementColumns", 'labels')
             
             self.displayNextImage()
 

@@ -20,7 +20,7 @@ class UnpackStage(Stage):
         def __init__(self, configHandler):
             Runnable.__init__(self, configHandler)
 
-            self.lib = cdll.LoadLibrary("./src/libunpacker.so")
+            self.lib = cdll.LoadLibrary(os.path.join(configHandler.getParentFolder(), "src", "libunpacker.so"))
             
             self.obj = self.lib.Unpacker_new()
 
@@ -31,7 +31,7 @@ class UnpackStage(Stage):
         """Controls logic of getting the dataset from online sources."""
         def __init__(self, configHandler):
             Runnable.__init__(self, configHandler)
-            self.folderRelPath = "./" + configHandler.getDatasetName()
+            self.folderAbsPath = configHandler.getUnpackFolderPath()
 
         @pyqtSlot()
         def run(self):
@@ -47,5 +47,5 @@ class UnpackStage(Stage):
             self.signals.finished.emit()
 
         def countDcms(self):
-            return sum([len(files) for r, d, files in os.walk(self.folderRelPath) if any(item.endswith('.dcm') for item in files)])
+            return sum([len(files) for r, d, files in os.walk(self.folderAbsPath) if any(item.endswith('.dcm') for item in files)])
 

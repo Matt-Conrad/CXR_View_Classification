@@ -1,5 +1,7 @@
 import logging
 import os
+import shutil
+import atexit
 import pydicom as pdm
 import cv2
 import numpy as np
@@ -20,7 +22,12 @@ from metadata_to_db.databaseHandler import DatabaseHandler
 class MainWindow(QMainWindow):
     """Contains GUI code for the application."""
     def __init__(self):
-        self.configHandler = CxrConfigHandler("../../miscellaneous/config.ini")
+        self.miscFiles = ["config.ini", "columns_info.json", "image_labels.csv"]
+        self.copyMiscFiles()
+        atexit.register(self.removeMiscFiles)
+
+        parentFolder = os.path.dirname(os.path.abspath(__file__))
+        self.configHandler = CxrConfigHandler(os.path.join(parentFolder, "config.ini"))
         self.configureLogging()
 
         logging.info('Constructing Main app')
@@ -44,6 +51,16 @@ class MainWindow(QMainWindow):
         self.show()
         
         logging.info('Done constructing Main app')
+    
+    def copyMiscFiles(self):
+        cxrRootFolder = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        miscFolderAbsPath = os.path.join(cxrRootFolder, "miscellaneous")
+        for miscFile in self.miscFiles:
+            shutil.copyfile(os.path.join(miscFolderAbsPath, miscFile), miscFile)
+
+    def removeMiscFiles(self):
+        for miscFile in self.miscFiles:
+            os.remove(miscFile)
 
     def fillWindow(self):
         """Fills the window with buttons."""
@@ -110,7 +127,7 @@ class MainWindow(QMainWindow):
 
     ### STAGES UI
     def initGuiState(self):
-        self.setWindowIcon(QIcon(self.configHandler.getParentFolder() + '/' + 'icon.jpg'))
+        self.setWindowIcon(QIcon(os.path.join(self.configHandler.getParentFolder(), 'icon.jpg')))
 
         # Initialize in right stage
         if self.dbHandler.tableExists(self.configHandler.getTableName("label")):

@@ -21,7 +21,7 @@ class DownloadStage(Stage):
         def __init__(self, configHandler):
             Runnable.__init__(self, configHandler)
 
-            self.lib = cdll.LoadLibrary("./src/libdownloader.so")
+            self.lib = cdll.LoadLibrary(os.path.join(configHandler.getParentFolder(), "src", "libdownloader.so"))
             
             self.obj = self.lib.Downloader_new()
 
@@ -32,7 +32,7 @@ class DownloadStage(Stage):
         """Controls logic of getting the dataset from online sources."""
         def __init__(self, configHandler):
             Runnable.__init__(self, configHandler)
-            self.filenameRelPath = "./" + configHandler.getTgzFilename()
+            self.filenameAbsPath = configHandler.getTgzFilePath()
             self.datasetType = configHandler.getDatasetType()
 
         @pyqtSlot()
@@ -41,7 +41,7 @@ class DownloadStage(Stage):
             self.signals.attemptUpdateProBarBounds.emit(0, self.getTgzMax())
             self.signals.attemptUpdateProBarValue.emit(0)
 
-            while not os.path.isfile(self.filenameRelPath):
+            while not os.path.isfile(self.filenameAbsPath):
                 pass
             
             while self.getTgzSize() < self.expectedSize:
@@ -55,9 +55,9 @@ class DownloadStage(Stage):
             """Calculates the size of the TGZ file."""
             if self.datasetType == 'full_set':
                 # Dividing by 100 because the expected size of this TGZ is larger than QProgressBar accepts
-                return int(os.path.getsize(self.filenameRelPath) / 100)
+                return int(os.path.getsize(self.filenameAbsPath) / 100)
             elif self.datasetType == 'subset':
-                return os.path.getsize(self.filenameRelPath)
+                return os.path.getsize(self.filenameAbsPath)
             else:
                 raise ValueError('Value must be one of the keys in SOURCE_URL')
 
