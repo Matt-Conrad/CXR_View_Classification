@@ -7,8 +7,7 @@ Unpacker::Unpacker()
 
 void Unpacker::run() 
 {      
-    std::string fileRelPath = configHandler->getTgzFilename();
-    extract(fileRelPath.c_str(), "./");
+    extract(configHandler->getTgzFilePath().c_str(), configHandler->getUnpackFolderPath().c_str());
 }
 
 int Unpacker::copy_data(struct archive * ar, struct archive * aw)

@@ -12,7 +12,7 @@ class Downloader {
         void run();
 
     private:
-        std::string filenameRelPath;
+        std::string filenameAbsPath;
         uint64_t expected_size;
 
         ConfigHandler * configHandler = new ConfigHandler("../../miscellaneous/config.ini");

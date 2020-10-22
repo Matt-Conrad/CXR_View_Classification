@@ -1,18 +1,20 @@
 #include "downloader.h"
 
+namespace fs = std::filesystem;
+
 Downloader::Downloader()
 {
-    filenameRelPath = "./" + configHandler->getTgzFilename();
+    filenameAbsPath = configHandler->getTgzFilePath();
     expected_size = expected_sizes.at(configHandler->getDatasetType());
 }
 
 void Downloader::run()
 {
-    if (std::filesystem::exists(filenameRelPath) && !std::filesystem::is_directory(filenameRelPath)) {
-        if (std::filesystem::file_size(filenameRelPath) == expected_size) {
+    if (std::filesystem::exists(filenameAbsPath) && !std::filesystem::is_directory(filenameAbsPath)) {
+        if (std::filesystem::file_size(filenameAbsPath) == expected_size) {
             ;
         } else {
-            std::filesystem::remove(filenameRelPath);
+            std::filesystem::remove(filenameAbsPath);
             download();
         }
     } else {
@@ -23,7 +25,7 @@ void Downloader::run()
 int Downloader::download()
 {
     QNetworkAccessManager nam;
-    QFile file(filenameRelPath.c_str());
+    QFile file(filenameAbsPath.c_str());
     if(!file.open(QIODevice::ReadWrite)) {
         // log "Can't open write file"
     }

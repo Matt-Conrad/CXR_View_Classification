@@ -18,13 +18,16 @@ public:
     std::string getTableName(std::string);
     std::string getUrl();
     std::string getTgzFilename();
+    std::string getTgzFilePath();
     std::string getDatasetName();
+    std::string getUnpackFolderPath();
     std::string getColumnsInfoPath();
     std::string getCsvPath();
     std::string getDatasetType();
     std::string getParentFolder();
     std::string getLogLevel();
     std::string getConfigFilename();
+    std::string prependParentPath(std::string);
 
 private:
     std::string configFilename;
