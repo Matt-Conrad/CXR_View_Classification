@@ -12,7 +12,7 @@ class Unpacker {
         void run();
 
     private: 
-        ConfigHandler * configHandler = new ConfigHandler("../../miscellaneous/config.ini");
+        ConfigHandler * configHandler = new ConfigHandler("config.ini");
 
         int extract(const char *, std::string);
         int copy_data(struct archive *, struct archive *);

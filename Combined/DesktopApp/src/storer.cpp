@@ -21,7 +21,7 @@ void Storer::run()
     boost::property_tree::ptree elements = columnsJson.get_child("elements");
 
     int storeCount = 0;
-    for (auto & p : std::filesystem::recursive_directory_iterator("./" + configHandler->getDatasetName())) {
+    for (auto & p : std::filesystem::recursive_directory_iterator(configHandler->getUnpackFolderPath())) {
         if (p.path().extension() == ".dcm") {
             pqxx::result result = dbHandler->executeQuery(dbHandler->connection, createSqlQuery(metadataTableName, elements, p.path().string()));
             storeCount++;

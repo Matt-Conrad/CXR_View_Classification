@@ -18,7 +18,7 @@ public:
     void run();
 
 private:
-    ConfigHandler * configHandler = new ConfigHandler("../../miscellaneous/config.ini");
+    ConfigHandler * configHandler = new ConfigHandler("config.ini");
     DatabaseHandler * dbHandler = new DatabaseHandler(configHandler);
 };
 
