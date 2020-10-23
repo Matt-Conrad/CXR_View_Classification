@@ -7,14 +7,14 @@ LabelImporter::LabelImporter()
 
 void LabelImporter::run()
 {
-    std::string elementsJson = configHandler->getColumnsInfoPath();
+    std::string columnsInfoPath = configHandler->getColumnsInfoPath();
     std::string labelTableName = configHandler->getTableName("label");
 
-    dbHandler->addTableToDb(elementsJson, "labels", labelTableName);
+    dbHandler->addTableToDb(columnsInfoPath, "labels", labelTableName);
 
     // Open the json with the list of elements we're interested in
     boost::property_tree::ptree columnsJson;
-    boost::property_tree::read_json(elementsJson, columnsJson);
+    boost::property_tree::read_json(columnsInfoPath, columnsJson);
     boost::property_tree::ptree elements = columnsJson.get_child("labels");
 
     // Make the SQL query
@@ -24,7 +24,7 @@ void LabelImporter::run()
             sqlQuery += (column.first + ",");
         }
     }
-    sqlQuery = sqlQuery.substr(0, sqlQuery.length() - 1) + ") FROM '" + configHandler->getParentFolder() + "/" + configHandler->getCsvPath() + "' DELIMITER ',' CSV HEADER;";
+    sqlQuery = sqlQuery.substr(0, sqlQuery.length() - 1) + ") FROM '" + configHandler->getCsvPath() + "' DELIMITER ',' CSV HEADER;";
 
     dbHandler->executeQuery(dbHandler->connection, sqlQuery);
 }

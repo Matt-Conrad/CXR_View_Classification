@@ -21,12 +21,15 @@ public:
     std::string getTgzFilePath();
     std::string getDatasetName();
     std::string getUnpackFolderPath();
+    std::string getColumnsInfoName();
     std::string getColumnsInfoPath();
+    std::string getCsvName();
     std::string getCsvPath();
     std::string getDatasetType();
     std::string getParentFolder();
     std::string getLogLevel();
     std::string getConfigFilename();
+    std::string getConfigFilePath();
     std::string prependParentPath(std::string);
 
 private:
@@ -41,8 +44,8 @@ private:
 
     void setUrl(std::string);
     void setParentFolder();
-    void setCsvPath();
-    void setColumnsInfoPath();
+    void setCsvName();
+    void setColumnsInfoName();
 
     void readConfigFile();
 };

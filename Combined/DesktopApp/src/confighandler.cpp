@@ -30,12 +30,12 @@ void ConfigHandler::setSetting(std::string sectionName, std::string settingName,
     configFile.put(sectionName + "." + settingName, value);
 }
 
-void ConfigHandler::prepConfigIni() /////////
+void ConfigHandler::prepConfigIni()
 {
     setUrl(sourceUrl.at(getDatasetType()));
     setParentFolder();
-    setCsvPath();
-    setColumnsInfoPath();
+    setCsvName();
+    setColumnsInfoName();
 }
 
 void ConfigHandler::readConfigFile()
@@ -55,14 +55,14 @@ void ConfigHandler::setParentFolder()
     setSetting("misc", "parent_folder", fs::current_path());
 }
 
-void ConfigHandler::setCsvPath() /////////
+void ConfigHandler::setCsvName()
 {
-    setSetting("misc", "csv_relative_path", "../../miscellaneous/image_labels.csv");
+    setSetting("misc", "csv_filename", "image_labels.csv");
 }
 
-void ConfigHandler::setColumnsInfoPath() /////////
+void ConfigHandler::setColumnsInfoName()
 {
-    setSetting("misc", "columns_info_relative_path", "../../miscellaneous/columns_info.json");
+    setSetting("misc", "columns_info_name", "columns_info.json");
 }
 
 boost::property_tree::ptree ConfigHandler::getDbInfo()
@@ -87,7 +87,7 @@ std::string ConfigHandler::getTgzFilename()
 
 std::string ConfigHandler::getTgzFilePath()
 {
-    return prependParentPath(fs::path(getTgzFilename()));
+    return prependParentPath(getTgzFilename());
 }
 
 std::string ConfigHandler::getDatasetName()
@@ -97,17 +97,27 @@ std::string ConfigHandler::getDatasetName()
 
 std::string ConfigHandler::getUnpackFolderPath()
 {
-    return prependParentPath(fs::path(getDatasetName()));
+    return prependParentPath(getDatasetName());
 }
 
-std::string ConfigHandler::getColumnsInfoPath() /////////
+std::string ConfigHandler::getColumnsInfoName()
 {
-    return getSetting("misc", "columns_info_relative_path");
+    return getSetting("misc", "columns_info_name");
 }
 
-std::string ConfigHandler::getCsvPath() /////////
+std::string ConfigHandler::getColumnsInfoPath()
 {
-    return getSetting("misc", "csv_relative_path");
+    return prependParentPath(getColumnsInfoName());
+}
+
+std::string ConfigHandler::getCsvName()
+{
+    return getSetting("misc", "csv_filename");
+}
+
+std::string ConfigHandler::getCsvPath()
+{
+    return prependParentPath(getCsvName());
 }
 
 std::string ConfigHandler::getDatasetType()
@@ -128,6 +138,11 @@ std::string ConfigHandler::getLogLevel()
 std::string ConfigHandler::getConfigFilename()
 {
     return configFilename;
+}
+
+std::string ConfigHandler::getConfigFilePath()
+{
+    return prependParentPath(getConfigFilename());
 }
 
 std::string ConfigHandler::prependParentPath(std::string fsItem)

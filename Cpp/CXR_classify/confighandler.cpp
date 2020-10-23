@@ -87,7 +87,7 @@ std::string ConfigHandler::getTgzFilename()
 
 std::string ConfigHandler::getTgzFilePath()
 {
-    return prependParentPath(fs::path(getTgzFilename()));
+    return prependParentPath(getTgzFilename());
 }
 
 std::string ConfigHandler::getDatasetName()
@@ -97,7 +97,7 @@ std::string ConfigHandler::getDatasetName()
 
 std::string ConfigHandler::getUnpackFolderPath()
 {
-    return prependParentPath(fs::path(getDatasetName()));
+    return prependParentPath(getDatasetName());
 }
 
 std::string ConfigHandler::getColumnsInfoName()
@@ -107,7 +107,7 @@ std::string ConfigHandler::getColumnsInfoName()
 
 std::string ConfigHandler::getColumnsInfoPath()
 {
-    return prependParentPath(fs::path(getCsvName()));
+    return prependParentPath(getColumnsInfoName());
 }
 
 std::string ConfigHandler::getCsvName()
