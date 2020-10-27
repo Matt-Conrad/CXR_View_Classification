@@ -11,18 +11,17 @@ SRCS := confighandler.cpp \
 	labelimporter.cpp \
 	trainer.cpp
 
-
-SHARED_OBJS1 = libdownloader.so \
+SHARED_OBJS_WITHOUT_DBHANDLER = libdownloader.so \
 	libunpacker.so
 
-SHARED_OBJS2 = libstorer.so \
-	libfeatcalc.so \
+SHARED_OBJS_WITH_DBHANDLER = libstorer.so \
+	libfeaturecalculator.so \
 	liblabelimporter.so \
 	libtrainer.so
 
+SHARED_OBJS = $(SHARED_OBJS_WITHOUT_DBHANDLER) $(SHARED_OBJS_WITH_DBHANDLER)
+
 OBJS := ${SRCS:cpp=o} 
-HEADERS := ${SRCS:cpp=h} 
-NAMES := ${SRCS:.cpp=} 
 
 LIBS = -lQt5Network -lQt5Core -lopencv_core -lopencv_imgproc -lz -lbz2 -larchive -ldcmimgle -ldcmdata -lpqxx -lpq -fopenmp -larmadillo -lmlpack -lboost_system -lstdc++fs 
 
@@ -31,30 +30,15 @@ INCPATH += -I/usr/local/include/opencv4
 
 .PHONY: all clean
 
-all: ${OBJS} ${SHARED_OBJS1} ${SHARED_OBJS2}
+all: ${OBJS} ${SHARED_OBJS}
 
 clean :
 	rm -f *.o *.so
 
-$(OBJS): %.o : %.cpp %.h
+$(OBJS): %.o : %.cpp %.h expectedsizes.h
 	$(CXX) $(CXXFLAGS) $(INCPATH) $< -o $@ 
 
-libdownloader.so: downloader.o confighandler.o
+$(SHARED_OBJS): lib%.so : %.o confighandler.o
 	$(CXX) $(SHAREDFLAGS) -o $@ $^ $(LIBS)
 
-libunpacker.so: unpacker.o confighandler.o
-	$(CXX) $(SHAREDFLAGS) -o $@ $^ $(LIBS)
-
-libstorer.so: storer.o confighandler.o databasehandler.o
-	$(CXX) $(SHAREDFLAGS) -o $@ $^ $(LIBS)
-
-libfeatcalc.so: featurecalculator.o confighandler.o databasehandler.o
-	$(CXX) $(SHAREDFLAGS) -o $@ $^ $(LIBS)
-
-liblabelimporter.so: labelimporter.o confighandler.o databasehandler.o
-	$(CXX) $(SHAREDFLAGS) -o $@ $^ $(LIBS)
-
-libtrainer.so: trainer.o confighandler.o databasehandler.o
-	$(CXX) $(SHAREDFLAGS) -o $@ $^ $(LIBS)
-
-
+$(SHARED_OBJS_WITH_DBHANDLER): lib%.so : databasehandler.o
