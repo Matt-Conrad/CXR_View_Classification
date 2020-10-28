@@ -9,7 +9,6 @@ Python/DesktopApp/test_images.csv
 Python/DesktopApp/full_set_classifier.joblib
 .pylintrc
 *.log
-build*
 Release
 *.egg-info
 *.pro.user
@@ -18,3 +17,7 @@ Release
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
 .pytest_cache
+Combined/SharedCode/build/*
+Python/SharedCode/build/*
+*build-CXR_classify-Desktop_Qt_5_9_8_GCC_64bit-Debug
+
