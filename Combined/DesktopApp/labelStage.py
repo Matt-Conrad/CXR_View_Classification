@@ -25,7 +25,7 @@ class LabelStage(Stage):
         def __init__(self, configHandler, dbHandler):
             Runnable.__init__(self, configHandler, dbHandler)
 
-            self.lib = cdll.LoadLibrary(os.path.join(configHandler.getParentFolder(), "src", "liblabelimporter.so"))
+            self.lib = cdll.LoadLibrary(os.path.join(configHandler.getParentFolder(), "build", "liblabelimporter.so"))
             
             self.obj = self.lib.LabelImporter_new()
         

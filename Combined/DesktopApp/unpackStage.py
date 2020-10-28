@@ -20,7 +20,7 @@ class UnpackStage(Stage):
         def __init__(self, configHandler):
             Runnable.__init__(self, configHandler)
 
-            self.lib = cdll.LoadLibrary(os.path.join(configHandler.getParentFolder(), "src", "libunpacker.so"))
+            self.lib = cdll.LoadLibrary(os.path.join(configHandler.getParentFolder(), "build", "libunpacker.so"))
             
             self.obj = self.lib.Unpacker_new()
 
