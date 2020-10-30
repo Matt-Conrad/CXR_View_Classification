@@ -1,3 +1,4 @@
+# Manually created 
 CXX := g++
 CXXFLAGS := -std=c++17 -fPIC -c
 SHAREDFLAGS = -shared -Wl,-soname,$@ -Wl,-rpath,/home/matthew/Qt5/5.15.1/gcc_64/lib
@@ -30,12 +31,15 @@ LIBS:= -lQt5Network -lQt5Core -lopencv_core -lopencv_imgproc -lz -lbz2 -larchive
 INCPATH := -I/home/matthew/Qt5/5.15.1/gcc_64/include -I/home/matthew/Qt5/5.15.1/gcc_64/include/QtNetwork -I/home/matthew/Qt5/5.15.1/gcc_64/include/QtCore 
 INCPATH += -I/usr/local/include/opencv4
 
-.PHONY: all clean
+.PHONY: all clean clean_objects
 
 all: ${OBJS} ${SHARED_OBJS}
 
 clean :
 	rm -f *.o *.so
+
+clean_objects :
+	rm -f *.o
 
 $(OBJS): %.o : $(SOURCE_DIR)/%.cpp $(SOURCE_DIR)/%.h $(SOURCE_DIR)/expectedsizes.h
 	$(CXX) $(CXXFLAGS) $(INCPATH) $< -o $@ 
