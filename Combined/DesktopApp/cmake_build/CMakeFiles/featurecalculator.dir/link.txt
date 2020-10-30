@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC   -shared -Wl,-soname,libfeaturecalculator.so -o libfeaturecalculator.so CMakeFiles/featurecalculator.dir/featurecalculator.cpp.o CMakeFiles/featurecalculator.dir/confighandler.cpp.o CMakeFiles/featurecalculator.dir/databasehandler.cpp.o -ldcmimgle -ldcmdata -lopencv_core -lopencv_imgproc -lpqxx -lpq -lboost_system -lstdc++fs 

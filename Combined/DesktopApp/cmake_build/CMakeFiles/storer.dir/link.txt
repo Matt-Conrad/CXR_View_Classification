@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC   -shared -Wl,-soname,libstorer.so -o libstorer.so CMakeFiles/storer.dir/storer.cpp.o CMakeFiles/storer.dir/confighandler.cpp.o CMakeFiles/storer.dir/databasehandler.cpp.o -ldcmimgle -ldcmdata -lpqxx -lpq -lboost_system -lstdc++fs 

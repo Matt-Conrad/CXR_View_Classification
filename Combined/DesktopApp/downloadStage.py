@@ -21,7 +21,7 @@ class DownloadStage(Stage):
         def __init__(self, configHandler):
             Runnable.__init__(self, configHandler)
 
-            self.lib = cdll.LoadLibrary(os.path.join(configHandler.getParentFolder(), "build", "libdownloader.so"))
+            self.lib = cdll.LoadLibrary(os.path.join(configHandler.getParentFolder(), "cmake_build", "libdownloader.so"))
             
             self.obj = self.lib.Downloader_new()
 
