@@ -6,5 +6,5 @@ CXX_FLAGS = -fPIC   -std=gnu++1z
 
 CXX_DEFINES = -Dstorer_EXPORTS
 
-CXX_INCLUDES = -I/home/matthew/Documents/CXR_Classification/Combined/DesktopApp/src/src -I/home/matthew/Documents/CXR_Classification/Combined/DesktopApp/src/cmake_build 
+CXX_INCLUDES = -I/home/matthew/Documents/CXR_Classification/Combined/DesktopApp/src/src 
 

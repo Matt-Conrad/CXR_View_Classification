@@ -6,5 +6,5 @@ CXX_FLAGS = -fPIC   -std=gnu++1z
 
 CXX_DEFINES = -Dfeaturecalculator_EXPORTS
 
-CXX_INCLUDES = -I/home/matthew/Documents/CXR_Classification/Combined/DesktopApp/src/src -I/home/matthew/Documents/CXR_Classification/Combined/DesktopApp/src/cmake_build -I/usr/local/include/opencv4 
+CXX_INCLUDES = -I/home/matthew/Documents/CXR_Classification/Combined/DesktopApp/src/src -I/usr/local/include/opencv4 
 
