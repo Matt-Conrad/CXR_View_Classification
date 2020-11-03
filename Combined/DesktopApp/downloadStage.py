@@ -5,6 +5,8 @@ import requests
 from PyQt5.QtCore import pyqtSlot
 from ctypes import cdll
 
+import time
+
 class DownloadStage(Stage):
     """Downloads datasets from online sources."""
     def __init__(self, configHandler):
@@ -26,7 +28,10 @@ class DownloadStage(Stage):
             self.obj = self.lib.Downloader_new()
 
         def run(self): 
+            start = time.time()
             self.lib.Downloader_run(self.obj)
+            end = time.time()
+            print(end - start)
 
     class DownloadUpdater(Runnable):
         """Controls logic of getting the dataset from online sources."""

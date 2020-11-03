@@ -5,6 +5,8 @@ import logging
 import os
 from ctypes import cdll, c_char_p
 
+import time
+
 class UnpackStage(Stage):
     def __init__(self, configHandler):
         Stage.__init__(self)
@@ -25,7 +27,10 @@ class UnpackStage(Stage):
             self.obj = self.lib.Unpacker_new()
 
         def run(self): 
+            start = time.time()
             self.lib.Unpacker_run(self.obj)
+            end = time.time()
+            print(end - start)
 
     class UnpackUpdater(Runnable):
         """Controls logic of getting the dataset from online sources."""

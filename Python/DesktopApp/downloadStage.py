@@ -4,6 +4,8 @@ import logging
 import requests
 from PyQt5.QtCore import pyqtSlot
 
+import time
+
 class DownloadStage(Stage):
     """Downloads datasets from online sources."""
     def __init__(self, configHandler):
@@ -22,6 +24,7 @@ class DownloadStage(Stage):
 
         @pyqtSlot()
         def run(self):
+            start = time.time()
             logging.info('Checking if %s already exists', self.tgzFilePath)
             if os.path.isfile(self.tgzFilePath):
                 logging.info('%s already exists', self.tgzFilePath)
@@ -29,6 +32,8 @@ class DownloadStage(Stage):
                 
                 if os.path.getsize(self.tgzFilePath) == self.expectedSize:
                     logging.info('%s was downloaded properly', self.tgzFilePath)
+                    end = time.time()
+                    print(end - start)
                     self.signals.attemptUpdateProBarValue.emit(self.getTgzSize())
                     self.signals.attemptUpdateText.emit("Image download complete")
                     self.signals.finished.emit()
@@ -41,6 +46,7 @@ class DownloadStage(Stage):
             else:
                 logging.info('%s does not exist', self.tgzFilePath)
                 self.downloadDataset()
+            
 
         def downloadDataset(self):
             logging.info('Downloading dataset from %s', self.configHandler.getUrl())

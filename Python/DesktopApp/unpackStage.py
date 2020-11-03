@@ -4,6 +4,8 @@ import tarfile
 import logging
 import os
 
+import time
+
 class UnpackStage(Stage):
     def __init__(self, configHandler):
         Stage.__init__(self)
@@ -22,6 +24,7 @@ class UnpackStage(Stage):
 
         @pyqtSlot()
         def run(self):
+            start = time.time()
             tgzFilePath = self.configHandler.getTgzFilePath()
 
             logging.info('Unpacking dataset from %s', tgzFilePath)
@@ -30,6 +33,8 @@ class UnpackStage(Stage):
             tf.extractall(path=self.configHandler.getUnpackFolderPath())
 
             logging.info('Done unpacking')
+            end = time.time()
+            print(end - start)
 
     class UnpackUpdater(Runnable):
         """Controls logic of getting the dataset from online sources."""
@@ -44,7 +49,7 @@ class UnpackStage(Stage):
             
             while self.countDcms() != self.expectedNumFiles:
                 self.signals.attemptUpdateProBarValue.emit(self.countDcms())
-                
+
             self.signals.attemptUpdateProBarValue.emit(self.countDcms())
             self.signals.attemptUpdateText.emit("Images unpacked")
             self.signals.finished.emit()

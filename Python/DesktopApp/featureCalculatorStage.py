@@ -6,6 +6,8 @@ from shared_image_processing.features import calc_image_prof
 from cxr_pipeline.preprocessing import preprocessing
 from PyQt5.QtCore import pyqtSlot
 
+import time
+
 class FeatCalcStage(Stage):
     """Downloads datasets from online sources."""
     def __init__(self, configHandler, dbHandler):
@@ -24,6 +26,7 @@ class FeatCalcStage(Stage):
 
         @pyqtSlot()
         def run(self):
+            start = time.time()
             logging.info('Calculating features from images')
             
             sqlQuery = 'SELECT * FROM ' + self.configHandler.getTableName("metadata") + ';'
@@ -50,6 +53,8 @@ class FeatCalcStage(Stage):
                 self.signals.attemptUpdateProBarValue.emit(self.dbHandler.countRecords(self.featTableName))
 
             logging.info('Done calculating features from images')
+            end = time.time()
+            print(end - start)
             self.signals.attemptUpdateText.emit('Done calculating features')
             self.signals.finished.emit()
 

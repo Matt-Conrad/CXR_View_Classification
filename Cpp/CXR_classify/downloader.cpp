@@ -1,5 +1,8 @@
 #include "downloader.h"
 
+#include <chrono>
+#include <iostream>
+
 namespace fs = std::filesystem;
 
 Downloader::Downloader(ConfigHandler * configHandler) : Runnable(configHandler)
@@ -10,6 +13,7 @@ Downloader::Downloader(ConfigHandler * configHandler) : Runnable(configHandler)
 
 void Downloader::run()
 {
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     logger->info("Checking if {} already exists", filenameAbsPath);
     if (fs::exists(filenameAbsPath) && !fs::is_directory(filenameAbsPath)) {
         logger->info("{} already exists", filenameAbsPath);
@@ -27,6 +31,8 @@ void Downloader::run()
         logger->info("{} does not exist", filenameAbsPath);
         download();
     }
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    std::cout << "Time difference = " << (std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count())/1000000000.0 << "[s]" << std::endl;
     emit attemptUpdateProBarValue(getTgzSize());
     emit attemptUpdateText("Image download complete");
     emit finished();

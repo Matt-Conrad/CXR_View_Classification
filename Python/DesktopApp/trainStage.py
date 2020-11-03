@@ -8,6 +8,8 @@ from sklearn.model_selection import KFold, cross_val_score, train_test_split
 from sklearn import svm
 from joblib import dump
 
+import time
+
 class TrainStage(Stage):
     """Downloads datasets from online sources."""
     def __init__(self, configHandler, dbHandler):
@@ -25,6 +27,7 @@ class TrainStage(Stage):
 
         @pyqtSlot()
         def run(self):
+            start = time.time()
             logging.info('Training SVM')
 
             self.signals.attemptUpdateText.emit("Training classifier")
@@ -94,6 +97,9 @@ class TrainStage(Stage):
                 writer = csv.writer(f)
                 for row in fileNamesTest:
                     writer.writerow([row])
+
+            end = time.time()
+            print(end - start)
 
             logging.info('Done training SVM. K-Fold Cross Validation Accuracy: %s', str(accuracy))
             self.signals.attemptUpdateText.emit('K-Fold Cross Validation Accuracy: ' + str(accuracy))

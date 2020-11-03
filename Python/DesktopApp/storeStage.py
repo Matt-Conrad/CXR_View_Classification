@@ -2,6 +2,8 @@ from stage import Stage, Runnable
 from PyQt5.QtCore import pyqtSlot
 from metadata_to_db.dicomToDb import DicomToDatabase
 
+import time
+
 class StoreStage(Stage):
     def __init__(self, configHandler, dbHandler):
         Stage.__init__(self)
@@ -20,6 +22,7 @@ class StoreStage(Stage):
 
         @pyqtSlot()
         def run(self):
+            start = time.time()
             metaTableName = self.configHandler.getTableName("metadata")
             columnsInfoPath = self.configHandler.getColumnsInfoFullPath()
 
@@ -27,6 +30,8 @@ class StoreStage(Stage):
                 self.dbHandler.addTableToDb(metaTableName, columnsInfoPath, "nonElementColumns", "elements")
 
             self.dicomToDatabase.dicomToDb(self.dbHandler.dbInfo['database'], metaTableName, columnsInfoPath)
+            end = time.time()
+            print(end - start)
 
     class StoreUpdater(Runnable):
         def __init__(self, configHandler, dbHandler):

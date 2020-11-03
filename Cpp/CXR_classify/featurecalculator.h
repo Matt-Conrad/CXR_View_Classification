@@ -23,17 +23,8 @@ public slots:
 private:
     std::string featTableName;
 
-    cv::Mat imageUnsigned;
-    cv::Mat imageFloat;
-    cv::Mat imageResize;
-    cv::Mat imageFloatFlat;
-    cv::Mat horProfile;
-    cv::Mat vertProfile;
-
-    cv::Mat preprocessing(uint8_t);
-    cv::Mat calcHorProf();
-    cv::Mat calcVertProf();
     void store(std::string, cv::Mat, cv::Mat);
+    void multiThread(pqxx::row);
 };
 
 #endif // FEATURECALCULATOR_H

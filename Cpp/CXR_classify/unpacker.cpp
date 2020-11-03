@@ -1,5 +1,8 @@
 #include "unpacker.h"
 
+#include <chrono>
+#include <iostream>
+
 Unpacker::Unpacker(ConfigHandler * configHandler) : Runnable(configHandler)
 {
     folderAbsPath = configHandler->getUnpackFolderPath();
@@ -88,6 +91,7 @@ int Unpacker::extract(const char * filename, std::string destination)
 
 void Unpacker::run()
 {
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     std::string filenameAbsPath = configHandler->getTgzFilePath();
 
     logger->info("Unpacking dataset from {}", filenameAbsPath);
@@ -102,6 +106,9 @@ void Unpacker::run()
     } else {
         extract(filenameAbsPath.c_str(), configHandler->getParentFolder());
     }
+
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    std::cout << "Time difference = " << (std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count())/1000000000.0 << "[s]" << std::endl;
     emit attemptUpdateProBarValue(countDcms());
     emit attemptUpdateText("Images unpacked");
     emit finished();
