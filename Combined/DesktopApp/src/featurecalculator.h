@@ -6,6 +6,7 @@
 #include <dcmtk/dcmimgle/dcmimage.h>
 #include <dcmtk/dcmdata/dcfilefo.h>
 #include <vector>
+#include <thread>
 #include "opencv2/imgproc.hpp"
 // #include <opencv2/cudaarithm.hpp>
 #include "confighandler.h"
@@ -23,17 +24,8 @@ private:
 
     std::string featTableName;
 
-    cv::Mat imageUnsigned;
-    cv::Mat imageFloat;
-    cv::Mat imageResize;
-    cv::Mat imageFloatFlat;
-    cv::Mat horProfile;
-    cv::Mat vertProfile;
-
-    cv::Mat preprocessing(uint8_t);
-    cv::Mat calcHorProf();
-    cv::Mat calcVertProf();
     void store(std::string, cv::Mat, cv::Mat);
+    void calculateFeatures(pqxx::row);
 };
 
 // These functions can be called from "C" 

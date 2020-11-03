@@ -61,6 +61,8 @@ dcmtk/dcmdata/dcfilefo.h
 -
 vector
 -
+thread
+-
 opencv2/imgproc.hpp
 /home/matthew/Documents/CXR_Classification/Combined/DesktopApp/src/opencv2/imgproc.hpp
 confighandler.h

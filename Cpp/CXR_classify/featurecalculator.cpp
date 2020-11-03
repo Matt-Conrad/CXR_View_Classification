@@ -2,8 +2,6 @@
 
 #include <chrono>
 #include <iostream>
-#include <thread>
-#include <vector>
 
 FeatureCalculator::FeatureCalculator(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Runnable(configHandler, dbHandler)
 {
@@ -26,7 +24,7 @@ void FeatureCalculator::run()
 
     std::vector<std::thread> threads ;
     for (int rownum=0; rownum < result.size(); ++rownum){
-        std::thread th = std::thread([this, result, rownum](){ multiThread(result[rownum]); });
+        std::thread th = std::thread([this, result, rownum](){ calculateFeatures(result[rownum]); });
         threads.push_back(std::move(th));
     }
 
@@ -42,7 +40,7 @@ void FeatureCalculator::run()
     emit finished();
 }
 
-void FeatureCalculator::multiThread(pqxx::row row)
+void FeatureCalculator::calculateFeatures(pqxx::row row)
 {
     const char * filePath = row["file_path"].c_str();
 

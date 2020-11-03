@@ -6,6 +6,7 @@
 #include <dcmtk/dcmimgle/dcmimage.h>
 #include <dcmtk/dcmdata/dcfilefo.h>
 #include <vector>
+#include <thread>
 #include "opencv2/imgproc.hpp"
 #include <opencv2/cudaarithm.hpp>
 #include "confighandler.h"
@@ -24,7 +25,7 @@ private:
     std::string featTableName;
 
     void store(std::string, cv::Mat, cv::Mat);
-    void multiThread(pqxx::row);
+    void calculateFeatures(pqxx::row);
 };
 
 #endif // FEATURECALCULATOR_H
