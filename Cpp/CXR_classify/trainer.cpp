@@ -76,17 +76,25 @@ void Trainer::run()
     arma::mat xTrain, xTest;
     arma::Row<size_t> yTrain, yTest;
 
+    // need a shuffle here, might be the last parameter in the split function
+
     mlpack::data::Split(xArma, yArma, xTrain, xTest, yTrain, yTest, 0.33, true);
 
     const size_t numClasses = 2;
     int nSplits = 10;
+    int numSamplesInTrain = xTrain.n_cols;
     double cvAcc;
-    if (xTrain.n_cols < nSplits) {
+    if (numSamplesInTrain < nSplits) {
         mlpack::cv::KFoldCV<mlpack::svm::LinearSVM<>, mlpack::cv::Accuracy> cv(xTrain.n_cols, xTrain, yTrain, numClasses);
         cvAcc = cv.Evaluate();
     } else {
-        mlpack::cv::KFoldCV<mlpack::svm::LinearSVM<>, mlpack::cv::Accuracy> cv(nSplits, xTrain, yTrain, numClasses);
-        cvAcc = cv.Evaluate();
+        std::vector<double> results;
+        for (int i = 0; i < 10; i++) {
+            TrainProcessor * trainProcessor = new TrainProcessor(xTrain, yTrain, i, &results, configHandler, dbHandler);
+            threadpool->start(trainProcessor);
+        }
+        threadpool->waitForDone();
+        cvAcc = accumulate(results.begin(), results.end(), 0.0) / results.size();
     }
 
     std::string result("KFoldCV Accuracy: " + std::to_string(cvAcc));
@@ -98,4 +106,31 @@ void Trainer::run()
     emit attemptUpdateText(result.c_str());
     emit attemptUpdateProBarValue(expected_num_files);
     emit finished();
+}
+
+
+TrainProcessor::TrainProcessor(arma::mat xTrain, arma::Row<size_t> yTrain, int index, std::vector<double> * results, ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Runnable(configHandler, dbHandler)
+{
+    TrainProcessor::xTrain = xTrain;
+    TrainProcessor::yTrain = yTrain;
+    TrainProcessor::index = index;
+    TrainProcessor::results = results;
+}
+
+void TrainProcessor::run()
+{
+    double subsetIncrements = ((double) xTrain.n_cols) / 10;
+    int firstIndex = std::round(index * subsetIncrements); // may need to subtract 1
+    int secondIndex = std::round((index+1) * subsetIncrements) - 1;
+
+    mlpack::svm::LinearSVM<> lsvm(xTrain.cols(firstIndex, secondIndex), yTrain.cols(firstIndex, secondIndex));
+    arma::Row<size_t> predictedLabels;
+
+    xTrain.shed_cols(firstIndex, secondIndex);
+    yTrain.shed_cols(firstIndex, secondIndex);
+
+    lsvm.Classify(xTrain, predictedLabels);
+    size_t numberOfCorrectPredictions = arma::sum(predictedLabels == yTrain);
+    double accuracy = ((double) numberOfCorrectPredictions) / yTrain.n_elem;
+    results->push_back(accuracy);
 }

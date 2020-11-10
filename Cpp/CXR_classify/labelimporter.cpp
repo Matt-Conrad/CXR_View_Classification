@@ -1,5 +1,7 @@
 #include "labelimporter.h"
 
+#include <iostream>
+
 LabelImporter::LabelImporter(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : Runnable(configHandler, dbHandler)
 {
 
@@ -27,7 +29,7 @@ void LabelImporter::run()
             sqlQuery += (column.first + ",");
         }
     }
-    sqlQuery = sqlQuery.substr(0, sqlQuery.length() - 1) + ") FROM '" + configHandler->getParentFolder() + "/" + configHandler->getCsvPath() + "' DELIMITER ',' CSV HEADER;";
+    sqlQuery = sqlQuery.substr(0, sqlQuery.length() - 1) + ") FROM '" + configHandler->getCsvPath() + "' DELIMITER ',' CSV HEADER;";
 
     dbHandler->executeQuery(dbHandler->connection, sqlQuery);
 

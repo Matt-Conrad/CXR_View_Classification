@@ -2,6 +2,7 @@ QT += widgets
 QT += network
 
 QMAKE_CXXFLAGS += -std=c++17
+QMAKE_CXXFLAGS += -fopenmp
 
 CONFIG += console
 CONFIG -= app_bundle
@@ -61,7 +62,7 @@ HEADERS += \
     unpacker.h \ \
     unpackstage.h
 
-LIBS += -ldl -lboost_system -lstdc++fs -lz -lbz2 -larchive -lpqxx -lpq -pthread -ldcmimgle -ldcmdata -loflog -lofstd -lopencv_cudaarithm -lopencv_core -lopencv_imgproc -fopenmp -larmadillo -lmlpack -lspdlog
+LIBS += -ldl -lboost_system -lstdc++fs -lz -lbz2 -larchive -lpqxx -lpq -ldcmimgle -ldcmdata -loflog -lofstd -lopencv_cudaarithm -lopencv_core -lopencv_imgproc -larmadillo -lmlpack -fopenmp -lomp -pthread -lspdlog
 
 copydata.commands = $(COPY_DIR) $$PWD/../../miscellaneous/config.ini $$OUT_PWD
 copydata2.commands = $(COPY_DIR) $$PWD/../../miscellaneous/columns_info.json $$OUT_PWD

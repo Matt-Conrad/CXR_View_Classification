@@ -12,6 +12,7 @@
 #include "confighandler.h"
 #include "databasehandler.h"
 #include "runnable.h"
+#include <QThreadPool>
 
 class FeatureCalculator : public Runnable
 {
@@ -22,10 +23,21 @@ public slots:
     void run();
 
 private:
+    QThreadPool * threadpool = new QThreadPool();
     std::string featTableName;
+};
 
+class Processor : public Runnable
+{
+public:
+    Processor(std::string, ConfigHandler *, DatabaseHandler *);
+
+public slots:
+    void run();
+
+private:
     void store(std::string, cv::Mat, cv::Mat);
-    void calculateFeatures(pqxx::row);
+    std::string filePath;
 };
 
 #endif // FEATURECALCULATOR_H
