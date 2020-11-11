@@ -191,7 +191,7 @@ CXR_classify_SOURCE_DIR:STATIC=/home/matthew/Documents/CXR_Classification/Combin
 downloader_LIB_DEPENDS:STATIC=general;-lQt5Network;general;-lQt5Core;general;-lboost_system;general;-lstdc++fs;
 
 //Dependencies for the target
-featurecalculator_LIB_DEPENDS:STATIC=general;-ldcmimgle;general;-ldcmdata;general;-lopencv_core;general;-lopencv_imgproc;general;-lpqxx;general;-lpq;general;-lboost_system;general;-lstdc++fs;
+featurecalculator_LIB_DEPENDS:STATIC=general;-lQt5Core;general;-ldcmimgle;general;-ldcmdata;general;-lopencv_core;general;-lopencv_imgproc;general;-lpqxx;general;-lpq;general;-lboost_system;general;-lstdc++fs;
 
 //Dependencies for the target
 labelimporter_LIB_DEPENDS:STATIC=general;-lpqxx;general;-lpq;general;-lboost_system;general;-lstdc++fs;
@@ -200,7 +200,7 @@ labelimporter_LIB_DEPENDS:STATIC=general;-lpqxx;general;-lpq;general;-lboost_sys
 storer_LIB_DEPENDS:STATIC=general;-ldcmimgle;general;-ldcmdata;general;-lpqxx;general;-lpq;general;-lboost_system;general;-lstdc++fs;
 
 //Dependencies for the target
-trainer_LIB_DEPENDS:STATIC=general;-lpqxx;general;-lpq;general;-fopenmp;general;-larmadillo;general;-lmlpack;general;-lboost_system;general;-lstdc++fs;
+trainer_LIB_DEPENDS:STATIC=general;-lQt5Core;general;-lpqxx;general;-lpq;general;-fopenmp;general;-larmadillo;general;-lmlpack;general;-lboost_system;general;-lstdc++fs;
 
 //Dependencies for the target
 unpacker_LIB_DEPENDS:STATIC=general;-lz;general;-lbz2;general;-larchive;general;-lboost_system;general;-lstdc++fs;

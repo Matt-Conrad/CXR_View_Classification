@@ -4,6 +4,7 @@ import json
 from PyQt5.QtCore import pyqtSlot
 from stage import Stage, Runnable
 from ctypes import cdll
+import time
 
 class LabelStage(Stage):
     """Downloads datasets from online sources."""
@@ -36,7 +37,10 @@ class LabelStage(Stage):
             self.signals.attemptUpdateProBarValue.emit(0)
             self.signals.attemptUpdateText.emit("Importing label data")
 
+            start = time.time()
             self.lib.LabelImporter_run(self.obj)
+            end = time.time()
+            print(end - start)
             
             self.signals.attemptUpdateProBarValue.emit(1)
             self.signals.attemptUpdateText.emit("Done importing")

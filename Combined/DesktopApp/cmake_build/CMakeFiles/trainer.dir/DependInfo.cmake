@@ -13,6 +13,8 @@ set(CMAKE_CXX_COMPILER_ID "GNU")
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "/home/matthew/Documents/CXR_Classification/Combined/DesktopApp/src/src"
+  "/home/matthew/Qt5/5.15.1/gcc_64/include"
+  "/home/matthew/Qt5/5.15.1/gcc_64/include/QtCore"
   )
 
 # Targets to which this target links.

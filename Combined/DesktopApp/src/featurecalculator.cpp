@@ -12,22 +12,39 @@ void FeatureCalculator::run()
 
     pqxx::result result = dbHandler->executeQuery(dbHandler->connection, "SELECT * FROM " + configHandler->getTableName("metadata") + ";");
 
-    std::vector<std::thread> threads ;
     for (int rownum=0; rownum < result.size(); ++rownum){
-        std::thread th = std::thread([this, result, rownum](){ calculateFeatures(result[rownum]); });
-        threads.push_back(std::move(th));
+        pqxx::row row = result[rownum];
+        std::string filePath = row["file_path"].c_str();
+        Processor * processor = new Processor(filePath, configHandler, dbHandler);
+        threadpool->start(processor);
     }
 
-    for(auto& th : threads){
-        th.join();
-    }
+    threadpool->waitForDone();
+
 }
 
-void FeatureCalculator::calculateFeatures(pqxx::row row)
-{
-    const char * filePath = row["file_path"].c_str();
 
-    DicomImage * dcmImage = new DicomImage(filePath);
+FeatureCalculator * FeatureCalculator_new() { 
+    return new FeatureCalculator(); 
+}
+
+void FeatureCalculator_run(FeatureCalculator * featCalculator) {
+    featCalculator->run();
+}
+
+
+
+Processor::Processor(std::string filePath, ConfigHandler * configHandler, DatabaseHandler * dbHandler)
+{
+    Processor::filePath = filePath;
+    Processor::configHandler = configHandler;
+    Processor::dbHandler = dbHandler;
+}
+
+void Processor::run()
+{
+//    std::cout << filePath << std::endl;
+    DicomImage * dcmImage = new DicomImage(filePath.c_str());
     uint16_t * pixelData = (uint16_t *) (dcmImage->getOutputData(16)); // This scales the pixel values so that the intensity range is 0 - 2^16 instead of 0 - 2^bits_stored
 
     // Convert the image from uint16 to double
@@ -40,7 +57,7 @@ void FeatureCalculator::calculateFeatures(pqxx::row row)
 
     // Get the bits_stored for scaling intensities back down from 16 bits to their bits_stored value
     DcmFileFormat file_format;
-    file_format.loadFile(filePath);
+    file_format.loadFile(filePath.c_str());
 
     DcmTagKey bitsStoredKey(40, 257); // bits stored
     OFString bitsStoredValue;
@@ -131,7 +148,7 @@ void FeatureCalculator::calculateFeatures(pqxx::row row)
     delete dcmImage;
 }
 
-void FeatureCalculator::store(std::string filePath, cv::Mat horProfile, cv::Mat vertProfile)
+void Processor::store(std::string filePath, cv::Mat horProfile, cv::Mat vertProfile)
 {
     // Create SQL query
     std::vector<double> horVec(horProfile.begin<double>(), horProfile.end<double>());
@@ -143,18 +160,13 @@ void FeatureCalculator::store(std::string filePath, cv::Mat horProfile, cv::Mat 
     std::vector<std::string> vertVecString(vertVec.size());
     std::transform(vertVec.begin(), vertVec.end(), vertVecString.begin(), [](const double& val){return std::to_string(val);});
 
-    std::string sqlQuery = "INSERT INTO " + featTableName + " (file_name, file_path, hor_profile, vert_profile) VALUES ('" +
+    std::string sqlQuery = "INSERT INTO " + configHandler->getTableName("features") + " (file_name, file_path, hor_profile, vert_profile) VALUES ('" +
             filePath.substr(filePath.find_last_of("/") + 1) + "', '" + filePath + "', '{" + boost::algorithm::join(horVecString, ", ") +
             "}', '{" + boost::algorithm::join(vertVecString, ", ") + "}');";
 
-    dbHandler->executeQuery(dbHandler->connection, sqlQuery);
-}
+    pqxx::connection * connection = dbHandler->openConnection();
 
+    dbHandler->executeQuery(connection, sqlQuery);
 
-FeatureCalculator * FeatureCalculator_new() { 
-    return new FeatureCalculator(); 
-}
-
-void FeatureCalculator_run(FeatureCalculator * featCalculator) {
-    featCalculator->run();
+    delete connection;
 }
