@@ -3,6 +3,7 @@ import os
 import json
 from PyQt5.QtCore import pyqtSlot
 from stage import Stage, Runnable
+import time
 
 class LabelStage(Stage):
     """Downloads datasets from online sources."""
@@ -30,9 +31,13 @@ class LabelStage(Stage):
             self.signals.attemptUpdateProBarBounds.emit(0, 1)
             self.signals.attemptUpdateProBarValue.emit(0)
             self.signals.attemptUpdateText.emit("Importing label data")
+            start = time.time()
 
             self.dbHandler.addTableToDb(self.configHandler.getTableName('label'), self.configHandler.getColumnsInfoFullPath(), "nonElementColumns", 'labels')
             self.importImageLabelData()
+
+            end = time.time()
+            print(end - start)
             
             self.signals.attemptUpdateProBarValue.emit(1)
             self.signals.attemptUpdateText.emit("Done importing")

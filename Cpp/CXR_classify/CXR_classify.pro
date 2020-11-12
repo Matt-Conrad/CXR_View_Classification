@@ -13,7 +13,9 @@ CONFIG -= app_bundle
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
 
-INCLUDEPATH += /usr/local/include/opencv4
+# FIND OPENCV AND QT SO DON'T HAVE TO HARDCODE THEM
+
+INCLUDEPATH += /usr/include/opencv4
 
 SOURCES += \
         confighandler.cpp \
@@ -59,10 +61,11 @@ HEADERS += \
     storestage.h \
     trainer.h \
     trainstage.h \
-    unpacker.h \ \
+    unpacker.h \
     unpackstage.h
 
-LIBS += -ldl -lboost_system -lstdc++fs -lz -lbz2 -larchive -lpqxx -lpq -ldcmimgle -ldcmdata -loflog -lofstd -lopencv_cudaarithm -lopencv_core -lopencv_imgproc -larmadillo -lmlpack -fopenmp -lomp -pthread -lspdlog
+# -lopencv_cudaarithm
+LIBS += -ldl -lboost_system -lstdc++fs -lz -lbz2 -larchive -lpqxx -lpq -ldcmimgle -ldcmdata -loflog -lofstd  -lopencv_core -lopencv_imgproc -larmadillo -lmlpack -fopenmp -lspdlog
 
 copydata.commands = $(COPY_DIR) $$PWD/../../miscellaneous/config.ini $$OUT_PWD
 copydata2.commands = $(COPY_DIR) $$PWD/../../miscellaneous/columns_info.json $$OUT_PWD

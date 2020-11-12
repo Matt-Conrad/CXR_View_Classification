@@ -8,7 +8,7 @@
 #include <vector>
 #include <thread>
 #include "opencv2/imgproc.hpp"
-#include <opencv2/cudaarithm.hpp>
+//#include <opencv2/cudaarithm.hpp>
 #include "confighandler.h"
 #include "databasehandler.h"
 #include "runnable.h"
