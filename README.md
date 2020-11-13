@@ -1,36 +1,37 @@
 # Implementation of Chest X-ray Image View Classification
-This project is an implementation of the paper "Chest X-ray Image View Classification" by Xue et al found [here](https://www.researchgate.net/publication/283778178_Chest_X-ray_Image_View_Classification). Currently, the implementation is in the form of a desktop application coded in both Python and C++, as well as a web API in Python. 
+This project is an implementation of the paper "Chest X-ray Image View Classification" by Xue et al found [here](https://www.researchgate.net/publication/283778178_Chest_X-ray_Image_View_Classification). Currently, the project is split into 2 parts: a desktop application for training the algorithm and a web API for deploying the trained algorithm. 
 
-The desktop app is a Qt application that allows a user to interact with a GUI to go through the all of the steps including: downloading, storing metadata, extracting features, data labaling, cross-validation, and classifier training. The application is available and optimized in C++, Python, and a Combined solution. All implementations come with full logging and the Python implementation is equipped with a suite of pytest unit tests. 
+The desktop app is a Qt GUI application that guides the user through the training steps including: downloading the image set, unpacking it, storing the metadata, extracting the features, data labaling, cross-validation, and classifier training. The application is optimally coded in C++, Python, and a combined Python/C++ solution. All implementations come with full logging and the Python implementation is equipped with a suite of pytest unit tests. 
 
-The web API is a RESTful web API and contains the trained model and I outline steps below on how to deploy either to the local machine, a local VM, or to AWS Elastic Beanstalk.  
+The web API contains the trained model and I outline steps below on how to deploy either to the local machine, a local VM, or to AWS Elastic Beanstalk.  
 
 ## Motivation
 The inspiration for this project arises from my experience in the medical imaging industry. A classifier such as this would be useful in industry. One use case being a lot of medical imaging software relies on DICOM tags such as laterality (0020,0060), view position (0018,5101), and patient orientation (0020,0020) to perform some action. However, this tag is not always there or has values of all images in the study or series as seen in the image set from [NLM History of Medicine](https://openi.nlm.nih.gov/faq#collection), which is the image set used in the cited paper. Thus, this automatic classifier can be used to label all of these images so that the medical software relying on these DICOM tags can perform their duty.
  
-The main purpose of implementing this paper was to get experience with and learn about a wide range of technologies and concepts. Using this paper's algorithm as the core of the project, I utilized the following technologies and concepts to build the application and web API:
+The main purpose of this project was to learn about a wide range of technologies and concepts by combining them into one large project. Using this paper's algorithm as the core of the project, I utilized the following technologies and concepts to build the application and web API:
  - PostgreSQL (Python package: psycopg2, C++ library: libpqxx) to organize the metadata, features, and labels of all of the downloaded images
- - Qt to provide a simple multi-threaded user interface for guiding the user from image set download to classifier training
+ - Qt for building multi-threaded
  - NumPy for most calculations in Python
- - SciPy, scikit-image for feature calculation
  - Pydicom Python library and DCMTK C++ library for working with DICOM files
  - Flask for designing the web API and web app
  - Amazon Web Services (AWS) Elastic Beanstalk for deploying the Flask app to the cloud
- - Gunicorn, and Nginx to deploy the Flask app as a RESTful web API to a local virtual machine
- - OpenCV for image preprocessing in both Python and C++
+ - Gunicorn and Nginx to securely deploy the Flask app web API to a local virtual machine
+ - OpenCV for image processing in both Python and C++
  - pytest for writing an automated suite of unit tests
  - Boost for configuration file handling in C++
  - Armadillo for matrix operations in C++
- - mlpack for machine learning in C++
- - OO Concept: Inheritance (including multiple)
+ - mlpack for dataset manipulation and machine learning in C++
+ - Object-Oriented Concepts: Inheritance (including multiple), Encapsulation, Polymorphism, Abstraction, Coupling & Cohesion
  - ctypes Python library for wrapping C++ functionality
  - UML class diagram for modeling system
- - PyInstaller for packaging the application into an executable
+ - PyInstaller for building Python implementation into an executable
+ - g++, Make, QMake, and CMake build tools for C++
  - VMware for testing on local virtual machines
  - Proper logging using Python's built-in logging library and spdlog C++ library
  - Git: Large File Storage, Submodules
  - Python packaging and deployment to PyPI
- - g++, Make, QMake, and CMake build tools
+ - Multi-threading using QThreadPool and the standard thread library
+ - Downloading dataset: Qt for C++ and requests library for Python
 
 ## Data
 As stated, I used the same data set that was in the paper ([NLM Image Set](https://openi.nlm.nih.gov/faq#collection)). This consists of 7470 chest X-ray images (CR) in the form of DICOM images. To organize the image set, I stored the metadata from the DICOM images into a PostgreSQL database using my [DicomToDatabase repository](https://github.com/Matt-Conrad/DicomToDatabase) I made. 
@@ -182,9 +183,9 @@ Ideas for future improvements:
  - Provide an installer and configuration for the Gunicorn and Nginx server pair
  - Implement a HTML user interface for the web API
  - Add executables for other OSs
- - Make it so that nomkl only installs if you have AMD processor
  - Find a way to remove pre-installed Postgres dependency
  - Make image set source URL more visible to user
  - Fix bugs in one of the PHOG algorithm define in the paper to improve accuracy
  - Implement DICOM compliant HTTP transfer of DICOM files
  - Improve logging in AWS deployment
+ - CI/CD for the desktop apps and web API

@@ -1,8 +1,0 @@
-/home/matthew/Documents/CXR_Classification/Combined/DesktopApp/cmake_build/CMakeFiles/trainer.dir
-/home/matthew/Documents/CXR_Classification/Combined/DesktopApp/cmake_build/CMakeFiles/rebuild_cache.dir
-/home/matthew/Documents/CXR_Classification/Combined/DesktopApp/cmake_build/CMakeFiles/labelimporter.dir
-/home/matthew/Documents/CXR_Classification/Combined/DesktopApp/cmake_build/CMakeFiles/edit_cache.dir
-/home/matthew/Documents/CXR_Classification/Combined/DesktopApp/cmake_build/CMakeFiles/featurecalculator.dir
-/home/matthew/Documents/CXR_Classification/Combined/DesktopApp/cmake_build/CMakeFiles/storer.dir
-/home/matthew/Documents/CXR_Classification/Combined/DesktopApp/cmake_build/CMakeFiles/unpacker.dir
-/home/matthew/Documents/CXR_Classification/Combined/DesktopApp/cmake_build/CMakeFiles/downloader.dir

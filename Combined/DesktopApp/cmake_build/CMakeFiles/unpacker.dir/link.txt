@@ -1,1 +1,0 @@
-/usr/bin/c++ -fPIC  -fopenmp  -shared -Wl,-soname,libunpacker.so -o libunpacker.so CMakeFiles/unpacker.dir/unpacker.cpp.o CMakeFiles/unpacker.dir/confighandler.cpp.o -lz -lbz2 -larchive -lboost_system -lstdc++fs 

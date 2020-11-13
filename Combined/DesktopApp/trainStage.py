@@ -26,7 +26,7 @@ class TrainStage(Stage):
         def __init__(self, configHandler, dbHandler):
             Runnable.__init__(self, configHandler, dbHandler)
 
-            self.lib = cdll.LoadLibrary(os.path.join(configHandler.getParentFolder(), "cmake_build", "libtrainer.so"))
+            self.lib = cdll.LoadLibrary(os.path.join(configHandler.getParentFolder(), "build", "libtrainer.so"))
             
             self.obj = self.lib.Trainer_new()
 
