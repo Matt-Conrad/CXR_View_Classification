@@ -25,7 +25,7 @@ The main purpose of this project was to learn about a wide range of technologies
  - ctypes Python library for wrapping C++ functionality
  - UML class diagram for modeling system
  - PyInstaller for building Python implementation into an executable
- - g++, Make, QMake, and CMake build tools for C++
+ - g++, Make, QMake, and CMake build tools for building C++ executables and shared libraries
  - VMware for testing on local virtual machines
  - Proper logging using Python's built-in logging library and spdlog C++ library
  - Git: Large File Storage, Submodules
@@ -50,11 +50,26 @@ Workflow testing of the app and executables was done on the following environmen
    - Windows 10 laptop with Intel i7-4700MQ CPU and NVIDIA GeForce GT 755M GPU (Only source code testing done)
    - Fresh Ubuntu 18.04 virtual machine using VMware Workstation Player 15 on top of an Ubuntu 18.04 Desktop with AMD Ryzen 2600 CPU and NVIDIA RTX 2070 Super GPU
    - AWS Elastic Beanstalk web server on a Python 3.6 platform running on 64-bit Amazon Linux
+   - Fresh Ubuntu 20.04 virtual machine using VMware Workstation Player 16 on top of an Ubuntu 20.04 Laptop with AMD 3rd Generation Ryzen 9 4900HS and NVIDIA GeForce RTX 2060 Max-Q
 
 ## Desktop App Usage
-There are several usage paths that one can use. I will be providing the source code, a way to compile a folder-based executable, and a single executable. NOTE: According to PyInstaller, since I compiled these executables on Ubuntu 18.04 only Linux users can execute the executables. I will need to compile the source code on other OSs to provide those executables. 
- 
- ### Using source code
+Since there are 3 implementations of the app, there are many ways to build and run it:
+- Python implementation
+   1. Run source code
+   2. Run file-based executable
+   3. Run folder-based executable
+- C++ implementation
+   1. Compile using QMake and run the resulting executable 
+- Combined implementation
+   1. Compile the C++ side using individual g++ commands and run the Python source code
+   2. Compile the C++ side using the provided Makefile and run the Python source code
+   3. Compile the C++ side using CMake and run the Python source code
+
+NOTE: According to PyInstaller, since I compiled the Python implementation executables on Ubuntu 18.04 only Linux users can execute the executables. I will need to compile the source code on other OSs to provide those executables. 
+
+ ### Python
+
+ #### Using source code
  Here are the steps for using the app from the source code:
  1. Clone the git repository onto your computer: 
     ```
@@ -91,19 +106,29 @@ There are several usage paths that one can use. I will be providing the source c
  6. If you are trying to use the dataset subset then you must delete the *NLMCXR_subset_dataset.tgz* from the cloned git repository since the TGZ comes with the code. In order to see the entire workflow, you must delete it from your local repository so that the GUI will start from the beginning of the process. 
  7. Run the app using the following command: ```python main.py```
 
- ### Using the folder-based executable
+ #### Using the folder-based executable
  This executable was created with PyInstaller by providing my *folder.spec* file in the following command: ```pyinstaller folder.spec```, you will need to run this command in the *CXR_View_Classification/Python/DesktopApp/pyinstaller* folder if you want to create it yourself. You can find the executable if you unpack the *dist_folder.zip* from the v1.0.0 release attachment in the Github repository. Here are the steps for running it:
  1. Download the *dist_folder.zip* folder from the Github release and unzip it.
  2. If you don't already have it, install PostgreSQL by following the steps from step 4 of the above section (*Using source code*). 
  3. Change the *config.ini* file in the *dist_folder/main/* folder as explained step 5 from the above section
  4. Execute the *main* executable and go through the steps.
 
- ### Using the single-file executable
+ #### Using the single-file executable
  This executable was created with PyInstaller by providing my *one_file.spec* file in the following command: ```pyinstaller one_file.spec```, you will need to run this command in the *CXR_View_Classification/Python/DesktopApp/pyinstaller* folder if you want to create it yourself. You can find the executable if you unpack the *dist_folder.zip* from the v1.0.0 release attachment in the Github repository. Here are the steps for running it:
  1. Download the *dist_one_file.zip* folder from the Github repository and unzip it.
  2. If you don't already have it, install PostgreSQL by following the steps from step 4 of the source code section (*Using source code*). 
  3. Change the *config.ini* file in the *dist_one_file/* folder as explained step 5 from the source code section
  4. Execute the *main* executable and go through the steps.
+
+ ### C++ Implementation
+
+ #### Building from source
+ The source code for this implementation can be found at *CXR_View_Classification/Cpp/CXR_classify* and the design of this source code is outlined in the *UML* sibling file to source code file. To build this code, you must have QMake installed. I used Qt Creator to facilitate the build process. There is a *pro* file in the source code and if you run build in Qt Creator, it should build the executable in a build folder with supporting files. 
+
+ ### Combined Implementation
+
+ #### Building the shared libraries from C++ source
+ The source code for this implementation can be found in *CXR_View_Classification/Combined/DesktopApp/src*. Along with the source code, there is also a Makefile and a CMakeList.txt file in there to aid building the executables. There are 3 equivalent ways to build this code: g++ commands, Make, and CMake. The commands for each of these build paths can be found in the *buildTools* folder, sibling to the *src* folder. 
 
 ## Web API Usage for local machine or local VM
 There are several ways to deploy the web interfaces: standalone built-in Flask server, standalone Gunicorn server running the Flask app, and an Nginx/Gunicorn server pair where the Nginx server works as a reverse proxy for the Gunicorn server running Flask (recommended). Below I discuss the preparation required for each path, then I provide the following instructions
