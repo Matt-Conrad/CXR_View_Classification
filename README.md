@@ -214,3 +214,10 @@ Ideas for future improvements:
  - Implement DICOM compliant HTTP transfer of DICOM files
  - Improve logging in AWS deployment
  - CI/CD for the desktop apps and web API
+ - Bug tracking / project management system
+ - Speed it up further with CUDA capabilities
+ - Combine the QThreadPools, ConfigHandlers, and DatabaseHandlers in the Combined implementation's C++ code
+ - Update the UMLs again
+ - Add speed performance statistics to the README
+ - Turn the README into a Github wiki 
+ - Add shuffle to the C++ implementation
