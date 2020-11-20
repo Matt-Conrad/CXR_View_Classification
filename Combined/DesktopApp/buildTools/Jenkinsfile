@@ -1,0 +1,14 @@
+pipeline {
+    agent any
+    stages {
+        stage('Build') {
+            steps {
+                sh 'cmake --version'
+                // sh 'mkdir build'
+                // sh 'cd build'
+                // sh 'cmake ../src'
+                // sh 'cmake --build .'
+            }
+        }
+    }
+}
