@@ -26,12 +26,14 @@ The main purpose of this project was to learn about a wide range of technologies
  - UML class diagram for modeling system
  - PyInstaller for building Python implementation into an executable
  - g++, Make, QMake, and CMake build tools for building C++ executables and shared libraries
- - VMware for testing on local virtual machines
+ - VMware Workstation for testing on local virtual machines
  - Proper logging using Python's built-in logging library and spdlog C++ library
  - Git: Large File Storage, Submodules
  - Python packaging and deployment to PyPI
  - Multi-threading using QThreadPool and the standard thread library
  - Downloading dataset: Qt for C++ and requests library for Python
+ - Github Issues for bug and task tracking
+ - Jenkins for CI/CD
 
 ## Data
 As stated, I used the same data set that was in the paper ([NLM Image Set](https://openi.nlm.nih.gov/faq#collection)). This consists of 7470 chest X-ray images (CR) in the form of DICOM images. To organize the image set, I stored the metadata from the DICOM images into a PostgreSQL database using my [DicomToDatabase repository](https://github.com/Matt-Conrad/DicomToDatabase) I made. 
@@ -203,21 +205,3 @@ There are several ways to deploy the web interfaces: standalone built-in Flask s
  - When the source code or executables are run, they produce a log called the *CXR_Classification.log*. This log contains messages that alert the user of where it is at in the code. The *config.ini* file contains the setting, *level*, under the *logging* section for the level of logging the user would like to see in the log. Currently, this can be set to "info" or "debug". The default for this setting is "info".
  - Additionally, the log for the Nginx engine is set for */var/log/nginx/cxr_classifier.log* in the */etc/nginx/sites-available/default* config file as specified in step 6 of *Nginx/Gunicorn server pair (Recommended)* above.
 
-## Future work
-Ideas for future improvements:
- - Provide an installer and configuration for the Gunicorn and Nginx server pair
- - Implement a HTML user interface for the web API
- - Add executables for other OSs
- - Find a way to remove pre-installed Postgres dependency
- - Make image set source URL more visible to user
- - Fix bugs in one of the PHOG algorithm define in the paper to improve accuracy
- - Implement DICOM compliant HTTP transfer of DICOM files
- - Improve logging in AWS deployment
- - CI/CD for the desktop apps and web API
- - Bug tracking / project management system
- - Speed it up further with CUDA capabilities
- - Combine the QThreadPools, ConfigHandlers, and DatabaseHandlers in the Combined implementation's C++ code
- - Update the UMLs again
- - Add speed performance statistics to the README
- - Turn the README into a Github wiki 
- - Add shuffle to the C++ implementation
