@@ -1,14 +1,22 @@
 pipeline {
     agent any
+    options {
+        skipDefaultCheckout()
+    }
     stages {
         stage('Build') {
             steps {
+                cleanWs()
+                
+                checkout scm
+
                 sh 'cmake --version'
-                sh 'echo "Hello World"'
-                // sh 'mkdir build'
-                // sh 'cd build'
-                // sh 'cmake ../src'
-                // sh 'cmake --build .'
+                sh 'mkdir ./Combined/DesktopApp/build'
+                dir('./Combined/DesktopApp/build') {
+                    sh 'pwd'
+                    sh 'cmake ../src'
+                    sh 'cmake --build .'
+                }
             }
         }
     }
