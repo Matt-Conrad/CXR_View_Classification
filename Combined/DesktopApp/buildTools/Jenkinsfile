@@ -16,6 +16,14 @@ pipeline {
             }
         }
 
+        stage('Build Python implementation') {
+            steps {
+                dir('./Python/pyinstaller') {
+                    sh '/home/matt/.venvs/CXR_env/bin/pyinstaller --distpath=../ folder.spec'
+                }
+            }
+        }
+
         stage('Build C++ implementation') {
             steps {
                 sh 'mkdir ./Cpp/build'
