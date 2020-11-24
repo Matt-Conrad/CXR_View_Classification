@@ -4,16 +4,32 @@ pipeline {
         skipDefaultCheckout()
     }
     stages {
-        stage('Build') {
+        stage('Prepare build folder') {
             steps {
                 cleanWs()
-                
-                checkout scm
+            }
+        }
 
-                sh 'cmake --version'
+        stage('Get source code') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build C++ implementation') {
+            steps {
+                sh 'mkdir ./Cpp/build'
+                dir('./Cpp/build') {
+                    sh '/usr/lib/qt5/bin/qmake /home/matt/Documents/CXR_View_Classification/Cpp/CXR_classify/CXR_classify.pro -spec linux-g++ CONFIG+=debug'
+                    sh '/usr/bin/make -j10'
+                }
+            }
+        }
+
+        stage('Build shared libraries') {
+            steps {
                 sh 'mkdir ./Combined/DesktopApp/build'
                 dir('./Combined/DesktopApp/build') {
-                    sh 'pwd'
                     sh 'cmake ../src'
                     sh 'cmake --build .'
                 }
