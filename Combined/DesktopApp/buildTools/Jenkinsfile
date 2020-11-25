@@ -43,5 +43,19 @@ pipeline {
                 }
             }
         }
+
+        stage('Copy repository to VM shared folder') {
+            steps {
+                /*
+                jenkins user can't write to shared folder in Matt so we must allow
+                jenkins to write to folder. I used:
+                sudo chmod -R a+rw /home/matt/SharedFolder_host
+                before and after the call below. Before to write and after so the VM
+                can execute and operate on the files. However I did this from host terminal
+                so I need to find a way to do it using Jenkinsfile. 
+                */
+                sh 'cp -r . /home/matt/SharedFolder_Host'
+            }
+        }
     }
 }
