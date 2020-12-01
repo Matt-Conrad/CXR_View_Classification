@@ -47,7 +47,7 @@ pipeline {
         stage('Set up VM') {
             steps {
                 sh 'cp -r /home/matt/vmwareSnapshots/Ubuntu /home/matt/vmware/Ubuntu'
-                // Make sure vmrest server is started
+                // sh 'gnome-terminal -- vmrest'
                 sh "curl 'http://127.0.0.1:8697/api/vms/0G9LFS4SVBVOVO33L6NBO3K4N9GV3F0U/power' -X PUT --header 'Content-Type: application/vnd.vmware.vmw.rest-v1+json' --header 'Accept: application/vnd.vmware.vmw.rest-v1+json' --header 'Authorization: Basic TWF0dC1Db25yYWQ6Q2Ftd2FyZDQzMTAh' -d 'on'"
                 // sh 'ping 192.168.61.130'
             }
@@ -56,7 +56,48 @@ pipeline {
         stage('Copy repository to VM shared folder') {
             steps {
                 // Must run this in the same user that has the shared folder
-                sh 'cp -r . /home/matt/SharedFolder_Host'
+                sh 'cp -r `ls --ignore=.*` /home/matt/SharedFolder_Host'
+            }
+        }
+        
+        stage('Run setup scripts') {
+            steps {
+                sh "ssh-keygen -R 192.168.61.130"
+
+                sleep 5
+
+                script {
+                    def ver_script = $/eval "sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' matt@192.168.61.130 'echo password | sudo -S /usr/bin/vmhgfs-fuse .host:/ /mnt/hgfs -o subtype=vmhgfs-fuse,allow_other'"/$
+                    sh(script: "${ver_script}")
+                }
+
+                script {
+                    def ver_script = $/eval "sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' matt@192.168.61.130 'echo password | sudo -S chmod u+x /mnt/hgfs/SharedFolder_Guest/miscellaneous/pythonSetup.sh'"/$
+                    sh(script: "${ver_script}")
+                }
+
+                script {
+                    def ver_script = $/eval "sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' matt@192.168.61.130 'echo password | sudo -S /mnt/hgfs/SharedFolder_Guest/miscellaneous/pythonSetup.sh'"/$
+                    sh(script: "${ver_script}")
+                }
+
+                script {
+                    def ver_script = $/eval "sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' matt@192.168.61.130 'echo password | sudo -S chmod u+x /mnt/hgfs/SharedFolder_Guest/miscellaneous/postgresSetup.sh'"/$
+                    sh(script: "${ver_script}")
+                }
+
+                script {
+                    def ver_script = $/eval "sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' matt@192.168.61.130 'echo password | sudo -S /mnt/hgfs/SharedFolder_Guest/miscellaneous/postgresSetup.sh'"/$
+                    sh(script: "${ver_script}")
+                }
+
+                // sh "sshpass -p \\'password\\' ssh -o \\\"StrictHostKeyChecking no\\\" matt@192.168.61.130 \\'echo password | sudo -S /usr/bin/vmhgfs-fuse .host:/ /mnt/hgfs -o subtype=vmhgfs-fuse,allow_other\\'"
+
+                // sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' matt@192.168.61.130 'echo password | sudo -S /usr/bin/vmhgfs-fuse .host:/ /mnt/hgfs -o subtype=vmhgfs-fuse,allow_other'
+                // sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' matt@192.168.61.130 'echo password | sudo -S chmod u+x /mnt/hgfs/SharedFolder_Guest/miscellaneous/pythonSetup.sh'
+                // sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' matt@192.168.61.130 'echo password | sudo -S /mnt/hgfs/SharedFolder_Guest/miscellaneous/pythonSetup.sh'
+                // sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' matt@192.168.61.130 'echo password | sudo -S chmod u+x /mnt/hgfs/SharedFolder_Guest/miscellaneous/postgresSetup.sh'
+                // sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' matt@192.168.61.130 'echo password | sudo -S /mnt/hgfs/SharedFolder_Guest/miscellaneous/postgresSetup.sh'
             }
         }
     }
