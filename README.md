@@ -107,6 +107,9 @@ NOTE: According to PyInstaller, since I compiled the Python implementation execu
  #### Building from source
  The source code for this implementation can be found at *CXR_View_Classification/Cpp/CXR_classify* and the design of this source code is outlined in the *UML* sibling file to source code file. To build this code, you must have QMake installed. I used Qt Creator to facilitate the build process. There is a *pro* file in the source code and if you run build in Qt Creator, it should build the executable in a build folder with supporting files. 
 
+ #### Running the file
+ Run cppSetup.sh before you run the provided build.
+
  ### Combined Implementation
 
  #### Building the shared libraries from C++ source

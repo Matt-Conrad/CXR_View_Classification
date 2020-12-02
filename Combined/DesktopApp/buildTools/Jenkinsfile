@@ -16,13 +16,13 @@ pipeline {
             }
         }
 
-        stage('Build Python implementation') {
-            steps {
-                dir('./Python/pyinstaller') {
-                    sh '/home/matt/.venvs/CXR_env/bin/pyinstaller --distpath=../ folder.spec'
-                }
-            }
-        }
+        // stage('Build Python implementation') {
+        //     steps {
+        //         dir('./Python/pyinstaller') {
+        //             sh '/home/matt/.venvs/CXR_env/bin/pyinstaller --distpath=../ folder.spec'
+        //         }
+        //     }
+        // }
 
         stage('Build C++ implementation') {
             steps {
@@ -34,15 +34,15 @@ pipeline {
             }
         }
 
-        stage('Build shared libraries') {
-            steps {
-                sh 'mkdir ./Combined/DesktopApp/build'
-                dir('./Combined/DesktopApp/build') {
-                    sh 'cmake ../src'
-                    sh 'cmake --build .'
-                }
-            }
-        }
+        // stage('Build shared libraries') {
+        //     steps {
+        //         sh 'mkdir ./Combined/DesktopApp/build'
+        //         dir('./Combined/DesktopApp/build') {
+        //             sh 'cmake ../src'
+        //             sh 'cmake --build .'
+        //         }
+        //     }
+        // }
 
         stage('Set up VM') {
             steps {
