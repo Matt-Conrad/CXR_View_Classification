@@ -7,6 +7,8 @@ sudo apt-get install python3-dev -y
 sudo apt-get install gcc -y
 sudo apt-get install python3-virtualenv -y
 sudo apt-get install libxcb-xinerama0 -y
+# TODO: Thin out the list above. Probably some of them are not needed. 
+# NOTE: libxcb-xinerama0 is due to an error message from Qt
 
 virtualenv -p /usr/bin/python3.6 CXR_env
 

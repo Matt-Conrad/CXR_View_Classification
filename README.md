@@ -77,42 +77,8 @@ NOTE: According to PyInstaller, since I compiled the Python implementation execu
     ```
     git clone https://github.com/Matt-Conrad/CXR_View_Classification.git
     ```
- 2. Install virtualenv and Python 3.6 if you don't already have it. You can install virtualenv using [these instructions](https://virtualenv.pypa.io/en/latest/installation.html)
-    ```
-    sudo add-apt-repository ppa:deadsnakes/ppa
-    sudo apt-get update
-    sudo apt-get install python3.6
-    sudo apt-get install python3.6-dev
-    sudo apt-get install python3-dev
-    sudo apt-get install gcc
-    sudo apt-get install python3-virtualenv
-    sudo apt-get install libxcb-xinerama0
-    ```
-    TODO: Thin out the list above. Probably some of them are not needed. 
-    NOTE: libxcb-xinerama0 is due to an error message from Qt in 
- 3. Create a virtualenv using ```virtualenv -p PATH_TO_PYTHON_3.6 CXR_env``` to create a folder containing virtual environment files. Activate the environment using ```source CXR_env/bin/activate```. Lastly, install the pip packages using ```pip install -r requirements.txt``` from inside the *miscellaneous* folder.
- 4. If you don't already have it, install PostgreSQL using [these instructions](https://wiki.postgresql.org/wiki/Detailed_installation_guides). If you're on Ubuntu, I used the following to get PostgreSQL set up:
-    1. Run the following commands:
-    ```
-    sudo apt-get install curl ca-certificates gnupg
-    curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-    sudo touch /etc/apt/sources.list.d/pgdg.list
-    sudo nano /etc/apt/sources.list.d/pgdg.list
-    ``` 
-    3. Add the following line to the file: ```deb http://apt.postgresql.org/pub/repos/apt/ focal-pgdg main```. Alternatively, you could replace the *bionic-pgdg* (for Ubuntu 18.04) with *xenial-pgdg* (for Ubuntu 16.04).
-    4. Run the following commands:
-    ```
-    sudo apt-get update
-    sudo apt-get install postgresql-12
-    sudo systemctl start postgresql@12-main
-    ```
-    6. Maybe unnecessary, but I set the password for the *postgres* user with:
-    ```
-    sudo -u postgres -i
-    psql
-    \password postgres
-    ```
-    Confirm the password, and now you have a working version of PostgreSQL on your computer.
+ 2. Run the pythonSetup.sh file to set up Python and virtualenv
+ 3. Run the postgresSetup.sh file to set up Postgres
  4. The last step before running the application is to optionally change the settings of the config.ini file
     1. (OPTIONAL) Change the default configuration if you wish. \
       - The *postgresql* section contains the server host and port, desired name of the DB to be created, as well as user and password. The template is currently set up to create a DB named "db" on the localhost, so you can leave it as is or rename it if you wish. 
@@ -125,14 +91,14 @@ NOTE: According to PyInstaller, since I compiled the Python implementation execu
  #### Using the folder-based executable
  This executable was created with PyInstaller by providing my *folder.spec* file in the following command: ```pyinstaller folder.spec```, you will need to run this command in the *CXR_View_Classification/Python/DesktopApp/pyinstaller* folder if you want to create it yourself. You can find the executable if you unpack the *dist_folder.zip* from the v1.0.0 release attachment in the Github repository. Here are the steps for running it:
  1. Download the *dist_folder.zip* folder from the Github release and unzip it.
- 2. If you don't already have it, install PostgreSQL by following the steps from step 3 of the above section (*Using source code*). 
+ 2. If you don't already have it, install PostgreSQL by running the postgresSetup.sh script. 
  3. Change the *config.ini* file in the *dist_folder/main/* folder as explained step 4 from the above section
  4. Execute the *main* executable and go through the steps.
 
  #### Using the single-file executable
  This executable was created with PyInstaller by providing my *one_file.spec* file in the following command: ```pyinstaller one_file.spec```, you will need to run this command in the *CXR_View_Classification/Python/DesktopApp/pyinstaller* folder if you want to create it yourself. You can find the executable if you unpack the *dist_folder.zip* from the v1.0.0 release attachment in the Github repository. Here are the steps for running it:
  1. Download the *dist_one_file.zip* folder from the Github repository and unzip it.
- 2. If you don't already have it, install PostgreSQL by following the steps from step 4 of the source code section (*Using source code*). 
+ 2. If you don't already have it, install PostgreSQL by running the postgresSetup.sh script.
  3. Change the *config.ini* file in the *dist_one_file/* folder as explained step 5 from the source code section
  4. Execute the *main* executable and go through the steps.
 
