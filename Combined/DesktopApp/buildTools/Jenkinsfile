@@ -24,34 +24,36 @@ pipeline {
         //     }
         // }
 
-        stage('Build C++ implementation') {
-            steps {
-                sh 'mkdir ./Cpp/build'
-                dir('./Cpp/build') {
-                    sh '/usr/lib/qt5/bin/qmake /home/matt/Documents/CXR_View_Classification/Cpp/CXR_classify/CXR_classify.pro -spec linux-g++ CONFIG+=debug'
-                    sh '/usr/bin/make -j6'
-                }
-            }
-        }
-
-        // stage('Build shared libraries') {
+        // stage('Build C++ implementation') {
         //     steps {
-        //         sh 'mkdir ./Combined/DesktopApp/build'
-        //         dir('./Combined/DesktopApp/build') {
-        //             sh 'cmake ../src'
-        //             sh 'cmake --build .'
+        //         sh 'mkdir ./Cpp/build'
+        //         dir('./Cpp/build') {
+        //             sh '/usr/lib/qt5/bin/qmake /home/matt/Documents/CXR_View_Classification/Cpp/CXR_classify/CXR_classify.pro -spec linux-g++ CONFIG+=debug'
+        //             sh '/usr/bin/make -j6'
         //         }
         //     }
         // }
+
+        stage('Build shared libraries') {
+            steps {
+                sh 'mkdir ./Combined/DesktopApp/build'
+                dir('./Combined/DesktopApp/build') {
+                    sh 'cmake ../src'
+                    sh 'cmake --build .'
+                }
+            }
+        }
 
         stage('Set up VM') {
             steps {
                 dir('/home/matt/vmware') {
                     sh 'rm -rf *'
                 }
-                sh 'cp -r /home/matt/vmwareSnapshots/Ubuntu /home/matt/vmware/Ubuntu'
+                sh 'cp -r /home/matt/vmwareSnapshots/Ubuntu40GB /home/matt/vmware/Ubuntu'
                 // sh 'gnome-terminal -- vmrest'
-                sh "curl 'http://127.0.0.1:8697/api/vms/0G9LFS4SVBVOVO33L6NBO3K4N9GV3F0U/power' -X PUT --header 'Content-Type: application/vnd.vmware.vmw.rest-v1+json' --header 'Accept: application/vnd.vmware.vmw.rest-v1+json' --header 'Authorization: Basic TWF0dC1Db25yYWQ6Q2Ftd2FyZDQzMTAh' -d 'on'"
+                // Ubuntu 20GB: 0G9LFS4SVBVOVO33L6NBO3K4N9GV3F0U
+                // Ubuntu 40GB: OL8L57FIL3B6FADO2ALNQDRC7PVKDCVH
+                sh "curl 'http://127.0.0.1:8697/api/vms/OL8L57FIL3B6FADO2ALNQDRC7PVKDCVH/power' -X PUT --header 'Content-Type: application/vnd.vmware.vmw.rest-v1+json' --header 'Accept: application/vnd.vmware.vmw.rest-v1+json' --header 'Authorization: Basic TWF0dC1Db25yYWQ6Q2Ftd2FyZDQzMTAh' -d 'on'"
                 // sh 'ping 192.168.61.130'
             }
         }
@@ -68,7 +70,7 @@ pipeline {
         
         stage('Run setup scripts') {
             steps {
-                sh "ssh-keygen -R 192.168.61.130"
+                sh "ssh-keygen -R 192.168.61.132"
 
                 sleep 15
 
