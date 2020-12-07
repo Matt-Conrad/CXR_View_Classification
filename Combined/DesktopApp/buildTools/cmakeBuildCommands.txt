@@ -1,7 +1,0 @@
-Starting at the DesktopApp directory, enter the following commands in the Linux command prompt to build 
-the shared libraries using CMake:
-
-mkdir build
-cd build
-cmake ../src
-cmake --build .

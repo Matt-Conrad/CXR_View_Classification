@@ -1,7 +1,0 @@
-Starting at the DesktopApp directory, enter the following commands in the Linux command prompt to build 
-the shared libraries using GNU Make:
-
-mkdir build
-cd build
-cp ../src/Makefile ./Makefile
-make
