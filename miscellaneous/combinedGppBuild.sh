@@ -1,7 +1,7 @@
-Starting at the DesktopApp directory, enter the following commands in the Linux command prompt to build 
-the shared libraries using g++ and the command line:
+#!/bin/bash
+# Starting at the DesktopApp directory, enter the following commands in the Linux command prompt to build 
+# the shared libraries using g++ and the command line:
 
-# Below are the commands to run for compiling and linking the shared libraries
 g++ -std=c++17 -c -fPIC confighandler.cpp -o confighandler.o
 g++ -std=c++17 -c -fPIC databasehandler.cpp -o databasehandler.o
 g++ -std=c++17 -c -fPIC -I/home/matthew/Qt5/5.15.1/gcc_64/include -I/home/matthew/Qt5/5.15.1/gcc_64/include/QtNetwork -I/home/matthew/Qt5/5.15.1/gcc_64/include/QtCore downloader.cpp -o downloader.o 

@@ -58,62 +58,95 @@ Workflow testing of the app and executables was done on the following environmen
 Since there are 3 implementations of the app, there are many ways to build and run it:
 - Python implementation
    1. Run source code
-   2. Run file-based executable
-   3. Run folder-based executable
+   2. Run pre-built file-based executable
+   3. Run pre-built folder-based executable
+   4. Build and run file-based executable
+   5. Build and run folder-based executable
 - C++ implementation
-   1. Compile using QMake and run the resulting executable 
+   1. Build using QMake and run the resulting executable
+   2. Run pre-built executable
 - Combined implementation
-   1. Compile the C++ side using individual g++ commands and run the Python source code
-   2. Compile the C++ side using the provided Makefile and run the Python source code
-   3. Compile the C++ side using CMake and run the Python source code
+   1. Build C++ side using individual g++ commands and run Python source code
+   2. Build C++ side using provided Makefile and run Python source code
+   3. Build C++ side using CMake and run Python source code
+   4. Run Python source code with pre-built C++ shared libraries
 
-NOTE: According to PyInstaller, since I compiled the Python implementation executables on Ubuntu 18.04 only Linux users can execute the executables. I will need to compile the source code on other OSs to provide those executables. 
+NOTE: Pre-built executables and shared libraries are compiled on Ubuntu 20.04 so they may only work on that OS. Additionally, scripts for building are targeted toward Ubuntu/Linux users.
 
- ### Python
-
- #### Using source code
- Here are the steps for using the app from the source code:
+ ### For all paths
  1. Clone the git repository onto your computer: 
     ```
     git clone https://github.com/Matt-Conrad/CXR_View_Classification.git
     ```
- 2. Run the pythonSetup.sh file to set up Python and virtualenv
- 3. Run the postgresSetup.sh file to set up Postgres
- 4. The last step before running the application is to optionally change the settings of the config.ini file
-    1. (OPTIONAL) Change the default configuration if you wish. \
+ 2. Set up Postgres by running postgresSetup.sh if you don't already have it
+ 2. (OPTIONAL) Change the default configuration if you wish. \
       - The *postgresql* section contains the server host and port, desired name of the DB to be created, as well as user and password. The template is currently set up to create a DB named "db" on the localhost, so you can leave it as is or rename it if you wish. 
       - Leave the *dicom_folder* section alone as it gets filled in automatically as the app goes through the steps. You can also rename the tables that will be created.
       - You can leave the *table_info* section alone, or if you want to change the names of the tables you can here
       - Feel free to leave the *logging* section alone. For more detail, go down to the *Logging* section of this README
       - Currently the code is set up to operate with the subset. If you would like to switch to the full image set, you must change the *dataset_info* section to either be "full_set" or "subset"
- 5. Run the app using the following command: ```python main.py```
 
- #### Using the folder-based executable
- This executable was created with PyInstaller by providing my *folder.spec* file in the following command: ```pyinstaller folder.spec```, you will need to run this command in the *CXR_View_Classification/Python/DesktopApp/pyinstaller* folder if you want to create it yourself. You can find the executable if you unpack the *dist_folder.zip* from the v1.0.0 release attachment in the Github repository. Here are the steps for running it:
+ ### Python
+ Here are the steps for using the app for the various paths.
+
+ #### Run source code
+ 1. Run the pythonSetup.sh file to set up Python and virtualenv
+ 3. Activate the virtualenv
+ 4. Run the app using the following command: ```python main.py```
+
+ #### Run pre-built file-based executable
+ 1. Download the *dist_file.zip* folder from the Github release and unzip it.
+ 3. Execute the *main* executable in *dist_folder/main/* folder
+
+ #### Run pre-built folder-based executable
  1. Download the *dist_folder.zip* folder from the Github release and unzip it.
- 2. If you don't already have it, install PostgreSQL by running the postgresSetup.sh script. 
- 3. Change the *config.ini* file in the *dist_folder/main/* folder as explained step 4 from the above section
- 4. Execute the *main* executable and go through the steps.
+ 3. Execute the *main* executable in *dist_folder/main/* folder
 
- #### Using the single-file executable
- This executable was created with PyInstaller by providing my *one_file.spec* file in the following command: ```pyinstaller one_file.spec```, you will need to run this command in the *CXR_View_Classification/Python/DesktopApp/pyinstaller* folder if you want to create it yourself. You can find the executable if you unpack the *dist_folder.zip* from the v1.0.0 release attachment in the Github repository. Here are the steps for running it:
- 1. Download the *dist_one_file.zip* folder from the Github repository and unzip it.
- 2. If you don't already have it, install PostgreSQL by running the postgresSetup.sh script.
- 3. Change the *config.ini* file in the *dist_one_file/* folder as explained step 5 from the source code section
- 4. Execute the *main* executable and go through the steps.
+ #### Build and run folder-based executable
+ 1. Run the pythonSetup.sh file to set up Python and virtualenv
+ 2. Activate the virtualenv
+ 3. Run ```pyinstaller folder.spec``` in *CXR_View_Classification/Python/DesktopApp/pyinstaller*
+ 5. Execute the *CXR_View_Classification/Python/main* executable and go through the steps.
+
+ #### Build and run file-based executable
+ 1. Run the pythonSetup.sh file to set up Python and virtualenv
+ 2. Activate the virtualenv
+ 3. Run ```pyinstaller one_file.spec``` in *CXR_View_Classification/Python/DesktopApp/pyinstaller*
+ 5. Execute the *CXR_View_Classification/Python/main* executable and go through the steps.
 
  ### C++ Implementation
 
- #### Building from source
- The source code for this implementation can be found at *CXR_View_Classification/Cpp/CXR_classify* and the design of this source code is outlined in the *UML* sibling file to source code file. To build this code, you must have QMake installed. I used Qt Creator to facilitate the build process. There is a *pro* file in the source code and if you run build in Qt Creator, it should build the executable in a build folder with supporting files. 
+ #### Build using QMake and run the resulting executable
+ 1. Run cppSetup.sh to set up C++ libraries
+ 2. Run QMake on the .pro file
+ 3. Execute the *CXR_View_Classification/Cpp...* executable and go through the steps.
 
  #### Running the file
- Run cppSetup.sh before you run the provided build.
+ 1. Run cppSetup.sh to set up C++ libraries
+ 2. Execute the provided executable and go through the steps.
 
  ### Combined Implementation
+ The source code for this implementation can be found in *CXR_View_Classification/Combined/DesktopApp/src*. Along with the source code, there is also a Makefile and a CMakeList.txt file in there to aid building the executables. There are 3 equivalent ways to build this code: g++ commands, Make, and CMake. The commands for each of these build paths can be found in the *buildTools* folder, sibling to the *src* folder.
 
- #### Building the shared libraries from C++ source
- The source code for this implementation can be found in *CXR_View_Classification/Combined/DesktopApp/src*. Along with the source code, there is also a Makefile and a CMakeList.txt file in there to aid building the executables. There are 3 equivalent ways to build this code: g++ commands, Make, and CMake. The commands for each of these build paths can be found in the *buildTools* folder, sibling to the *src* folder. 
+ #### Build C++ side using individual g++ commands and run Python source code
+ 1. Run combinedSetup.sh to set up C++ and Python libraries
+ 2. Run combinedGppBuild.sh to build the C++ side
+ 3. Run Python source code 
+  
+ #### Build C++ side using provided Makefile and run Python source code
+ 1. Run combinedSetup.sh to set up C++ and Python libraries
+ 2. Run combinedMakeBuild.sh to build the C++ side
+ 3. Run Python source code 
+
+ #### Build C++ side using CMake and run Python source code
+ 1. Run combinedSetup.sh to set up C++ and Python libraries
+ 2. Run combinedCmakeBuild.sh to build the C++ side
+ 3. Run Python source code 
+
+ #### Run Python source code with pre-built C++ shared libraries
+ 1. Run combinedSetup.sh to set up C++ (?) and Python libraries
+ 2. Download the provided C++ shared libraries
+ 3. Run Python source code 
 
 ## Web API Usage for local machine or local VM
 There are several ways to deploy the web interfaces: standalone built-in Flask server, standalone Gunicorn server running the Flask app, and an Nginx/Gunicorn server pair where the Nginx server works as a reverse proxy for the Gunicorn server running Flask (recommended). Below I discuss the preparation required for each path, then I provide the following instructions
