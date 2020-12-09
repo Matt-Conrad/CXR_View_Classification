@@ -1,7 +1,9 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-block_cipher = None
+import PyInstaller.config
+PyInstaller.config.CONF['distpath'] = '../builds/dist_one_file'
 
+block_cipher = None
 
 a = Analysis(['../DesktopApp/main.py'],
              pathex=[],

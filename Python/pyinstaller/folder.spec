@@ -1,7 +1,9 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-block_cipher = None
+import PyInstaller.config
+PyInstaller.config.CONF['distpath'] = '../builds'
 
+block_cipher = None
 
 a = Analysis(['../DesktopApp/main.py'],
              pathex=[],
@@ -34,7 +36,7 @@ coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
                a.datas,
+               name='dist_folder',
                strip=False,
                upx=True,
-               upx_exclude=[],
-               name='main')
+               upx_exclude=[])
