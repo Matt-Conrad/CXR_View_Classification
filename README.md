@@ -91,20 +91,20 @@ NOTE: Pre-built executables and shared libraries are compiled on Ubuntu 20.04 so
 
  #### Run source code
  1. Run the pythonSetup.sh file to set up Python and virtualenv
- 3. Activate the virtualenv
- 4. Run the app using the following command: ```python main.py```
+ 2. Activate the virtualenv
+ 3. Run the app using the following command: ```python main.py```
 
  #### Run pre-built file-based executable
- 1. Download the *dist_file.zip* folder from the Github release and unzip it.
- 3. Execute the *main* executable in *dist_folder/main/* folder
+ 1. Download the *dist_one_file.zip* folder from the Github release and unzip it.
+ 2. Execute the *main* executable in *dist_one_file* folder
 
  #### Run pre-built folder-based executable
  1. Download the *dist_folder.zip* folder from the Github release and unzip it.
- 3. Execute the *main* executable in *dist_folder/main/* folder
+ 2. Execute the *main* executable in *dist_folder* folder
 
  #### Build and run folder-based executable
  1. Run the pythonSetup.sh file to set up Python and virtualenv
- 2. Activate the virtualenv
+ 2. Activate the virtualenv ```source CXR_env/bin/activate```
  3. Run ```pyinstaller folder.spec``` in *CXR_View_Classification/Python/DesktopApp/pyinstaller*
  5. Execute the *CXR_View_Classification/Python/main* executable and go through the steps.
 

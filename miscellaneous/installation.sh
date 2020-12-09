@@ -5,8 +5,8 @@ sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' $endpoint1 'echo passwor
 
 sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' $endpoint1 'echo password | sudo -S chmod u+x /mnt/hgfs/SharedFolder_Guest/miscellaneous/postgresSetup.sh'
 sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' $endpoint1 'echo password | sudo -S /mnt/hgfs/SharedFolder_Guest/miscellaneous/postgresSetup.sh'
-sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' $endpoint1 'echo password | sudo -S chmod u+x /mnt/hgfs/SharedFolder_Guest/miscellaneous/pythonSetup.sh'
-sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' $endpoint1 'echo password | sudo -S /mnt/hgfs/SharedFolder_Guest/miscellaneous/pythonSetup.sh'
+# sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' $endpoint1 'echo password | sudo -S chmod u+x /mnt/hgfs/SharedFolder_Guest/miscellaneous/pythonSetup.sh'
+# sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' $endpoint1 'echo password | sudo -S /mnt/hgfs/SharedFolder_Guest/miscellaneous/pythonSetup.sh'
 # sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' $endpoint1 'echo password | sudo -S chmod u+x /mnt/hgfs/SharedFolder_Guest/miscellaneous/cppSetup.sh'
 # sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' $endpoint1 'echo password | sudo -S /mnt/hgfs/SharedFolder_Guest/miscellaneous/cppSetup.sh'
 # sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' $endpoint1 'echo password | sudo -S chmod u+x /mnt/hgfs/SharedFolder_Guest/miscellaneous/combinedSetup.sh'
@@ -19,8 +19,8 @@ sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' $endpoint2 'echo passwor
 
 sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' $endpoint2 'echo password | sudo -S chmod u+x /mnt/hgfs/SharedFolder_Guest/miscellaneous/postgresSetup.sh'
 sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' $endpoint2 'echo password | sudo -S /mnt/hgfs/SharedFolder_Guest/miscellaneous/postgresSetup.sh'
-sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' $endpoint2 'echo password | sudo -S chmod u+x /mnt/hgfs/SharedFolder_Guest/miscellaneous/pythonSetup.sh'
-sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' $endpoint2 'echo password | sudo -S /mnt/hgfs/SharedFolder_Guest/miscellaneous/pythonSetup.sh'
+# sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' $endpoint2 'echo password | sudo -S chmod u+x /mnt/hgfs/SharedFolder_Guest/miscellaneous/pythonSetup.sh'
+# sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' $endpoint2 'echo password | sudo -S /mnt/hgfs/SharedFolder_Guest/miscellaneous/pythonSetup.sh'
 # sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' $endpoint2 'echo password | sudo -S chmod u+x /mnt/hgfs/SharedFolder_Guest/miscellaneous/cppSetup.sh'
 # sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' $endpoint2 'echo password | sudo -S /mnt/hgfs/SharedFolder_Guest/miscellaneous/cppSetup.sh'
 # sshpass -p 'password' ssh -o 'StrictHostKeyChecking no' $endpoint2 'echo password | sudo -S chmod u+x /mnt/hgfs/SharedFolder_Guest/miscellaneous/combinedSetup.sh'

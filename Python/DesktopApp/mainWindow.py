@@ -226,8 +226,6 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(object)
     def updateImage(self, record):
-        print(os.getcwd()) # /mnt/hgfs/SharedFolder_Guest
-        print(os.path.abspath(__file__)) # /tmp/_MEIVTMdcd/mainWindow.pyc
         image = pdm.dcmread(os.path.join(self.configHandler.getParentFolder(), record['file_path'])).pixel_array
         bitsStored = record['bits_stored']
         pixmap = self.arrIntoPixmap(image, bitsStored)
