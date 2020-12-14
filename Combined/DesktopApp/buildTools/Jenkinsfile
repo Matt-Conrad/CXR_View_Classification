@@ -58,11 +58,11 @@ pipeline {
         //     }
         // }
 
-        stage('Clean up') {
-            steps {
-                sh 'find . -name "*@tmp" -type d -delete'
-            }
-        }
+        // stage('Clean up') {
+        //     steps {
+        //         sh 'find . -name "*@tmp" -type d -delete'
+        //     }
+        // }
 
         stage('Set up VM') {
             steps {
@@ -71,8 +71,6 @@ pipeline {
                     sh 'rm -rf *'
                 }
                 sh 'cp -r /home/matt/vmwareSnapshots/Ubuntu /home/matt/vmware/Ubuntu'
-                // Ubuntu 20GB: 0G9LFS4SVBVOVO33L6NBO3K4N9GV3F0U
-                // Ubuntu 40GB: OL8L57FIL3B6FADO2ALNQDRC7PVKDCVH
             }
         }
 
@@ -89,7 +87,7 @@ pipeline {
         stage('Run setup scripts') {
             steps {
                 sh 'nohup vmrest &'
-                sleep 5
+                sleep 15
                 sh "chmod u+x ./miscellaneous/installation.sh"
                 sh "./miscellaneous/installation.sh"
             }

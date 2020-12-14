@@ -11,6 +11,7 @@ sudo apt-get install libxcb-xinerama0 -y
 # NOTE: libxcb-xinerama0 is due to an error message from Qt
 
 virtualenv -p /usr/bin/python3.6 CXR_env
+sudo chmod -R a+rwx CXR_env #maybe remove
 
 source CXR_env/bin/activate
 
