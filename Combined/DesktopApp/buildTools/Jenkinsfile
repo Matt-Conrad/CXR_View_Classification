@@ -85,10 +85,10 @@ pipeline {
         }
         
         stage('Run setup scripts') {
+            environment {
+                VMREST_CREDS = credentials('vmrest-credentials-for-cxr-classify')
+            }
             steps {
-                environment {
-                    VMREST_CREDS = credentials('vmrest-credentials-for-cxr-classify')
-                }
                 sh 'nohup vmrest &'
                 sleep 15
                 sh "chmod u+x ./miscellaneous/installation.sh"
