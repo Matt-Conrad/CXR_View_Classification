@@ -58,11 +58,11 @@ pipeline {
         //     }
         // }
 
-        // stage('Clean up') {
-        //     steps {
-        //         sh 'find . -name "*@tmp" -type d -delete'
-        //     }
-        // }
+        stage('Clean up') {
+            steps {
+                sh 'find . -name "*@tmp" -type d -delete'
+            }
+        }
 
         stage('Set up VM') {
             steps {
@@ -86,6 +86,9 @@ pipeline {
         
         stage('Run setup scripts') {
             steps {
+                environment {
+                    VMREST_CREDS = credentials('vmrest-credentials-for-cxr-classify')
+                }
                 sh 'nohup vmrest &'
                 sleep 15
                 sh "chmod u+x ./miscellaneous/installation.sh"

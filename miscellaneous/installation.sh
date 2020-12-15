@@ -1,6 +1,8 @@
 #!/bin/bash
 # Move this one to run after the VM set up no matter what
-auth=$(<./miscellaneous/JenkinsLoginInfo.txt)
+
+# Must set up credentials in Jenkins
+auth=$(echo -n ${VMREST_CREDS} | base64)
 
 curl 'http://127.0.0.1:8697/api/vms/0G9LFS4SVBVOVO33L6NBO3K4N9GV3F0U/power' -X PUT --header 'Content-Type: application/vnd.vmware.vmw.rest-v1+json' --header 'Accept: application/vnd.vmware.vmw.rest-v1+json' --header "Authorization: Basic ${auth}" -d 'on'
 
@@ -13,7 +15,6 @@ done
 
 IP=$(curl 'http://127.0.0.1:8697/api/vms/0G9LFS4SVBVOVO33L6NBO3K4N9GV3F0U/ip' -X GET --header 'Accept: application/vnd.vmware.vmw.rest-v1+json' --header "Authorization: Basic ${auth}"| jq '.ip' | tr -d '"')
 
-echo $IP
 ssh-keygen -R $IP
 
 endpoint=matt@$IP
