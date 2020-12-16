@@ -34,6 +34,7 @@ The main purpose of this project was to learn about a wide range of technologies
  - Downloading dataset: Qt for C++ and requests library for Python
  - Github Issues for bug and task tracking
  - Jenkins for CI/CD
+ - Shell scripting (Bash)
 
 ## Data
 As stated, I used the same data set that was in the paper ([NLM Image Set](https://openi.nlm.nih.gov/faq#collection)). This consists of 7470 chest X-ray images (CR) in the form of DICOM images. To organize the image set, I stored the metadata from the DICOM images into a PostgreSQL database using my [DicomToDatabase repository](https://github.com/Matt-Conrad/DicomToDatabase) I made. 

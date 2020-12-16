@@ -65,32 +65,23 @@ pipeline {
         }
 
         stage('Set up VM') {
-            steps {
-                sh 'nohup vmrest &'
-                dir('/home/matt/vmware') {
-                    sh 'rm -rf *'
-                }
-                sh 'cp -r /home/matt/vmwareSnapshots/Ubuntu /home/matt/vmware/Ubuntu'
-            }
-        }
-
-        stage('Copy repository to VM shared folder') {
-            steps {
-                // Must run this in the same user that has the shared folder
-                dir('/home/matt/SharedFolder_Host') {
-                    sh 'rm -rf *'
-                }
-                sh 'cp -r `ls --ignore=.*` /home/matt/SharedFolder_Host'
-            }
-        }
-        
-        stage('Run setup scripts') {
             environment {
                 VMREST_CREDS = credentials('vmrest-credentials-for-cxr-classify')
+                VM_SOURCE = "/home/matt/vmwareSnapshots/Ubuntu"
+                VM_DESTINATION = "/home/matt/vmware/Ubuntu/"
+                SHARED_FOLDER_HOST_PATH = "/home/matt/SharedFolder_Host"
             }
             steps {
                 sh 'nohup vmrest &'
-                sleep 15
+                sh 'rm -rf ${VM_DESTINATION}'
+                sh 'cp -r ${VM_SOURCE} ${VM_DESTINATION}'
+
+                // Must run this in the same user that has the shared folder
+                dir('${SHARED_FOLDER_HOST_PATH}') {
+                    sh 'rm -rf *'
+                }
+                sh 'cp -r `ls --ignore=.*` ${SHARED_FOLDER_HOST_PATH}'
+
                 sh "chmod u+x ./miscellaneous/installation.sh"
                 sh "./miscellaneous/installation.sh"
             }
