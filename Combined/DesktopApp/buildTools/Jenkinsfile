@@ -72,16 +72,6 @@ pipeline {
                 SHARED_FOLDER_HOST_PATH = "/home/matt/SharedFolder_Host"
             }
             steps {
-                sh 'nohup vmrest &'
-                sh 'rm -rf ${VM_DESTINATION}'
-                sh 'cp -r ${VM_SOURCE} ${VM_DESTINATION}'
-
-                // Must run this in the same user that has the shared folder
-                dir('${SHARED_FOLDER_HOST_PATH}') {
-                    sh 'rm -rf *'
-                }
-                sh 'cp -r `ls --ignore=.*` ${SHARED_FOLDER_HOST_PATH}'
-
                 sh "chmod u+x ./miscellaneous/installation.sh"
                 sh "./miscellaneous/installation.sh"
             }
