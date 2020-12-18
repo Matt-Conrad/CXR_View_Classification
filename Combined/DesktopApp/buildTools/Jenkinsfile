@@ -67,9 +67,6 @@ pipeline {
         stage('Set up VM') {
             environment {
                 VMREST_CREDS = credentials('vmrest-credentials-for-cxr-classify')
-                VM_SOURCE = "/home/matt/vmwareSnapshots/Ubuntu"
-                VM_DESTINATION = "/home/matt/vmware/Ubuntu/"
-                SHARED_FOLDER_HOST_PATH = "/home/matt/SharedFolder_Host"
             }
             steps {
                 sh "chmod u+x ./miscellaneous/installation.sh"
