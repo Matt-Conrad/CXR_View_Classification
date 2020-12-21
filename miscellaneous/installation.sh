@@ -9,39 +9,56 @@ auth=$(echo -n ${VMREST_CREDS} | base64)
 vmrest_ip=127.0.0.1
 vmrest_port=8697
 vmrest_url=http://${vmrest_ip}:${vmrest_port}/api/vms
-vmSource = "/home/matt/vmwareSnapshots/Ubuntu"
-vmDestination = "/home/matt/vmware/Ubuntu/"
+vmSource="/home/matt/vmwareSnapshots/Ubuntu"
+vmDestination="/home/matt/vmware/Ubuntu/"
+
+if [ -z "$vmDestination" ]
+then
+    echo "ERROR: vmDestination is empty. This can result in deleted system files with rm -rf"
+    exit 1    
+fi
 
 # Wait for vmrest to start up
 while ! echo exit | nc $vmrest_ip $vmrest_port; do sleep 1; done
 
 declare -a curlArgs=('-H' "Authorization: Basic ${auth}" '-H' 'Accept: application/vnd.vmware.vmw.rest-v1+json' '-H' 'Content-Type: application/vnd.vmware.vmw.rest-v1+json')
 
-# Get VM ID
-id=null
-while [ $id == null ]
-do 
-    vmList=$(curl "${vmrest_url}" -X GET "${curlArgs[@]}")
- 
-    id=$(echo $vmList | jq --arg vmDestination "$vmDestination" '.[] | select(.path | contains($vmDestination)) | .id')
-done
-id=$(echo $id | tr -d '"')
+vmList=$(curl "${vmrest_url}" -X GET "${curlArgs[@]}")
+numVMs=$(echo $vmList | jq '. | length')
 
-# Turn off VM
-curl "${vmrest_url}/${id}/power" -X PUT "${curlArgs[@]}" -d 'off'
+if [ $numVMs -gt 0 ]
+then
+    # Get VM ID
+    # Minor Bug: If the destination isn't there, this comes up as null and the VM doesn't get turned off
+    id=$(echo $vmList | jq --arg vmDestination "${vmDestination}" '.[] | select(.path | contains($vmDestination)) | .id') 
+    id=$(echo $id | tr -d '"')
+    # Turn off VM
+    curl "${vmrest_url}/${id}/power" -X PUT "${curlArgs[@]}" -d 'off'
+    # Remove VM
+    rm -rf ${vmDestination}
+fi
+
+cp -r ${vmSource} ${vmDestination}
+
+# Get VM ID
+vmList=$(curl "${vmrest_url}" -X GET "${curlArgs[@]}")
+id=$(echo $vmList | jq --arg vmDestination "${vmDestination}" '.[] | select(.path | contains($vmDestination)) | .id')
+id=$(echo $id | tr -d '"')
 
 # Get Shared Folders information
 sharedFolderInfo=$(curl "${vmrest_url}/${id}/sharedfolders" -X GET "${curlArgs[@]}")
-sharedFolderGuestName=$(echo $sharedFolderInfo | jq '.[0].folder_id')
-sharedFolderHostPath=$(echo $sharedFolderInfo | jq '.[0].host_path')
+sharedFolderGuestName=$(echo $sharedFolderInfo | jq '.[0].folder_id' | tr -d '"')
+sharedFolderHostPath=$(echo $sharedFolderInfo | jq '.[0].host_path' | tr -d '"')
 
-# Copy snapshot VM
-rm -rf ${vmDestination}
-cp -r ${vmSource} ${vmDestination}
-
-# Replace shared folder contents with most recent build
-rm -rf ${sharedFolderHostPath}/*
-cp -r `ls --ignore=.*` ${sharedFolderHostPath}
+if [ -z "$sharedFolderHostPath" ]
+then
+    echo "ERROR: sharedFolderHostPath is empty. This can result in deleted system files with rm -rf"
+    exit 1
+else
+    # Replace shared folder contents with most recent build
+    rm -rf ${sharedFolderHostPath}/*
+    cp -r `ls --ignore=.*` ${sharedFolderHostPath}
+fi
 
 # Turn on VM
 curl "${vmrest_url}/${id}/power" -X PUT "${curlArgs[@]}" -d 'on'
@@ -70,8 +87,6 @@ miscFolder="${sharedFolderMountLocation}/${sharedFolderGuestName}/miscellaneous"
 sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} /usr/bin/vmhgfs-fuse .host:/ ${sharedFolderMountLocation} -o subtype=vmhgfs-fuse,allow_other"
 
 sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} chmod u+x ${miscFolder}/postgresSetup.sh && ${miscFolder}/postgresSetup.sh"
-sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} chmod u+x ${miscFolder}/pythonSetup.sh && ${miscFolder}/pythonSetup.sh"
-sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} chmod u+x ${miscFolder}/pythonSetup.sh && ${miscFolder}/cppSetup.sh"
-sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} chmod u+x ${miscFolder}/pythonSetup.sh && ${miscFolder}/combinedSetup.sh"
-
-# curl 'http://127.0.0.1:8697/api/vms/0G9LFS4SVBVOVO33L6NBO3K4N9GV3F0U/power' -X PUT --header 'Content-Type: application/vnd.vmware.vmw.rest-v1+json' --header 'Accept: application/vnd.vmware.vmw.rest-v1+json' --header "Authorization: Basic ${auth}" -d 'off'
+# sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} chmod u+x ${miscFolder}/pythonSetup.sh && ${miscFolder}/pythonSetup.sh"
+# sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} chmod u+x ${miscFolder}/pythonSetup.sh && ${miscFolder}/cppSetup.sh"
+# sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} chmod u+x ${miscFolder}/pythonSetup.sh && ${miscFolder}/combinedSetup.sh"
