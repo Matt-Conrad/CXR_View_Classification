@@ -76,11 +76,13 @@ IP=$(echo ${IP} | tr -d '"')
 ssh-keygen -R $IP
 
 # Run scripts on VM using SSH
-endpoint=matt@$IP
+IFS=':' read -a vmCredsArray <<< "${VM_UBUNTU_CREDS}"
 
-declare -a sshpassArgs=('-p' 'password')
+endpoint=${vmCredsArray[0]}@${IP}
+
+declare -a sshpassArgs=('-p' "${vmCredsArray[1]}")
 declare -a sshArgs=('-o' 'StrictHostKeyChecking no')
-sshCommandPrefix='echo password | sudo -S'
+sshCommandPrefix="echo ${vmCredsArray[1]} | sudo -S"
 sharedFolderMountLocation="/mnt/hgfs"
 miscFolder="${sharedFolderMountLocation}/${sharedFolderGuestName}/miscellaneous"
 

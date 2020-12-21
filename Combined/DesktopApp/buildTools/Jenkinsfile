@@ -67,6 +67,7 @@ pipeline {
         stage('Set up VM') {
             environment {
                 VMREST_CREDS = credentials('vmrest-credentials-for-cxr-classify')
+                VM_UBUNTU_CREDS = credentials('vm-ubuntu-credentials')
             }
             steps {
                 sh "chmod u+x ./miscellaneous/installation.sh"
