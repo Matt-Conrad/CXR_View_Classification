@@ -76,7 +76,7 @@ IP=$(echo ${IP} | tr -d '"')
 ssh-keygen -R $IP
 
 # Run scripts on VM using SSH
-IFS=':' read -a vmCredsArray <<< "${VM_UBUNTU_CREDS}"
+IFS=':' read -a vmCredsArray <<< "${VM_UBUNTU_CREDS}" # GET THE PWD AND USR PARAMS INSTEAD OF PARSING YOURSELF
 
 endpoint=${vmCredsArray[0]}@${IP}
 

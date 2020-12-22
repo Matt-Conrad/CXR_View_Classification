@@ -16,27 +16,30 @@ pipeline {
             }
         }
 
-        // stage('Build Python folder implementation') {
-        //     steps {
-        //         dir('./Python/pyinstaller') {
-        //             sh '/home/matt/.venvs/CXR_env/bin/pyinstaller folder.spec'
-        //         }
-        //         dir('./Python/builds') {
-        //             sh 'zip -r dist_folder.zip dist_folder'
-        //         }
-        //     }
-        // }
+        stage('Build Python folder implementation') {
+            steps {
+                dir('./miscellaneous') {
+                    sh "chmod u+x ./pyinstallerSetup.sh"
+                    sh "sudo ./pyinstallerSetup.sh" // Must give user execute sudo permission for this folder in sudoers
+                }
 
-        // stage('Build Python file implementation') {
-        //     steps {
-        //         dir('./Python/pyinstaller') {
-        //             sh '/home/matt/.venvs/CXR_env/bin/pyinstaller one_file.spec'
-        //         }
-        //         dir('./Python/builds') {
-        //             sh 'zip -r dist_one_file.zip dist_one_file'
-        //         }
-        //     }
-        // }
+                // // Folder version
+                // dir('./Python/pyinstaller') {
+                //     sh '../../miscellaneous/CXR_env/bin/pyinstaller folder.spec'
+                // }
+                // dir('./Python/builds') {
+                //     sh 'zip -r dist_folder.zip dist_folder'
+                // }
+
+                // // File version
+                // dir('./Python/pyinstaller') {
+                //     sh '../../miscellaneous/CXR_env/bin/pyinstaller one_file.spec'
+                // }
+                // dir('./Python/builds') {
+                //     sh 'zip -r dist_one_file.zip dist_one_file'
+                // }
+            }
+        }
 
         // stage('Build C++ implementation') {
         //     steps {
