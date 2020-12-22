@@ -16,40 +16,45 @@ pipeline {
             }
         }
 
-        stage('Build Python folder implementation') {
-            steps {
-                dir('./miscellaneous') {
-                    sh "chmod u+x ./pyinstallerSetup.sh"
-                    sh "sudo ./pyinstallerSetup.sh" // Must give user execute sudo permission for this folder in sudoers
-                }
-
-                // // Folder version
-                // dir('./Python/pyinstaller') {
-                //     sh '../../miscellaneous/CXR_env/bin/pyinstaller folder.spec'
-                // }
-                // dir('./Python/builds') {
-                //     sh 'zip -r dist_folder.zip dist_folder'
-                // }
-
-                // // File version
-                // dir('./Python/pyinstaller') {
-                //     sh '../../miscellaneous/CXR_env/bin/pyinstaller one_file.spec'
-                // }
-                // dir('./Python/builds') {
-                //     sh 'zip -r dist_one_file.zip dist_one_file'
-                // }
-            }
-        }
-
-        // stage('Build C++ implementation') {
+        // stage('Build Python folder implementation') {
         //     steps {
-        //         sh 'mkdir ./Cpp/build'
-        //         dir('./Cpp/build') {
-        //             sh '/usr/lib/qt5/bin/qmake /home/matt/Documents/CXR_View_Classification/Cpp/CXR_classify/CXR_classify.pro -spec linux-g++ CONFIG+=debug'
-        //             sh '/usr/bin/make -j6'
+        //         dir('./miscellaneous') {
+        //             sh "chmod u+x ./pyinstallerSetup.sh"
+        //             sh "sudo ./pyinstallerSetup.sh" // Must give user execute sudo permission for this folder in sudoers
+        //         }
+
+        //         // Folder version
+        //         dir('./Python/pyinstaller') {
+        //             sh '../../miscellaneous/CXR_env/bin/pyinstaller folder.spec'
+        //         }
+        //         dir('./Python/builds') {
+        //             sh 'zip -r dist_folder.zip dist_folder'
+        //         }
+
+        //         // File version
+        //         dir('./Python/pyinstaller') {
+        //             sh '../../miscellaneous/CXR_env/bin/pyinstaller one_file.spec'
+        //         }
+        //         dir('./Python/builds') {
+        //             sh 'zip -r dist_one_file.zip dist_one_file'
         //         }
         //     }
         // }
+
+        stage('Build C++ implementation') {
+            steps {
+                // must run cppSetup.sh first
+                sh 'mkdir ./Cpp/build'
+                dir('./Cpp/build') {
+                    sh 'qmake ../CXR_classify/CXR_classify.pro CONFIG+=release'
+                    sh 'make -j6'
+                }
+                dir('./Cpp') {
+                    sh 'zip -r cppBuild.zip build'
+                }
+                    
+            }
+        }
 
         // stage('Build shared libraries') {
         //     steps {

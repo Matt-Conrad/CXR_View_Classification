@@ -117,14 +117,19 @@ NOTE: Pre-built executables and shared libraries are compiled on Ubuntu 20.04 so
 
  ### C++ Implementation
 
- #### Build using QMake and run the resulting executable
- 1. Run cppSetup.sh to set up C++ libraries
- 2. Run QMake on the .pro file
- 3. Execute the *CXR_View_Classification/Cpp...* executable and go through the steps.
+ #### Running the pre=built executable
+ 1. Run the cppSetup.sh script to set up C++ libraries: ```sudo cppSetup.sh```
+ 2. Download the *cppBuild.zip* folder from the Github release and unzip it.
+ 3. Execute the provided executable and go through the steps.
 
- #### Running the file
- 1. Run cppSetup.sh to set up C++ libraries
- 2. Execute the provided executable and go through the steps.
+ #### Build using QMake and run the resulting executable
+ 1. Run cppSetup.sh to set up C++ libraries: ```sudo cppSetup.sh```
+ 2. Build executable using qmake:
+   - Start from the *CXR_View_Classification/Cpp* directory
+   - Create build directory: ```mkdir ./build && cd ./build```
+   - Create build system using qmake: ```qmake ../CXR_classify/CXR_classify.pro CONFIG+=release```
+   - Build the executable: ```make```
+ 3. Execute the *CXR_View_Classification/Cpp/build/CXR_classify* executable and go through the steps.
 
  ### Combined Implementation
  The source code for this implementation can be found in *CXR_View_Classification/Combined/DesktopApp/src*. Along with the source code, there is also a Makefile and a CMakeList.txt file in there to aid building the executables. There are 3 equivalent ways to build this code: g++ commands, Make, and CMake. The commands for each of these build paths can be found in the *buildTools* folder, sibling to the *src* folder.
