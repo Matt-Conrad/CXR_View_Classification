@@ -64,13 +64,13 @@ Since there are 3 implementations of the app, there are many ways to build and r
    4. Build and run file-based executable
    5. Build and run folder-based executable
 - C++ implementation
-   1. Build using QMake and run the resulting executable
-   2. Run pre-built executable
+   1. Run pre-built executable
+   2. Build using QMake and run the resulting executable
 - Combined implementation
-   1. Build C++ side using individual g++ commands and run Python source code
-   2. Build C++ side using provided Makefile and run Python source code
-   3. Build C++ side using CMake and run Python source code
-   4. Run Python source code with pre-built C++ shared libraries
+   1. Run Python source code with pre-built C++ shared libraries
+   2. Build C++ side using individual g++ commands and run Python source code
+   3. Build C++ side using provided Makefile and run Python source code
+   4. Build C++ side using CMake and run Python source code
 
 NOTE: Pre-built executables and shared libraries are compiled on Ubuntu 20.04 so they may only work on that OS. Additionally, scripts for building are targeted toward Ubuntu/Linux users.
 
@@ -117,42 +117,33 @@ NOTE: Pre-built executables and shared libraries are compiled on Ubuntu 20.04 so
 
  ### C++ Implementation
 
- #### Running the pre=built executable
+ #### Run pre-built executable
  1. Run the cppSetup.sh script to set up C++ libraries: ```sudo cppSetup.sh```
  2. Download the *cppBuild.zip* folder from the Github release and unzip it.
  3. Execute the provided executable and go through the steps.
 
  #### Build using QMake and run the resulting executable
- 1. Run cppSetup.sh to set up C++ libraries: ```sudo cppSetup.sh```
+ 1. From miscellaneous folder, run cppSetup.sh to set up C++ libraries: ```chmod u+x ./cppBuildSetup.sh && sudo ./cppBuildSetup.sh```
  2. Build executable using qmake:
-   - Start from the *CXR_View_Classification/Cpp* directory
+   - Start from the *CXR_View_Classification/Cpp* directory: cd ```cd ../Cpp```
    - Create build directory: ```mkdir ./build && cd ./build```
-   - Create build system using qmake: ```qmake ../CXR_classify/CXR_classify.pro CONFIG+=release```
+   - Create build system using qmake: ```qmake ../CXR_classify/CXR_classify.pro CONFIG+=debug```
    - Build the executable: ```make```
  3. Execute the *CXR_View_Classification/Cpp/build/CXR_classify* executable and go through the steps.
 
  ### Combined Implementation
- The source code for this implementation can be found in *CXR_View_Classification/Combined/DesktopApp/src*. Along with the source code, there is also a Makefile and a CMakeList.txt file in there to aid building the executables. There are 3 equivalent ways to build this code: g++ commands, Make, and CMake. The commands for each of these build paths can be found in the *buildTools* folder, sibling to the *src* folder.
+ The source code for this implementation can be found in *CXR_View_Classification/Combined/DesktopApp/src*. Along with the source code, there is also a Makefile and a CMakeList.txt file in there to aid building the executables. There are 3 equivalent ways to build this code: g++ commands, Make, and CMake. 
 
- #### Build C++ side using individual g++ commands and run Python source code
- 1. Run combinedSetup.sh to set up C++ and Python libraries
- 2. Run combinedGppBuild.sh to build the C++ side
- 3. Run Python source code 
-  
- #### Build C++ side using provided Makefile and run Python source code
- 1. Run combinedSetup.sh to set up C++ and Python libraries
- 2. Run combinedMakeBuild.sh to build the C++ side
- 3. Run Python source code 
+ #### Run combined implementation
+ 1. Run combinedSetup.sh to set up C++ and Python libraries: ```sudo combinedSetup.sh```
+ 2. Several options here:
+   - Download the *combinedSharedLibraries.zip* folder from the Github release and unzip it.
+   - Build C++ side using individual g++ commands and run Python source code: ```sudo combinedGppSetup.sh```
+   - Build C++ side using provided Makefile and run Python source code: ```sudo combinedMakeSetup.sh```
+   - Build C++ side using CMake and run Python source code: ```sudo combinedCmakeSetup.sh```
+ 3. Activate the virtualenv: ```source CXR_env/bin/activate```
+ 4. Run the app using Python: ```python Python/DesktopApp/main.py``
 
- #### Build C++ side using CMake and run Python source code
- 1. Run combinedSetup.sh to set up C++ and Python libraries
- 2. Run combinedCmakeBuild.sh to build the C++ side
- 3. Run Python source code 
-
- #### Run Python source code with pre-built C++ shared libraries
- 1. Run combinedSetup.sh to set up C++ (?) and Python libraries
- 2. Download the provided C++ shared libraries
- 3. Run Python source code 
 
 ## Web API Usage for local machine or local VM
 There are several ways to deploy the web interfaces: standalone built-in Flask server, standalone Gunicorn server running the Flask app, and an Nginx/Gunicorn server pair where the Nginx server works as a reverse proxy for the Gunicorn server running Flask (recommended). Below I discuss the preparation required for each path, then I provide the following instructions

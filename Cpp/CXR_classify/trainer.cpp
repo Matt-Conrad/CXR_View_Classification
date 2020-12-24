@@ -78,7 +78,7 @@ void Trainer::run()
 
     // need a shuffle here, might be the last parameter in the split function
 
-    mlpack::data::Split(xArma, yArma, xTrain, xTest, yTrain, yTest, 0.33, true);
+    mlpack::data::Split(xArma, yArma, xTrain, xTest, yTrain, yTest, 0.33);
 
     const size_t numClasses = 2;
     int nSplits = 10;

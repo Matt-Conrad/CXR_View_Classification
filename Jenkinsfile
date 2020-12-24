@@ -41,27 +41,26 @@ pipeline {
         //     }
         // }
 
-        stage('Build C++ implementation') {
-            steps {
-                // must run cppSetup.sh first
-                sh 'mkdir ./Cpp/build'
-                dir('./Cpp/build') {
-                    sh 'qmake ../CXR_classify/CXR_classify.pro CONFIG+=release'
-                    sh 'make -j6'
-                }
-                dir('./Cpp') {
-                    sh 'zip -r cppBuild.zip build'
-                }
-                    
-            }
-        }
+        // stage('Build C++ implementation') {
+        //     steps {
+        //         // must run cppSetup.sh first
+        //         sh 'mkdir ./Cpp/build'
+        //         dir('./Cpp/build') {
+        //             sh 'qmake ../CXR_classify/CXR_classify.pro CONFIG+=debug'
+        //             sh 'make -j4'
+        //         }
+        //         dir('./Cpp') {
+        //             sh 'zip -r cppBuild.zip build'
+        //         }           
+        //     }
+        // }
 
         // stage('Build shared libraries') {
         //     steps {
-        //         sh 'mkdir ./Combined/DesktopApp/build'
+        //         sh 'chmod u+x ./miscellaneous/combinedCmakeBuild.sh'
+        //         sh './miscellaneous/combinedCmakeBuild.sh'
         //         dir('./Combined/DesktopApp/build') {
-        //             sh 'cmake ../src'
-        //             sh 'cmake --build .'
+        //             sh 'zip -r combinedSharedLibraries.zip build'
         //         }
         //     }
         // }

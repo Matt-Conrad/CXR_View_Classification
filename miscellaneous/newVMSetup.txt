@@ -1,4 +1,5 @@
-Create VM
+Create VM 
+    - if you're going to build mlpack, you'll want 10GB ram and 4 CPUs 
 Update VM software
 Add shared folder capability
 run:
