@@ -75,21 +75,37 @@ IP=$(echo ${IP} | tr -d '"')
 # Update ssh key
 ssh-keygen -R $IP
 
-# Run scripts on VM using SSH
-IFS=':' read -a vmCredsArray <<< "${VM_UBUNTU_CREDS}" # GET THE PWD AND USR PARAMS INSTEAD OF PARSING YOURSELF
+endpoint=${VM_UBUNTU_CREDS_USR}@${IP}
 
-endpoint=${vmCredsArray[0]}@${IP}
-
-declare -a sshpassArgs=('-p' "${vmCredsArray[1]}")
+declare -a sshpassArgs=('-p' "${VM_UBUNTU_CREDS_PSW}")
 declare -a sshArgs=('-o' 'StrictHostKeyChecking no')
-sshCommandPrefix="echo ${vmCredsArray[1]} | sudo -S"
+sshCommandPrefix="echo ${VM_UBUNTU_CREDS_PSW} | sudo -S"
 sharedFolderMountLocation="/mnt/hgfs"
 miscFolder="${sharedFolderMountLocation}/${sharedFolderGuestName}/miscellaneous"
 
 sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} /usr/bin/vmhgfs-fuse .host:/ ${sharedFolderMountLocation} -o subtype=vmhgfs-fuse,allow_other"
 
-sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} chmod u+x ${miscFolder}/postgresSetup.sh && ${miscFolder}/postgresSetup.sh"
-# sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} chmod u+x ${miscFolder}/pythonSetup.sh && ${miscFolder}/pythonSetup.sh"
-# sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} chmod u+x ${miscFolder}/cppSetup.sh && ${miscFolder}/cppSetup.sh"
-# sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} chmod u+x ${miscFolder}/cppSetup.sh && ${miscFolder}/cppBuildSetup.sh"
-# sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} chmod u+x ${miscFolder}/combinedSetup.sh && ${miscFolder}/combinedSetup.sh"
+if [ $setupPostgresOnGuest == true ] 
+then
+    sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} chmod u+x ${miscFolder}/postgresSetup.sh && ${miscFolder}/postgresSetup.sh"
+fi
+
+if [ $setupPythonOnGuest == true ] 
+then
+    sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} chmod u+x ${miscFolder}/pythonSetup.sh && ${miscFolder}/pythonSetup.sh"
+fi
+
+if [ $setupCppOnGuest == true ] 
+then
+    sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} chmod u+x ${miscFolder}/cppSetup.sh && ${miscFolder}/cppSetup.sh"
+fi
+
+if [ $setupCombinedOnGuest == true ] 
+then
+    sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} chmod u+x ${miscFolder}/combinedSetup.sh && ${miscFolder}/combinedSetup.sh"
+fi
+
+if [ $setupToBuildCppOnGuest == true ] 
+then
+    sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} chmod u+x ${miscFolder}/cppBuildSetup.sh && ${miscFolder}/cppBuildSetup.sh"
+fi
