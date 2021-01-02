@@ -1,6 +1,5 @@
 #!/bin/bash
-cd CXR_View_Classification/Combined/DesktopApp
-mkdir build
-cd build
+mkdir Combined/DesktopApp/build
+cd Combined/DesktopApp/build
 cp ../src/Makefile ./Makefile
 make

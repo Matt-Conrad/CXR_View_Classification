@@ -10,17 +10,17 @@ sudo apt-get install libxcb-xinerama0 -y
 # TODO: Thin out the list above. Probably some of them are not needed. 
 # NOTE: libxcb-xinerama0 is due to an error message from Qt
 
-virtualenv -p /usr/bin/python3.6 CXR_env
+virtualenv -p /usr/bin/python3.6 $HOME/CXR_env
 
-source CXR_env/bin/activate
+source $HOME/CXR_env/bin/activate
 
 cd /mnt/hgfs/SharedFolder_Guest/miscellaneous
 pip install -r /mnt/hgfs/SharedFolder_Guest/miscellaneous/requirements.txt
 
-apt-get install dcmtk -y
-apt-get install libopencv-dev -y
-apt-get install libmlpack-dev -y
-apt-get install libpqxx-6.4 -y
+sudo apt-get install dcmtk -y
+sudo apt-get install libopencv-dev -y
+sudo apt-get install libmlpack-dev -y
+sudo apt-get install libpqxx-6.4 -y
 
 # TO LINK QT FROM PYQT5 - must run this in terminal before running main.py
 export LD_LIBRARY_PATH="$HOME/CXR_env/lib/python3.6/site-packages/PyQt5/Qt/lib:$PATH"

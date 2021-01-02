@@ -79,7 +79,7 @@ NOTE: Pre-built executables and shared libraries are compiled on Ubuntu 20.04 so
     ```
     git clone https://github.com/Matt-Conrad/CXR_View_Classification.git
     ```
- 2. Set up Postgres by running postgresSetup.sh if you don't already have it
+ 2. Set up Postgres if you don't already have it by running postgresSetup.sh: ```sudo postgresSetup.sh```
  2. (OPTIONAL) Change the default configuration if you wish. \
       - The *postgresql* section contains the server host and port, desired name of the DB to be created, as well as user and password. The template is currently set up to create a DB named "db" on the localhost, so you can leave it as is or rename it if you wish. 
       - Leave the *dicom_folder* section alone as it gets filled in automatically as the app goes through the steps. You can also rename the tables that will be created.
@@ -93,7 +93,8 @@ NOTE: Pre-built executables and shared libraries are compiled on Ubuntu 20.04 so
  #### Run source 
  1. Run the pythonSetup.sh file to set up Python and virtualenv: ```sudo pythonSetup.sh```
  2. Activate the virtualenv: ```source CXR_env/bin/activate```
- 3. Run the app using Python: ```python Python/DesktopApp/main.py```
+ 3. Change directory to folder containing program: ```cd CXR_View_Classification/Python/DesktopApp```
+ 4. Run the app using Python: ```python main.py```
 
  #### Run pre-built file-based executable
  1. Download the *dist_one_file.zip* folder from the Github release and unzip it.
@@ -103,17 +104,17 @@ NOTE: Pre-built executables and shared libraries are compiled on Ubuntu 20.04 so
  1. Download the *dist_folder.zip* folder from the Github release and unzip it.
  2. Execute the *CXR_Classify* executable in *dist_folder* folder
 
- #### Build and run folder-based executable
- 1. Run the pythonSetup.sh file to set up Python and virtualenv: ```sudo pythonSetup.sh```
- 2. Activate the virtualenv: ```source CXR_env/bin/activate```
- 3. Run ```pyinstaller folder.spec``` in *CXR_View_Classification/Python/pyinstaller*
- 4. Execute the *CXR_View_Classification/Python/builds/dist_folder/CXR_Classify* executable and go through the steps.
-
  #### Build and run file-based executable
- 1. Run the pythonSetup.sh file to set up Python and virtualenv: ```sudo pythonSetup.sh```
+ 1. Run the script to set up for building: ```sudo pythonSetup.sh``` or ```sudo pyinstallerSetup.sh``` will work
  2. Activate the virtualenv: ```source CXR_env/bin/activate```
  3. Run ```pyinstaller one_file.spec`` in *CXR_View_Classification/Python/pyinstaller*
  4. Execute the *CXR_View_Classification/Python/builds/dist_one_file/CXR_Classify* executable and go through the steps.
+
+ #### Build and run folder-based executable
+ 1. Run the script to set up for building: ```sudo pythonSetup.sh``` or ```sudo pyinstallerSetup.sh``` will work
+ 2. Activate the virtualenv: ```source CXR_env/bin/activate```
+ 3. Run ```pyinstaller folder.spec``` in *CXR_View_Classification/Python/pyinstaller*
+ 4. Execute the *CXR_View_Classification/Python/builds/dist_folder/CXR_Classify* executable and go through the steps.
 
  ### C++ Implementation
 
@@ -135,14 +136,19 @@ NOTE: Pre-built executables and shared libraries are compiled on Ubuntu 20.04 so
  The source code for this implementation can be found in *CXR_View_Classification/Combined/DesktopApp/src*. Along with the source code, there is also a Makefile and a CMakeList.txt file in there to aid building the executables. There are 3 equivalent ways to build this code: g++ commands, Make, and CMake. 
 
  #### Run combined implementation
- 1. Run combinedSetup.sh to set up C++ and Python libraries: ```sudo combinedSetup.sh```
+ 1. Run the corresponding setup script to set up C++ and Python libraries: ```chmod u+x SCRIPT_NAME.sh && ./SCRIPT_NAME.sh```
+   - combinedDownloadSetup.sh if you're going to download the shared libraries
+   - combinedGppSetup.sh if you're going to build using the g++ method
+   - combinedMakeSetup.sh if you're going to build using the Make method
+   - combinedCmakeSetup.sh if you're going to build using the CMake method
  2. Several options here:
    - Download the *combinedSharedLibraries.zip* folder from the Github release and unzip it.
-   - Build C++ side using individual g++ commands and run Python source code: ```sudo combinedGppSetup.sh```
-   - Build C++ side using provided Makefile and run Python source code: ```sudo combinedMakeSetup.sh```
-   - Build C++ side using CMake and run Python source code: ```sudo combinedCmakeSetup.sh```
- 3. Activate the virtualenv: ```source CXR_env/bin/activate```
- 4. Run the app using Python: ```python Python/DesktopApp/main.py``
+   - Run cppBuildSetup.sh for the below build options
+      - From the *CXR_View_Classification* folder, build the C++ side using individual g++ commands and run Python source code: ```chmod u+x ./miscellaneous/combinedGppBuild.sh && ./miscellaneous/combinedGppBuild.sh```
+      - Build C++ side using provided Makefile and run Python source code: ```chmod u+x combinedMakeBuild.sh && combinedMakeBuild.sh```
+      - Build C++ side using CMake and run Python source code: ```chmod u+x combinedCmakeBuild.sh && combinedCmakeBuild.sh```
+ 3. Activate the virtualenv: ```source ~/CXR_env/bin/activate```
+ 4. Run the app using Python: ```cd Combined/DesktopApp && python main.py``
 
 
 ## Web API Usage for local machine or local VM

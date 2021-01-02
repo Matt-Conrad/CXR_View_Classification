@@ -32,8 +32,8 @@ pipeline {
                 stage('Run pyinstaller setup on host machine') {
                     when {
                         anyOf {
-                            expression { params.buildPythonFileExecutable == true }
-                            expression { params.buildPythonFolderExecutable == true }
+                            expression { params.buildPythonFileExecutableOnHost == true }
+                            expression { params.buildPythonFolderExecutableOnHost == true }
                         }
                     }
                     steps {
@@ -46,7 +46,7 @@ pipeline {
 
                 stage('Build file-based executable') {
                     when {
-                        expression { params.buildPythonFileExecutable == true }
+                        expression { params.buildPythonFileExecutableOnHost == true }
                     }
                     steps {
                         // File version
@@ -61,7 +61,7 @@ pipeline {
 
                 stage('Build folder-based executable') {
                     when {
-                        expression { params.buildPythonFolderExecutable == true }
+                        expression { params.buildPythonFolderExecutableOnHost == true }
                     }
                     steps {
                         // Folder version
@@ -78,7 +78,7 @@ pipeline {
 
         stage('Build C++ implementation') {
             when {
-                expression { params.buildCppExecutable == true }
+                expression { params.buildCppExecutableOnHost == true }
             }
             steps {
                 // must run cppSetup.sh first
@@ -98,9 +98,11 @@ pipeline {
                 expression { params.buildCombinedSharedLibsOnHost == true }
             }
             steps {
-                sh 'chmod u+x ./miscellaneous/combinedCmakeBuild.sh'
-                sh './miscellaneous/combinedCmakeBuild.sh'
-                dir('./Combined/DesktopApp/build') {
+                // sh 'chmod u+x ./miscellaneous/combinedCmakeBuild.sh'
+                // sh './miscellaneous/combinedCmakeBuild.sh'
+                sh 'chmod u+x ./miscellaneous/combinedGppBuild.sh'
+                sh './miscellaneous/combinedGppBuild.sh'
+                dir('./Combined/DesktopApp') {
                     sh 'zip -r combinedSharedLibraries.zip build'
                 }
             }
@@ -113,15 +115,6 @@ pipeline {
         }
 
         stage('Set up VM') {
-            when {
-                anyOf {
-                    expression { params.setupPostgresOnGuest == true }
-                    expression { params.setupPythonOnGuest == true }
-                    expression { params.setupCppOnGuest == true }
-                    expression { params.setupCombinedOnGuest == true }
-                    expression { params.setupToBuildCppOnGuest == true }
-                }
-            }
             environment {
                 VMREST_CREDS = credentials('vmrest-credentials-for-cxr-classify')
                 VM_UBUNTU_CREDS = credentials('vm-ubuntu-credentials')
