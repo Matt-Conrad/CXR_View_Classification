@@ -124,7 +124,7 @@ NOTE: Pre-built executables and shared libraries are compiled on Ubuntu 20.04 so
  3. Execute the provided executable and go through the steps.
 
  #### Build using QMake and run the resulting executable
- 1. From miscellaneous folder, run cppSetup.sh to set up C++ libraries: ```chmod u+x ./cppBuildSetup.sh && sudo ./cppBuildSetup.sh```
+ 1. From miscellaneous folder, run cppSetup.sh to set up C++ libraries: ```sudo ./cppBuildSetup.sh```
  2. Build executable using qmake:
    - Start from the *CXR_View_Classification/Cpp* directory: cd ```cd ../Cpp```
    - Create build directory: ```mkdir ./build && cd ./build```
@@ -136,7 +136,7 @@ NOTE: Pre-built executables and shared libraries are compiled on Ubuntu 20.04 so
  The source code for this implementation can be found in *CXR_View_Classification/Combined/DesktopApp/src*. Along with the source code, there is also a Makefile and a CMakeList.txt file in there to aid building the executables. There are 3 equivalent ways to build this code: g++ commands, Make, and CMake. 
 
  #### Run combined implementation
- 1. Run the corresponding setup script to set up C++ and Python libraries: ```chmod u+x SCRIPT_NAME.sh && ./SCRIPT_NAME.sh```
+ 1. Run the corresponding setup script to set up C++ and Python libraries: ```./SCRIPT_NAME.sh```
    - combinedDownloadSetup.sh if you're going to download the shared libraries
    - combinedGppSetup.sh if you're going to build using the g++ method
    - combinedMakeSetup.sh if you're going to build using the Make method
@@ -144,9 +144,9 @@ NOTE: Pre-built executables and shared libraries are compiled on Ubuntu 20.04 so
  2. Several options here:
    - Download the *combinedSharedLibraries.zip* folder from the Github release and unzip it.
    - Run cppBuildSetup.sh for the below build options
-      - From the *CXR_View_Classification* folder, build the C++ side using individual g++ commands and run Python source code: ```chmod u+x ./miscellaneous/combinedGppBuild.sh && ./miscellaneous/combinedGppBuild.sh```
-      - Build C++ side using provided Makefile and run Python source code: ```chmod u+x ./miscellaneous/combinedMakeBuild.sh && ./miscellaneous/combinedMakeBuild.sh```
-      - Build C++ side using CMake and run Python source code: ```chmod u+x ./miscellaneous/combinedCmakeBuild.sh && ./miscellaneous/combinedCmakeBuild.sh```
+      - From the *CXR_View_Classification* folder, build the C++ side using individual g++ commands and run Python source code: ```./miscellaneous/combinedGppBuild.sh```
+      - Build C++ side using provided Makefile and run Python source code: ```./miscellaneous/combinedMakeBuild.sh```
+      - Build C++ side using CMake and run Python source code: ```./miscellaneous/combinedCmakeBuild.sh```
  3. Activate the virtualenv: ```source ~/CXR_env/bin/activate```
  4. Run the app using Python: ```cd Combined/DesktopApp && python main.py``
 

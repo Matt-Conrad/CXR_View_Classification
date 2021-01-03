@@ -38,7 +38,6 @@ pipeline {
                     }
                     steps {
                         dir('./miscellaneous') {
-                            sh "chmod u+x ./pyinstallerSetup.sh"
                             sh "sudo ./pyinstallerSetup.sh" // Must give user execute sudo permission for this folder in sudoers
                         }
                     }
@@ -98,9 +97,9 @@ pipeline {
                 expression { params.buildCombinedSharedLibsOnHost == true }
             }
             steps {                
-                // sh 'chmod u+x ./miscellaneous/combinedGppBuild.sh && ./miscellaneous/combinedGppBuild.sh'
-                // sh 'chmod u+x ./miscellaneous/combinedMakeBuild.sh && ./miscellaneous/combinedMakeBuild.sh'
-                sh 'chmod u+x ./miscellaneous/combinedCmakeBuild.sh && ./miscellaneous/combinedCmakeBuild.sh'
+                // sh './miscellaneous/combinedGppBuild.sh'
+                // sh './miscellaneous/combinedMakeBuild.sh'
+                sh './miscellaneous/combinedCmakeBuild.sh'
                 dir('./Combined/DesktopApp') {
                     sh 'zip -r combinedSharedLibraries.zip build'
                 }
@@ -119,7 +118,6 @@ pipeline {
                 VM_UBUNTU_CREDS = credentials('vm-ubuntu-credentials')
             }
             steps {
-                sh "chmod u+x ./miscellaneous/installation.sh"
                 sh "./miscellaneous/installation.sh $setupPostgresOnGuest $setupPythonOnGuest $setupCppOnGuest $setupCombinedOnGuest $setupToBuildCppOnGuest"
             }
         }

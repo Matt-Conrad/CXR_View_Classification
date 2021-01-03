@@ -87,25 +87,25 @@ sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} /
 
 if [ $setupPostgresOnGuest == true ] 
 then
-    sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} chmod u+x ${miscFolder}/postgresSetup.sh && ${miscFolder}/postgresSetup.sh"
+    sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} ${miscFolder}/postgresSetup.sh"
 fi
 
 if [ $setupPythonOnGuest == true ] 
 then
-    sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} chmod u+x ${miscFolder}/pythonSetup.sh && ${miscFolder}/pythonSetup.sh"
+    sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} ${miscFolder}/pythonSetup.sh"
 fi
 
 if [ $setupCppOnGuest == true ] 
 then
-    sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} chmod u+x ${miscFolder}/cppSetup.sh && ${miscFolder}/cppSetup.sh"
+    sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} ${miscFolder}/cppSetup.sh"
 fi
 
 if [ $setupCombinedOnGuest == true ] 
 then
-    sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} chmod u+x ${miscFolder}/combinedSetup.sh && ${miscFolder}/combinedSetup.sh"
+    sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} ${miscFolder}/combinedDownloadSetup.sh"
 fi
 
 if [ $setupToBuildCppOnGuest == true ] 
 then
-    sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} chmod u+x ${miscFolder}/cppBuildSetup.sh && ${miscFolder}/cppBuildSetup.sh"
+    sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} ${miscFolder}/cppBuildSetup.sh"
 fi
