@@ -97,11 +97,10 @@ pipeline {
             when {
                 expression { params.buildCombinedSharedLibsOnHost == true }
             }
-            steps {
-                // sh 'chmod u+x ./miscellaneous/combinedCmakeBuild.sh'
-                // sh './miscellaneous/combinedCmakeBuild.sh'
-                sh 'chmod u+x ./miscellaneous/combinedGppBuild.sh'
-                sh './miscellaneous/combinedGppBuild.sh'
+            steps {                
+                // sh 'chmod u+x ./miscellaneous/combinedGppBuild.sh && ./miscellaneous/combinedGppBuild.sh'
+                // sh 'chmod u+x ./miscellaneous/combinedMakeBuild.sh && ./miscellaneous/combinedMakeBuild.sh'
+                sh 'chmod u+x ./miscellaneous/combinedCmakeBuild.sh && ./miscellaneous/combinedCmakeBuild.sh'
                 dir('./Combined/DesktopApp') {
                     sh 'zip -r combinedSharedLibraries.zip build'
                 }

@@ -1,7 +1,7 @@
 # Manually created 
 CXX := g++
-CXXFLAGS := -std=c++17 -fPIC -c
-SHAREDFLAGS = -shared -Wl,-soname,$@ -Wl,-rpath,/home/matthew/Qt5/5.15.1/gcc_64/lib
+CXXFLAGS := -std=c++17 -fPIC -fopenmp -c 
+SHAREDFLAGS = -shared -Wl,-soname,$@ -Wl,-rpath=/opt/qt515/lib -L/opt/qt515/lib
 
 SOURCES := confighandler.cpp \
     databasehandler.cpp \
@@ -26,10 +26,10 @@ SHARED_OBJS := $(SHARED_OBJS_WITHOUT_DBHANDLER) $(SHARED_OBJS_WITH_DBHANDLER)
 
 OBJS := ${SOURCES:cpp=o} 
 
-LIBS:= -lQt5Network -lQt5Core -lopencv_core -lopencv_imgproc -lz -lbz2 -larchive -ldcmimgle -ldcmdata -lpqxx -lpq -fopenmp -larmadillo -lmlpack -lboost_system -lstdc++fs 
+LIBS:= -lQt5Network -lQt5Core -lopencv_core -lopencv_imgproc -lz -lbz2 -larchive -ldcmimgle -ldcmdata -lpqxx -lpq -larmadillo -lmlpack -lboost_system -lstdc++fs 
 
-INCPATH := -I/home/matthew/Qt5/5.15.1/gcc_64/include -I/home/matthew/Qt5/5.15.1/gcc_64/include/QtNetwork -I/home/matthew/Qt5/5.15.1/gcc_64/include/QtCore 
-INCPATH += -I/usr/local/include/opencv4
+INCPATH := -I/opt/qt515/include -I/opt/qt515/include/QtNetwork -I/opt/qt515/include/QtCore 
+INCPATH += -I/usr/include/opencv4
 
 .PHONY: all clean clean_objects
 

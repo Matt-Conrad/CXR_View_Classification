@@ -145,8 +145,8 @@ NOTE: Pre-built executables and shared libraries are compiled on Ubuntu 20.04 so
    - Download the *combinedSharedLibraries.zip* folder from the Github release and unzip it.
    - Run cppBuildSetup.sh for the below build options
       - From the *CXR_View_Classification* folder, build the C++ side using individual g++ commands and run Python source code: ```chmod u+x ./miscellaneous/combinedGppBuild.sh && ./miscellaneous/combinedGppBuild.sh```
-      - Build C++ side using provided Makefile and run Python source code: ```chmod u+x combinedMakeBuild.sh && combinedMakeBuild.sh```
-      - Build C++ side using CMake and run Python source code: ```chmod u+x combinedCmakeBuild.sh && combinedCmakeBuild.sh```
+      - Build C++ side using provided Makefile and run Python source code: ```chmod u+x ./miscellaneous/combinedMakeBuild.sh && ./miscellaneous/combinedMakeBuild.sh```
+      - Build C++ side using CMake and run Python source code: ```chmod u+x ./miscellaneous/combinedCmakeBuild.sh && ./miscellaneous/combinedCmakeBuild.sh```
  3. Activate the virtualenv: ```source ~/CXR_env/bin/activate```
  4. Run the app using Python: ```cd Combined/DesktopApp && python main.py``
 

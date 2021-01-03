@@ -45,28 +45,29 @@ add_library(trainer SHARED
 )
 
 target_include_directories(downloader PRIVATE src)
-target_include_directories(downloader PRIVATE /home/matt/Qt/5.15.1/gcc_64/include)
-target_include_directories(downloader PRIVATE /home/matt/Qt/5.15.1/gcc_64/include/QtNetwork)
-target_include_directories(downloader PRIVATE /home/matt/Qt/5.15.1/gcc_64/include/QtCore)
+target_include_directories(downloader PRIVATE /opt/qt515/include)
+target_include_directories(downloader PRIVATE /opt/qt515/include/QtNetwork)
 target_include_directories(unpacker PRIVATE src)
 target_include_directories(storer PRIVATE src)
 target_include_directories(featurecalculator PRIVATE src)
 target_include_directories(featurecalculator PRIVATE /usr/include/opencv4)
-target_include_directories(featurecalculator PRIVATE /home/matt/Qt/5.15.1/gcc_64/include)
-target_include_directories(featurecalculator PRIVATE /home/matt/Qt/5.15.1/gcc_64/include/QtCore)
+target_include_directories(featurecalculator PRIVATE /opt/qt515/include)
+target_include_directories(featurecalculator PRIVATE /opt/qt515/include/QtCore)
 target_include_directories(labelimporter PRIVATE src)
 target_include_directories(trainer PRIVATE src)
-target_include_directories(trainer PRIVATE /home/matt/Qt/5.15.1/gcc_64/include)
-target_include_directories(trainer PRIVATE /home/matt/Qt/5.15.1/gcc_64/include/QtCore)
+target_include_directories(trainer PRIVATE /opt/qt515/include)
+target_include_directories(trainer PRIVATE /opt/qt515/include/QtCore)
 
 target_link_libraries(downloader -lQt5Network -lQt5Core -lboost_system -lstdc++fs)
 target_link_libraries(unpacker -lz -lbz2 -larchive -lboost_system -lstdc++fs)
 target_link_libraries(storer -ldcmimgle -ldcmdata -lpqxx -lpq -lboost_system -lstdc++fs)
 target_link_libraries(featurecalculator -lQt5Core -ldcmimgle -ldcmdata -lopencv_core -lopencv_imgproc -lpqxx -lpq -lboost_system -lstdc++fs)
 target_link_libraries(labelimporter -lpqxx -lpq -lboost_system -lstdc++fs)
-target_link_libraries(trainer -lQt5Core -lpqxx -lpq -fopenmp -larmadillo -lmlpack -lboost_system -lstdc++fs)
+target_link_libraries(trainer -lQt5Core -lpqxx -lpq -larmadillo -lmlpack -lboost_system -lstdc++fs)
 
-set_target_properties(downloader PROPERTIES LINK_FLAGS "-Wl,-rpath,/home/matt/Qt/5.15.1/gcc_64/lib")
+set_target_properties(downloader PROPERTIES LINK_FLAGS "-Wl,-rpath=/opt/qt515/lib -L/opt/qt515/lib")
+set_target_properties(featurecalculator PROPERTIES LINK_FLAGS "-Wl,-rpath=/opt/qt515/lib -L/opt/qt515/lib")
+set_target_properties(trainer PROPERTIES LINK_FLAGS "-Wl,-rpath=/opt/qt515/lib -L/opt/qt515/lib")
 
 
 
