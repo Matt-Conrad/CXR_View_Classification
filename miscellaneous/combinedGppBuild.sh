@@ -1,11 +1,8 @@
 #!/bin/bash
-# Starting at the DesktopApp directory, enter the following commands in the Linux command prompt to build 
-# the shared libraries using g++ and the command line:
 mkdir Combined/DesktopApp/build
 cd Combined/DesktopApp/build
 cp -r ../src/* .
 
-# TODO: CHANGE SOURCE CODE SO THAT QT INCLUDES CAN BE COMBINED
 g++ -std=c++17 -c -fPIC confighandler.cpp -o confighandler.o
 g++ -std=c++17 -c -fPIC databasehandler.cpp -o databasehandler.o
 g++ -std=c++17 -c -fPIC -I/opt/qt515/include downloader.cpp -o downloader.o
