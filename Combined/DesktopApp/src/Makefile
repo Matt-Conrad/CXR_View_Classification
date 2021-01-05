@@ -28,7 +28,7 @@ OBJS := ${SOURCES:cpp=o}
 
 LIBS:= -lQt5Network -lQt5Core -lopencv_core -lopencv_imgproc -lz -lbz2 -larchive -ldcmimgle -ldcmdata -lpqxx -lpq -larmadillo -lmlpack -lboost_system -lstdc++fs 
 
-INCPATH := -I/opt/qt515/include -I/opt/qt515/include/QtNetwork -I/opt/qt515/include/QtCore 
+INCPATH := -I/opt/qt515/include
 INCPATH += -I/usr/include/opencv4
 
 .PHONY: all clean clean_objects

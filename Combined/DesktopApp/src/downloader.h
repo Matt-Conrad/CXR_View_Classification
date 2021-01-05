@@ -3,7 +3,10 @@
 
 #include <string>
 #include <filesystem>
-#include <QtNetwork>
+#include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkReply>
+#include <QtCore/QEventLoop>
+#include <QtCore/QFile>
 #include "confighandler.h"
 
 class Downloader {

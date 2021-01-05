@@ -46,17 +46,14 @@ add_library(trainer SHARED
 
 target_include_directories(downloader PRIVATE src)
 target_include_directories(downloader PRIVATE /opt/qt515/include)
-target_include_directories(downloader PRIVATE /opt/qt515/include/QtNetwork)
 target_include_directories(unpacker PRIVATE src)
 target_include_directories(storer PRIVATE src)
 target_include_directories(featurecalculator PRIVATE src)
 target_include_directories(featurecalculator PRIVATE /usr/include/opencv4)
 target_include_directories(featurecalculator PRIVATE /opt/qt515/include)
-target_include_directories(featurecalculator PRIVATE /opt/qt515/include/QtCore)
 target_include_directories(labelimporter PRIVATE src)
 target_include_directories(trainer PRIVATE src)
 target_include_directories(trainer PRIVATE /opt/qt515/include)
-target_include_directories(trainer PRIVATE /opt/qt515/include/QtCore)
 
 target_link_libraries(downloader -lQt5Network -lQt5Core -lboost_system -lstdc++fs)
 target_link_libraries(unpacker -lz -lbz2 -larchive -lboost_system -lstdc++fs)

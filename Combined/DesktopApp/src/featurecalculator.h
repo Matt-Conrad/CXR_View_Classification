@@ -7,8 +7,8 @@
 #include <dcmtk/dcmdata/dcfilefo.h>
 #include <vector>
 #include <thread>
-#include <QThreadPool>
-#include <QRunnable>
+#include <QtCore/QThreadPool>
+#include <QtCore/QRunnable>
 #include "opencv2/imgproc.hpp"
 // #include <opencv2/cudaarithm.hpp>
 #include "confighandler.h"

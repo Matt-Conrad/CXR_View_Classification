@@ -3,8 +3,8 @@
 
 #include <pqxx/pqxx>
 #include <pqxx/array.hxx>
-#include <QThreadPool>
-#include <QRunnable>
+#include <QtCore/QThreadPool>
+#include <QtCore/QRunnable>
 #include "mlpack/methods/linear_svm/linear_svm.hpp"
 #include "mlpack/core/cv/k_fold_cv.hpp"
 #include "mlpack/core/data/split_data.hpp"

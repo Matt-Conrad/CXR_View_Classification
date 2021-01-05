@@ -8,12 +8,12 @@ cp -r ../src/* .
 # TODO: CHANGE SOURCE CODE SO THAT QT INCLUDES CAN BE COMBINED
 g++ -std=c++17 -c -fPIC confighandler.cpp -o confighandler.o
 g++ -std=c++17 -c -fPIC databasehandler.cpp -o databasehandler.o
-g++ -std=c++17 -c -fPIC -I/opt/qt515/include -I/opt/qt515/include/QtNetwork downloader.cpp -o downloader.o
+g++ -std=c++17 -c -fPIC -I/opt/qt515/include downloader.cpp -o downloader.o
 g++ -std=c++17 -c -fPIC unpacker.cpp -o unpacker.o
 g++ -std=c++17 -c -fPIC storer.cpp -o storer.o
-g++ -std=c++17 -c -fPIC -I/usr/include/opencv4 -I/opt/qt515/include -I/opt/qt515/include/QtCore featurecalculator.cpp -o featurecalculator.o
+g++ -std=c++17 -c -fPIC -I/usr/include/opencv4 -I/opt/qt515/include featurecalculator.cpp -o featurecalculator.o
 g++ -std=c++17 -c -fPIC labelimporter.cpp -o labelimporter.o
-g++ -std=c++17 -c -fPIC -fopenmp -I/opt/qt515/include -I/opt/qt515/include/QtCore trainer.cpp -o trainer.o
+g++ -std=c++17 -c -fPIC -fopenmp -I/opt/qt515/include trainer.cpp -o trainer.o
 
 g++ -shared -Wl,-soname,libdownloader.so -Wl,-rpath=/opt/qt515/lib -L/opt/qt515/lib -o libdownloader.so downloader.o -lQt5Network confighandler.o -lboost_system -lstdc++fs 
 g++ -shared -Wl,-soname,libunpacker.so -o libunpacker.so unpacker.o -lz -lbz2 -larchive confighandler.o -lboost_system -lstdc++fs
