@@ -136,19 +136,19 @@ NOTE: Pre-built executables and shared libraries are compiled on Ubuntu 20.04 so
  The source code for this implementation can be found in *CXR_View_Classification/Combined/DesktopApp/src*. Along with the source code, there is also a Makefile and a CMakeList.txt file in there to aid building the executables. There are 3 equivalent ways to build this code: g++ commands, Make, and CMake. 
 
  #### Run combined implementation
- 1. Run the corresponding setup script to set up C++ and Python libraries: ```./SCRIPT_NAME.sh```
-   - combinedDownloadSetup.sh if you're going to download the shared libraries
-   - combinedGppSetup.sh if you're going to build using the g++ method
-   - combinedMakeSetup.sh if you're going to build using the Make method
-   - combinedCmakeSetup.sh if you're going to build using the CMake method
- 2. Several options here:
+ 1. Run the setup script with the desired argument to set up for running the combined implementation: ```./combinedSetup.sh [arg1]``` 
+   - Pass ```download``` if you're going to download the shared libraries
+   - Pass no argument if you're going to build using the g++ method
+   - Pass ```make``` if you're going to build using the Make method
+   - Pass ```cmake``` if you're going to build using the CMake method
+ 2. Follow the various instructions to acquire or build the C++ shared libraries:
    - Download the *combinedSharedLibraries.zip* folder from the Github release and unzip it.
-   - Run cppBuildSetup.sh for the below build options
-      - From the *CXR_View_Classification* folder, build the C++ side using individual g++ commands and run Python source code: ```./miscellaneous/combinedGppBuild.sh```
-      - Build C++ side using provided Makefile and run Python source code: ```./miscellaneous/combinedMakeBuild.sh```
-      - Build C++ side using CMake and run Python source code: ```./miscellaneous/combinedCmakeBuild.sh```
+   - Run the build script with the desired argument to build the shared libraries: ```./miscellaneous/combinedBuild.sh [arg1]``` 
+      - Pass ```g++``` if you want to build with g++
+      - Pass ```make``` if you want to build with Make
+      - Pass ```cmake``` if you want to build with CMake
  3. Activate the virtualenv: ```source ~/CXR_env/bin/activate```
- 4. Run the app using Python: ```cd Combined/DesktopApp && python main.py``
+ 4. Run the app using Python: ```cd Combined/DesktopApp && python main.py```
 
 
 ## Web API Usage for local machine or local VM
