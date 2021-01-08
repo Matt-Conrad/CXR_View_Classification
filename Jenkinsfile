@@ -97,9 +97,9 @@ pipeline {
                 expression { params.buildCombinedSharedLibsOnHost == true }
             }
             steps {                
-                // sh './miscellaneous/combinedGppBuild.sh'
-                // sh './miscellaneous/combinedMakeBuild.sh'
-                sh './miscellaneous/combinedCmakeBuild.sh'
+                dir('./miscellaneous') {
+                    sh './combinedBuild.sh cmake'
+                }
                 dir('./Combined/DesktopApp') {
                     sh 'zip -r combinedSharedLibraries.zip build'
                 }

@@ -12,7 +12,7 @@ vmrest_url=http://${vmrest_ip}:${vmrest_port}/api/vms
 vmSource="/home/matt/vmwareSnapshots/Ubuntu"
 vmDestination="/home/matt/vmware/Ubuntu/"
 
-if [ -z "$vmDestination" ]
+if [ -z "$vmDestination" ] # TODO: Checking can maybe be removed if sudo is removed from installation.sh call in Jenkinsfile
 then
     echo "ERROR: vmDestination is empty. This can result in deleted system files with rm -rf"
     exit 1    
@@ -102,7 +102,7 @@ fi
 
 if [ $setupCombinedOnGuest == true ] 
 then
-    sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} ${miscFolder}/combinedDownloadSetup.sh"
+    sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} ${miscFolder}/combinedBuild.sh cmake"
 fi
 
 if [ $setupToBuildCppOnGuest == true ] 

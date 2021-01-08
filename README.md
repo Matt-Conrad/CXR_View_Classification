@@ -134,21 +134,14 @@ NOTE: Pre-built executables and shared libraries are compiled on Ubuntu 20.04 so
 
  ### Combined Implementation
  The source code for this implementation can be found in *CXR_View_Classification/Combined/DesktopApp/src*. Along with the source code, there is also a Makefile and a CMakeList.txt file in there to aid building the executables. There are 3 equivalent ways to build this code: g++ commands, Make, and CMake. 
-
- #### Run combined implementation
- 1. Run the setup script with the desired argument to set up for running the combined implementation: ```./combinedSetup.sh [arg1]``` 
-   - Pass ```download``` if you're going to download the shared libraries
-   - Pass no argument if you're going to build using the g++ method
-   - Pass ```make``` if you're going to build using the Make method
-   - Pass ```cmake``` if you're going to build using the CMake method
- 2. Follow the various instructions to acquire or build the C++ shared libraries:
-   - Download the *combinedSharedLibraries.zip* folder from the Github release and unzip it.
-   - Run the build script with the desired argument to build the shared libraries: ```./miscellaneous/combinedBuild.sh [arg1]``` 
-      - Pass ```g++``` if you want to build with g++
-      - Pass ```make``` if you want to build with Make
-      - Pass ```cmake``` if you want to build with CMake
+ 1. From the miscellaneous folder, run the build script with the desired argument to set up and build the shared libraries: ```./combinedBuild.sh [arg]```
+   - ```./combinedBuild.sh download``` if you're going to download the shared libraries
+   - ```./combinedBuild.sh g++``` if you're going to build using the g++ method
+   - ```./combinedBuild.sh make``` if you're going to build using the Make method
+   - ```./combinedBuild.sh cmake``` if you're going to build using the CMake method
+ 2. (Optional) If you're going the download route, then download the *combinedSharedLibraries.zip* folder from the Github release and unzip it.
  3. Activate the virtualenv: ```source ~/CXR_env/bin/activate```
- 4. Run the app using Python: ```cd Combined/DesktopApp && python main.py```
+ 4. Run the app using Python: ```cd ../Combined/DesktopApp && python main.py```
 
 
 ## Web API Usage for local machine or local VM
