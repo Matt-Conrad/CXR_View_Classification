@@ -90,31 +90,23 @@ NOTE: Pre-built executables and shared libraries are compiled on Ubuntu 20.04 so
  ### Python
  Here are the steps for using the app for the various paths.
 
- #### Run source 
- 1. Run the pythonSetup.sh file to set up Python and virtualenv: ```sudo pythonSetup.sh```
+ #### Running from source and building 
+ 1. Run pythonSetup.sh file in *miscellaneous* folder to set up Python: ```./pythonSetup.sh [arg]```
+   - ```./pythonSetup.sh source``` if you're going to run from source
+   - ```./pythonSetup.sh build``` if you're going to build the file-based or folder-based executable
  2. Activate the virtualenv: ```source CXR_env/bin/activate```
- 3. Change directory to folder containing program: ```cd CXR_View_Classification/Python/DesktopApp```
- 4. Run the app using Python: ```python main.py```
+ 3. (Optional) If you're going to build the executable, run ```pyinstaller [arg]`` in *CXR_View_Classification/Python/pyinstaller*
+   - ```pyinstaller folder.spec``` if building folder-based executable
+   - ```pyinstaller one_file.spec``` if building file-based executable
+ 4. Run the program:
+   - ```python main.py``` in *CXR_View_Classification/Python/DesktopApp* if you're running from source
+   - ```./CXR_Classify``` *CXR_View_Classification/Python/builds/dist_folder* executable for folder-based approach
+   - ```./CXR_Classify``` *CXR_View_Classification/Python/builds/dist_one_file* executable for file-based approach
 
- #### Run pre-built file-based executable
- 1. Download the *dist_one_file.zip* folder from the Github release and unzip it.
- 2. Execute the *CXR_Classify* executable in *dist_one_file* folder
-
- #### Run pre-built folder-based executable
- 1. Download the *dist_folder.zip* folder from the Github release and unzip it.
- 2. Execute the *CXR_Classify* executable in *dist_folder* folder
-
- #### Build and run file-based executable
- 1. Run the script to set up for building: ```sudo pythonSetup.sh``` or ```sudo pyinstallerSetup.sh``` will work
- 2. Activate the virtualenv: ```source CXR_env/bin/activate```
- 3. Run ```pyinstaller one_file.spec`` in *CXR_View_Classification/Python/pyinstaller*
- 4. Execute the *CXR_View_Classification/Python/builds/dist_one_file/CXR_Classify* executable and go through the steps.
-
- #### Build and run folder-based executable
- 1. Run the script to set up for building: ```sudo pythonSetup.sh``` or ```sudo pyinstallerSetup.sh``` will work
- 2. Activate the virtualenv: ```source CXR_env/bin/activate```
- 3. Run ```pyinstaller folder.spec``` in *CXR_View_Classification/Python/pyinstaller*
- 4. Execute the *CXR_View_Classification/Python/builds/dist_folder/CXR_Classify* executable and go through the steps.
+ #### Run pre-built folder-based and file-based executables
+ 1. Download and unzip the *FOLDER_NAME.zip* from the Github release
+ 2. Execute the *CXR_Classify* executable in *FOLDER_NAME_HERE* folder
+   - Where FOLDER_NAME is *dist_folder* if using the folder-based executable and *dist_one_file* if using the file-based executable
 
  ### C++ Implementation
 

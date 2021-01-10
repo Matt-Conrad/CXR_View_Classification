@@ -10,4 +10,4 @@ apt-get install libspdlog-dev -y
 apt-get install libarchive-dev -y
 apt-get install libensmallen-dev -y
 apt-get install libbz2-dev -y
-apt-get install libboost-all-dev -y
+apt-get install libboost-dev libboost-system-dev -y
