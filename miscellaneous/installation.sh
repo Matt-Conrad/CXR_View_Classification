@@ -79,7 +79,7 @@ endpoint=${VM_UBUNTU_CREDS_USR}@${IP}
 
 declare -a sshpassArgs=('-p' "${VM_UBUNTU_CREDS_PSW}")
 declare -a sshArgs=('-o' 'StrictHostKeyChecking no')
-sshCommandPrefix="echo ${VM_UBUNTU_CREDS_PSW} | sudo -S"
+sshCommandPrefix="echo ${VM_UBUNTU_CREDS_PSW} | sudo -S" # Take out sudo at some point
 sharedFolderMountLocation="/mnt/hgfs"
 miscFolder="${sharedFolderMountLocation}/${sharedFolderGuestName}/miscellaneous"
 
@@ -92,20 +92,20 @@ fi
 
 if [ $setupPythonOnGuest == true ] 
 then
-    sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} ${miscFolder}/pythonSetup.sh"
+    sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} ${miscFolder}/pythonSetup.sh source"
 fi
 
 if [ $setupCppOnGuest == true ] 
 then
-    sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} ${miscFolder}/cppSetup.sh"
+    sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} ${miscFolder}/cppSetup.sh prebuilt"
 fi
 
 if [ $setupCombinedOnGuest == true ] 
 then
-    sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} ${miscFolder}/combinedBuild.sh cmake"
+    sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} ${miscFolder}/combinedBuild.sh download"
 fi
 
 if [ $setupToBuildCppOnGuest == true ] 
 then
-    sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} ${miscFolder}/cppBuildSetup.sh"
+    sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} ${miscFolder}/cppSetup.sh build"
 fi

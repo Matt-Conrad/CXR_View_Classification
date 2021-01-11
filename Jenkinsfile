@@ -38,7 +38,7 @@ pipeline {
                     }
                     steps {
                         dir('./miscellaneous') {
-                            sh "sudo ./pyinstallerSetup.sh" // Must give user execute sudo permission for this folder in sudoers
+                            sh "./pythonSetup.sh build" // Must give user execute sudo permission for this folder in sudoers
                         }
                     }
                 }
@@ -80,7 +80,7 @@ pipeline {
                 expression { params.buildCppExecutableOnHost == true }
             }
             steps {
-                // must run cppSetup.sh first
+                // sh "./miscellaneous/cppSetup.sh build"
                 sh 'mkdir ./Cpp/build'
                 dir('./Cpp/build') {
                     sh 'qmake ../CXR_classify/CXR_classify.pro CONFIG+=debug'
@@ -96,9 +96,15 @@ pipeline {
             when {
                 expression { params.buildCombinedSharedLibsOnHost == true }
             }
+            // environment {
+            //     VM_UBUNTU_CREDS = credentials('vm-ubuntu-credentials')
+            // }
             steps {                
+                // dir('./miscellaneous') {
+                //     sh "echo ${VM_UBUNTU_CREDS_PSW} | sudo -S ./combinedBuild.sh cmake"
+                // }
                 dir('./miscellaneous') {
-                    sh './combinedBuild.sh cmake'
+                    sh './combinedBuild.sh cmake'  // Need to pass password without echoing to terminal somehow. This step makes it so we build but don't set up since missing password
                 }
                 dir('./Combined/DesktopApp') {
                     sh 'zip -r combinedSharedLibraries.zip build'

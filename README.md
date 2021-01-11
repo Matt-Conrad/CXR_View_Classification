@@ -79,8 +79,8 @@ NOTE: Pre-built executables and shared libraries are compiled on Ubuntu 20.04 so
     ```
     git clone https://github.com/Matt-Conrad/CXR_View_Classification.git
     ```
- 2. Set up Postgres if you don't already have it by running postgresSetup.sh: ```sudo postgresSetup.sh```
- 2. (OPTIONAL) Change the default configuration if you wish. \
+ 2. Set up Postgres if you don't already have it by running postgresSetup.sh in miscellaneous folder: ```./postgresSetup.sh```
+ 2. (OPTIONAL) Change the default configuration if you wish. 
       - The *postgresql* section contains the server host and port, desired name of the DB to be created, as well as user and password. The template is currently set up to create a DB named "db" on the localhost, so you can leave it as is or rename it if you wish. 
       - Leave the *dicom_folder* section alone as it gets filled in automatically as the app goes through the steps. You can also rename the tables that will be created.
       - You can leave the *table_info* section alone, or if you want to change the names of the tables you can here
@@ -95,7 +95,7 @@ NOTE: Pre-built executables and shared libraries are compiled on Ubuntu 20.04 so
    - ```./pythonSetup.sh source``` if you're going to run from source
    - ```./pythonSetup.sh build``` if you're going to build the file-based or folder-based executable
  2. Activate the virtualenv: ```source CXR_env/bin/activate```
- 3. (Optional) If you're going to build the executable, run ```pyinstaller [arg]`` in *CXR_View_Classification/Python/pyinstaller*
+ 3. (Optional) If you're going to build the executable, run ```pyinstaller [arg]``` in *CXR_View_Classification/Python/pyinstaller*
    - ```pyinstaller folder.spec``` if building folder-based executable
    - ```pyinstaller one_file.spec``` if building file-based executable
  4. Run the program:
@@ -105,21 +105,20 @@ NOTE: Pre-built executables and shared libraries are compiled on Ubuntu 20.04 so
 
  #### Run pre-built folder-based and file-based executables
  1. Download and unzip the *FOLDER_NAME.zip* from the Github release
- 2. Execute the *CXR_Classify* executable in *FOLDER_NAME_HERE* folder
+ 2. Execute the *CXR_Classify* executable in *FOLDER_NAME* folder
    - Where FOLDER_NAME is *dist_folder* if using the folder-based executable and *dist_one_file* if using the file-based executable
 
  ### C++ Implementation
 
  #### Run pre-built executable
- 1. Run the cppSetup.sh script to set up C++ libraries: ```sudo cppSetup.sh```
+ 1. Run the cppSetup.sh script to set up C++ libraries: ```./cppSetup.sh prebuilt```
  2. Download the *cppBuild.zip* folder from the Github release and unzip it.
  3. Execute the provided executable and go through the steps.
 
  #### Build using QMake and run the resulting executable
- 1. From miscellaneous folder, run cppSetup.sh to set up C++ libraries: ```sudo ./cppBuildSetup.sh```
+ 1. From miscellaneous folder, run cppSetup.sh to set up C++ libraries: ```./cppSetup.sh build```
  2. Build executable using qmake:
-   - Start from the *CXR_View_Classification/Cpp* directory: cd ```cd ../Cpp```
-   - Create build directory: ```mkdir ./build && cd ./build```
+   - Create and change to build directory: cd ```mkdir ../Cpp/build && cd ../Cpp/build```
    - Create build system using qmake: ```qmake ../CXR_classify/CXR_classify.pro CONFIG+=debug```
    - Build the executable: ```make```
  3. Execute the *CXR_View_Classification/Cpp/build/CXR_classify* executable and go through the steps.
@@ -132,8 +131,9 @@ NOTE: Pre-built executables and shared libraries are compiled on Ubuntu 20.04 so
    - ```./combinedBuild.sh make``` if you're going to build using the Make method
    - ```./combinedBuild.sh cmake``` if you're going to build using the CMake method
  2. (Optional) If you're going the download route, then download the *combinedSharedLibraries.zip* folder from the Github release and unzip it.
- 3. Activate the virtualenv: ```source ~/CXR_env/bin/activate```
- 4. Run the app using Python: ```cd ../Combined/DesktopApp && python main.py```
+ 3. Activate the virtualenv: ```source CXR_env/bin/activate```
+ 4. (Optional) If you're doing the download route, add the Qt lib to LD_LIBRARY_PATH so program can find Qt shared: ```export LD_LIBRARY_PATH="/PATH/TO/CXR_env/lib/python3.6/site-packages/PyQt5/Qt/lib:$PATH"```
+ 5. Run the app using Python: ```cd ../Combined/DesktopApp && python main.py```
 
 
 ## Web API Usage for local machine or local VM

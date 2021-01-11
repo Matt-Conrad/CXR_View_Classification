@@ -38,9 +38,7 @@ then
     sudo apt-get install cmake -y
 fi
 
-# TO LINK QT FROM PYQT5 - must run this in terminal before running main.py when doing the download option
-export LD_LIBRARY_PATH="./CXR_env/lib/python3.6/site-packages/PyQt5/Qt/lib:$PATH" #Replace period with explicit file location
-
+# Add a check to see if this folder already exists
 mkdir ../Combined/DesktopApp/build
 cd ../Combined/DesktopApp/build
 
@@ -71,6 +69,9 @@ elif [ "$1" == "cmake" ]
 then
     cmake ../src
     cmake --build .
+elif [ "$1" == "download" ]
+then
+    echo "Download selected, not building anything."
 else
     echo "MUST PROVIDE BUILD PARAMETER"
 fi
