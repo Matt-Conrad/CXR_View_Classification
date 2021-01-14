@@ -145,52 +145,15 @@ There are several ways to deploy the web interfaces: standalone built-in Flask s
     ```
     git clone https://github.com/Matt-Conrad/CXR_View_Classification.git
     ```
- 2. If you don't already have it, install pip using [these instructions](https://pip.pypa.io/en/stable/installing/)
- 3. Install virtualenv and Python 3.6 if you don't already have it. You can install virtualenv using [these instructions](https://virtualenv.pypa.io/en/latest/installation.html). Create a virtualenv using ```virtualenv -p PATH_TO_PYTHON_3.6 CXR_env``` to create a folder containing virtual environment files. Activate the environment using ```source CXR_env/bin/activate```. Lastly, install the pip packages using ```pip install -r requirements.txt``` from inside the *miscellaneous* folder.
-
- ### Standalone Built-in Flask Server
- 4. Open a terminal in the cloned repository and run the following command to add/update the following OS (in this case Linux) environment variables. Note: If you are on Windows, you need to replace the "export" keyword with "set":
-    ```
-    export FLASK_APP=api_controller
-    ```
- 5. To run the server so that only the host computer has access to it, use the following command: ```flask run```. To run the server so that other computers on the local network have access, use the following command: ```flask run --host=0.0.0.0```
- 6. You now have a running standalone built-in Flask server. Use the send_script.py script to send a DCM file over HTTP to port **5000** on the localhost (127.0.0.1) if you didn't provide the *host* parameter in step 5, the IP address of the host if you did provide *host*. Note: This is a development server and is not recommended to be used as a production server.
-
- ### Standalone Gunicorn Server Running The Flask App:
- 4. Open a terminal in the cloned repository and run the following command: ```gunicorn api_controller:app```.
- 5. You now have a running standalone Gunicorn server running the Flask app. Use the send_script.py script to send a DCM file over HTTP to port **8000** on the localhost (127.0.0.1). Note: Since Gunicorn is easily susceptible to DOS attacks, it is recommended to run Gunicorn behind a reverse proxy server which is why I only instruct to send to the localhost here. 
-
- ### Nginx/Gunicorn server pair (Recommended)
- 4. Open a terminal in the cloned repository and run the following command to run Flask app on the Gunicorn server in the background as a daemon: ```gunicorn -D api_controller:app```.
- 5. Now we need to set up the Nginx server If you don't already have Nginx, install it with the following commands:
-    ```
-    sudo apt-get update
-    sudo apt-get install nginx
-    ```
- 6. Remove the file ```/etc/nginx/sites-available/default``` and replace it with a file named the exact same, but with the following content:
-    ```
-    server {
-       listen 80;
-       server_name cxr_classifier;
-       access_log  /var/log/nginx/cxr_classifier.log;
-
-       location / {
-          proxy_pass http://127.0.0.1:8000;
-          proxy_set_header Host $host;
-          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-       }
-    }
-    ```
- 7. In order to send a DICOM file (which is about 10MB) over HTTP, we need to remove Nginx's request size cap. Add the following entry to the ```http``` section of the ```/etc/nginx/nginx.conf``` file:
-    ```
-    client_max_body_size 0;
-    ```
- 8. Start and then restart Nginx server:
-    ```
-    sudo service nginx start
-    sudo service nginx restart
-    ```
- 9. You now have a running Nginx/Gunicorn server pair running the Flask app. In this setup, the Nginx server is operating on port **80** and accepts requests from the localhost or other computers on the network. The Nginx server will pass requests to the Gunicorn server on port **8000** of the same computer, but this Gunicorn server is not directly accessible to computers outside the localhost. Use the send_script.py script to send a DCM file over HTTP to port **80** of the target computer.  
+ 2. Start the desired server configuration by running: ```./engineSetup.sh SERVER_TYPE SERVER_ACCESS``` where:
+   - SERVER_TYPE is the type of server you want to set up. 
+      - ```flask``` if you're trying to do the standalone Flask server
+      - ```gunicorn``` if you're trying to do the standalone Gunicorn server running the Flask app
+      - ```nginx``` if you're trying to do the Nginx/Gunicorn server pair
+   - SERVER_ACCESS is the type of access for the server
+      - ```localhost``` if you only want the server to be accessible by the machine it's running on
+      - ```network``` if you want the server to be accessible by any machine on the network
+ 3. You now have a running server or server pair. Use the send_script.py script to send a DCM file over HTTP to port **5000** on the localhost (127.0.0.1) if you didn't provide the *host* parameter in step 5, the IP address of the host if you did provide *host*. Note: This is a development server and is not recommended to be used as a production server.
 
 ## Web API Usage for AWS Elastic Beanstalk
  1. Clone the git repository onto your computer: 

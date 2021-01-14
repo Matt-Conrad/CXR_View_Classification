@@ -10,6 +10,7 @@ pipeline {
         booleanParam(name: 'setupCppOnGuest', defaultValue: false, description: 'Sets up C++ libraries on the VM for running C++ implementation')
         booleanParam(name: 'setupCombinedOnGuest', defaultValue: false, description: 'Sets up virtualenv and C++ libraries on the VM for running the Combined implementation')
         booleanParam(name: 'setupToBuildCppOnGuest', defaultValue: false, description: 'Sets up C++ libraries on the VM for building the C++ implementation')
+        booleanParam(name: 'setupEngineOnGuest', defaultValue: false, description: 'Sets up the engine on the VM')
     }
     options {
         skipDefaultCheckout()
@@ -124,7 +125,7 @@ pipeline {
                 VM_UBUNTU_CREDS = credentials('vm-ubuntu-credentials')
             }
             steps {
-                sh "./miscellaneous/installation.sh $setupPostgresOnGuest $setupPythonOnGuest $setupCppOnGuest $setupCombinedOnGuest $setupToBuildCppOnGuest"
+                sh "./miscellaneous/installation.sh $setupPostgresOnGuest $setupPythonOnGuest $setupCppOnGuest $setupCombinedOnGuest $setupToBuildCppOnGuest $setupEngineOnGuest"
             }
         }
     }

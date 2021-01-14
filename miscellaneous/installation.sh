@@ -109,3 +109,8 @@ if [ $setupToBuildCppOnGuest == true ]
 then
     sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} ${miscFolder}/cppSetup.sh build"
 fi
+
+if [ $setupEngineOnGuest == true ] 
+then
+    sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} ${miscFolder}/engineSetup.sh nginx network"
+fi
