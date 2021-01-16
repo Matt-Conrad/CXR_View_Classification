@@ -1,7 +1,6 @@
 #!/bin/bash
-
-__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd $__dir
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd $DIR
 ./pythonSetup.sh engine
 
 cd /mnt/hgfs/SharedFolder_Guest/Python/Engine
@@ -33,7 +32,7 @@ then
     sudo apt-get update -y
     sudo apt-get install nginx -y
     
-    sudo echo '
+    sudo bash -c "echo '
     server {
        listen 80;
        server_name cxr_classifier;
@@ -41,11 +40,11 @@ then
 
        location / {
           proxy_pass http://127.0.0.1:8000;
-          proxy_set_header Host $host;
-          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header Host \$host;
+          proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
        }
     }
-    ' > /etc/nginx/sites-available/default
+    ' > /etc/nginx/sites-available/default"
 
     sudo sed -i '/http {/ a \\tclient_max_body_size 0;' /etc/nginx/nginx.conf
     

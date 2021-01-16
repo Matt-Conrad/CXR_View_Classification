@@ -1,4 +1,4 @@
-"""This script is used to send a random DCM file to the Flask Dev server on the local machine."""
+"""This script is used to send a random test DCM file to a server"""
 import os
 import logging
 import csv
@@ -8,6 +8,9 @@ from datetime import datetime
 import pydicom as pdm
 import matplotlib.pyplot as plt
 import requests
+import sys
+
+url = "http://" + sys.argv[1] + "/api/classify" # Send to a separate machine on network
 
 # Randomize folder to be chosen from
 with open('test_images.csv', newline='') as f:
@@ -34,9 +37,6 @@ for test_image in test_images:
 
     # Send ASCII version of file in a JSON over HTTP
     print(str(datetime.now()) + " Sending " + file_name)
-    # url = "http://**ELASTIC_BEANSTALK_INSTANCE_URL**/api/classify" # Send to AWS service
-    # url = "http://127.0.0.1:80/api/classify" # Send to local service
-    url = "http://192.168.61.130:80/api/classify" # Send to a separate machine on network
     send_headers = {"Content-Type": "application/octet-stream"}
     response = requests.post(url, data=encoded_string_bin, headers=send_headers)
     print(str(datetime.now()) + " Received " + file_name)

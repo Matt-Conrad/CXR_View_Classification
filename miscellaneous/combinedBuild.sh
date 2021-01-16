@@ -17,7 +17,8 @@ fi
 virtualenv -p /usr/bin/python3.6 CXR_env
 source CXR_env/bin/activate
 
-cd /mnt/hgfs/SharedFolder_Guest/miscellaneous
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd $DIR
 pip install -r requirements.txt
 
 if [ "$1" == "download" ]

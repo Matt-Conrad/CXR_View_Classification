@@ -18,12 +18,12 @@ sudo chmod -R a+rwx CXR_env #maybe remove
 
 source CXR_env/bin/activate
 
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd $DIR
 if [ "$1" == "source" ] || [ "$1" == "build" ]
 then
-    # cd /mnt/hgfs/SharedFolder_Guest/miscellaneous # For CI/CD, otherwise comment out and run from misc folder
     pip install -r requirements.txt
 elif [ "$1" == "engine" ]
 then
-    # cd /mnt/hgfs/SharedFolder_Guest/miscellaneous # For CI/CD, otherwise comment out and run from misc folder
     pip install -r engineRequirements.txt
 fi
