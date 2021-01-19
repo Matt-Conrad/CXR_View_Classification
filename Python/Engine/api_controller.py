@@ -13,6 +13,10 @@ app = Flask(__name__)
 def how_to():
     return render_template('how_to_page.html')
 
+@app.route('/submit')
+def submit_page():
+    return render_template('submit.html')
+
 @app.route("/api/classify", methods=["POST"])
 def classify():
     # Deny requests that we don't care about
