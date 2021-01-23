@@ -13,14 +13,9 @@ app = Flask(__name__)
 def how_to():
     return render_template('how_to_page.html')
 
-@app.route('/submit')
-def submit_page():
-    return render_template('submit.html')
-
-
-@app.route('/example')
-def example_page():
-    return render_template('index.html')
+@app.route('/upload')
+def fileUploadPage():
+    return render_template('fileUpload.html')
 
 @app.route("/api/classify", methods=["POST"])
 def classify():
