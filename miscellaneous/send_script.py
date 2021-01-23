@@ -10,7 +10,8 @@ import matplotlib.pyplot as plt
 import requests
 import sys
 
-url = "http://" + sys.argv[1] + "/api/classify" # Send to a separate machine on network
+# url = "http://" + sys.argv[1] + "/api/classify" # Send to a separate machine on network
+url = "http://localhost:5000/api/classify"
 
 # Randomize folder to be chosen from
 with open('test_images.csv', newline='') as f:
@@ -34,6 +35,8 @@ for test_image in test_images:
     # Convert DCM file as follows: binary => b64 => ASCII
     with open(full_path, "rb") as image_file:
         encoded_string_bin = image_file.read()
+    
+    print(encoded_string_bin)
 
     # Send ASCII version of file in a JSON over HTTP
     print(str(datetime.now()) + " Sending " + file_name)

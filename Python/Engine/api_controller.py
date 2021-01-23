@@ -17,6 +17,11 @@ def how_to():
 def submit_page():
     return render_template('submit.html')
 
+
+@app.route('/example')
+def example_page():
+    return render_template('index.html')
+
 @app.route("/api/classify", methods=["POST"])
 def classify():
     # Deny requests that we don't care about
