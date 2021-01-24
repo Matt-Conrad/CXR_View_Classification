@@ -3,7 +3,7 @@
 
 <head>
     <!-- twitter bootstrap CSS stylesheet - included to make things pretty, not needed or used by cornerstone -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" rel="stylesheet"> 
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- include the cornerstone library -->
     <script src="https://cdn.jsdelivr.net/npm/cornerstone-core@2.0.0/dist/cornerstone.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/cornerstone-math@0.1.6/dist/cornerstoneMath.js"></script>
@@ -13,7 +13,8 @@
     <script src="https://cdn.jsdelivr.net/npm/dicom-parser@1.7.6/dist/dicomParser.min.js"></script>
 
     <!-- include the cornerstoneWADOImageLoader library -->
-    <script src="https://cdn.jsdelivr.net/npm/cornerstone-wado-image-loader@3.3.1/dist/cornerstoneWADOImageLoader.min.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/cornerstone-wado-image-loader@3.3.1/dist/cornerstoneWADOImageLoader.min.js"></script>
 </head>
 
 <body>
@@ -21,19 +22,32 @@
         <div class="page-header">
             <h1>CXR Classification File Upload</h1>
             <p class="lead">
-                Click "Choose File" and select a DICOM P10 file on your local file system or drag and drop a DICOM P10
-                file.
+                The CXR Classification Engine will classify a Chest X-Ray image as either Frontal or Lateral. 
             </p>
-            <label id="selectFile" class="btn btn-primary" type="button">
-                Choose DICOM File <input type="file" hidden>
-            </label>
-            <p id="fileSelected">
-
-            </p>
-            <p id="result">
-
-            </p>
+            <ol>
+                <li>Click "Choose DICOM File" and select Chest X-Ray DICOM file on your local file system or drag and drop a file</li>
+                <li>Click "Upload" to send to the engine</li>
+            </ol>
         </div>
+
+        <form class="form-inline">
+            <div class="form-group">
+                <div class="col-sm">
+                    <input class="form-control" id="fileSelected" type="text" placeholder="Filename" readonly>
+                </div>          
+                <div class="col-sm">
+                    <label id="selectFile" class="btn btn-primary" type="button">
+                        Choose DICOM File <input type="file" hidden>
+                    </label>
+                </div>
+                <div class="col-sm">
+                    <label id="sendFile" class="btn btn-primary" type="button">
+                        Upload
+                    </label>
+                </div>      
+            </div>
+        </form>
+
         <br> <!-- simplify this  -->
         <div class="row">
             <div class="col-md-6">
@@ -47,6 +61,7 @@
             <div class="col-md-6">
                 <span>Transfer Syntax: </span><span id="transferSyntax"></span><br>
                 <span>SOP Class: </span><span id="sopClass"></span><br>
+                <span>View Prediction: </span><span id="result"></span><br>
             </div>
         </div>
     </div>

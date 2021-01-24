@@ -26,6 +26,7 @@ dropZone.addEventListener('dragover', handleDragOver, false);
 dropZone.addEventListener('drop', handleFileSelect, false);
 
 let loaded = false;
+let payload;
 
 function loadAndViewImage(imageId) {
     const element = document.getElementById('dicomImage');
@@ -56,12 +57,6 @@ function loadAndViewImage(imageId) {
     });
 }
 
-cornerstone.events.addEventListener('cornerstoneimageloadprogress', function (event) {
-    const eventData = event.detail;
-    const loadProgress = document.getElementById('loadProgress');
-    loadProgress.textContent = `Image Load Progress: ${eventData.percentComplete}%`;
-});
-
 const element = document.getElementById('dicomImage');
 cornerstone.enable(element);
 
@@ -87,16 +82,21 @@ document.getElementById('selectFile').addEventListener('change', function (e) {
     // Add the file to the cornerstoneFileImageLoader and get unique
     // number for that file
     const file = e.target.files[0];
-    filenameDisplay.innerHTML = file.name;
+    filenameDisplay.setAttribute("placeholder", file.name);
+    resultDisplay.innerHTML = "";
 
     let reader = new FileReader();
-    let bytes;
     reader.onload = function () {
-        bytes = this.result;
-        sendImage(bytes);
+        payload = this.result;
     }
     reader.readAsArrayBuffer(file);
 
     const imageId = cornerstoneWADOImageLoader.wadouri.fileManager.add(file);
     loadAndViewImage(imageId);
+});
+
+document.getElementById('sendFile').addEventListener('click', function (e) {
+    if (loaded === true) {
+        sendImage(payload)
+    }
 });
