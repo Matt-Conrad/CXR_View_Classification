@@ -32,16 +32,14 @@ for test_image in test_images:
     dcm = pdm.dcmread(full_path)
     image = dcm.pixel_array
 
-    # Convert DCM file as follows: binary => b64 => ASCII
+    # Read as binary
     with open(full_path, "rb") as image_file:
-        encoded_string_bin = image_file.read()
-    
-    print(encoded_string_bin)
+        dcmBinary = image_file.read()
 
-    # Send ASCII version of file in a JSON over HTTP
+    # Send binary data over HTTP
     print(str(datetime.now()) + " Sending " + file_name)
     send_headers = {"Content-Type": "application/octet-stream"}
-    response = requests.post(url, data=encoded_string_bin, headers=send_headers)
+    response = requests.post(url, data=dcmBinary, headers=send_headers)
     print(str(datetime.now()) + " Received " + file_name)
     if response.status_code == 200:
         plt.imshow(image, cmap="bone")

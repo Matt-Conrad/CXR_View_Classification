@@ -25,15 +25,6 @@ const dropZone = document.getElementById('dicomImage');
 dropZone.addEventListener('dragover', handleDragOver, false);
 dropZone.addEventListener('drop', handleFileSelect, false);
 
-
-cornerstoneWADOImageLoader.configure({
-    beforeSend: function (xhr) {
-        // Add custom headers here (e.g. auth tokens)
-        //xhr.setRequestHeader('x-auth-token', 'my auth token');
-    },
-    useWebWorkers: true,
-});
-
 let loaded = false;
 
 function loadAndViewImage(imageId) {
@@ -74,10 +65,38 @@ cornerstone.events.addEventListener('cornerstoneimageloadprogress', function (ev
 const element = document.getElementById('dicomImage');
 cornerstone.enable(element);
 
+const filenameDisplay = document.getElementById('fileSelected');
+const resultDisplay = document.getElementById('result');
+
+function sendImage(payload) {
+    let xhttp = new XMLHttpRequest();
+    xhttp.open("POST", "http://localhost:5000/api/classify", true);
+    xhttp.setRequestHeader("Content-Type", "application/octet-stream");
+    
+    xhttp.onreadystatechange = function () {
+        if (this.readyState == XMLHttpRequest.DONE) {
+            let letter = JSON.parse(this.responseText)["result"]
+            resultDisplay.innerHTML = letter;
+        }
+    }
+
+    xhttp.send(payload)
+}
+
 document.getElementById('selectFile').addEventListener('change', function (e) {
     // Add the file to the cornerstoneFileImageLoader and get unique
     // number for that file
     const file = e.target.files[0];
+    filenameDisplay.innerHTML = file.name;
+
+    let reader = new FileReader();
+    let bytes;
+    reader.onload = function () {
+        bytes = this.result;
+        sendImage(bytes);
+    }
+    reader.readAsArrayBuffer(file);
+
     const imageId = cornerstoneWADOImageLoader.wadouri.fileManager.add(file);
     loadAndViewImage(imageId);
 });
