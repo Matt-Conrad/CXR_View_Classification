@@ -6,6 +6,7 @@ metadata-to-db==0.0.8
 nibabel==3.0.1
 numpy==1.18.1
 opencv-python==3.4.8.29
+pandas==1.1.5 # For Analytics
 psycopg2-binary==2.8.4
 pydicom==1.4.1
 pydocstyle==5.0.2

@@ -1,7 +1,7 @@
 # Chest X-ray Image View Classification
 The heart of this project is an image classifier based on [this paper](https://www.researchgate.net/publication/283778178_Chest_X-ray_Image_View_Classification) that can determine whether a Chest X-ray is a frontal or lateral view orientation. Additionally, there are a bunch of other technologies built around this core algorithm to facilitate use of the classifier. 
 
-The project can be split into 2 parts: a desktop application for training the algorithm and a web API for deploying the trained algorithm accompanied with a web UI. 
+The project can be split into 2 parts: a desktop application for training the algorithm and a deployable web API with an accompanying web UI for utilizing the trained algorithm. 
 
 The desktop app is a Qt GUI application that guides the user through the training steps including: downloading the image set, unpacking it, storing the metadata, extracting the features, data labaling, cross-validation, and classifier training. The application is optimally coded in C++, Python, and a combined Python/C++ solution. All implementations come with full logging and the Python implementation is equipped with a suite of pytest unit tests. 
 
@@ -10,7 +10,7 @@ The web API contains the trained model and accepts DICOM files to classify as ei
 ## Motivation
 The inspiration for this project arises from my experience in the medical imaging industry. A classifier such as this would be useful in industry. One use case being a lot of medical imaging software relies on DICOM tags such as laterality (0020,0060), view position (0018,5101), and patient orientation (0020,0020) to perform some action. However, this tag is not always there or has values of all images in the study or series as seen in the image set from [NLM History of Medicine](https://openi.nlm.nih.gov/faq#collection), which is the image set used in the cited paper. Thus, this automatic classifier can be used to label all of these images so that the medical software relying on these DICOM tags can perform their duty.
  
-The main purpose of this project was to learn about a wide range of technologies and concepts by combining them into one large project. Using this paper's algorithm as the core of the project, I utilized the following technologies and concepts to build the application and web API:
+The main purpose of this project was to learn about a wide range of technologies and concepts and how to integrate them into one large project. Using this paper's algorithm as the core of the project, I utilized the following technologies and concepts to build the application and web API:
  - PostgreSQL (Python package: psycopg2, C++ library: libpqxx) to organize the metadata, features, and labels of all of the downloaded images
  - Qt for building multi-threaded
  - NumPy for most calculations in Python
@@ -47,7 +47,9 @@ While the training app can handle processing of all 7470 images, I also provide 
 ## Performance
 Using the horizontal and vertical profile method from the paper, I am able to get an accuracy of 98.4% while using 2/3 of the NLM image set as the training set with 10-fold cross-validation, which is the same reported in the paper. Additionally, I am able to get the 90% accuracy when using the body-size ratio method, however I do not use it at the core of this application as it is a much lower accuracy. For the profile method, I also get a 98.4% with the test set.
 
-TODO Add speed performance statistics
+<img src="miscellaneous/images/Performance.png" alt="drawing" width="750"/>
+
+As one would expect, the C++ implementation is faster than the Python approach, and the Combined implementation performs on par with the C++ one. This Combined approach has the best of both worlds: the quick development of Python code and the speedy execution of C++ for performance critical areas. This exercise is a testament that using both Python and C++ in development is an impactful combination.   
 
 ## Testing
 The suite of unit tests were created using Pytest and can be found in Python > DesktopApp > test. These tests mainly cover the backend functionality of the app such as downloading and feature calculation. To run the tests, the pip environment must be set up (see section *Using source code* on how to set that up). Once done, all you have to do is run ```pytest .``` from the test folder.
@@ -59,6 +61,8 @@ Workflow testing of the app and executables was done on the following environmen
    - Fresh Ubuntu 20.04 virtual machine using VMware Workstation Player 16 on top of an Ubuntu 20.04 Laptop with AMD 3rd Generation Ryzen 9 4900HS and NVIDIA GeForce RTX 2060 Max-Q
 
 ## Desktop App Usage
+![](miscellaneous/images/DesktopApp.png)
+
 Since there are 3 implementations of the app, there are many ways to build and run it:
 - Python implementation
    1. Run source code
@@ -139,7 +143,9 @@ NOTE: Pre-built executables and shared libraries are compiled on Ubuntu 20.04 so
  5. Run the app using Python: ```cd CXR_View_Classification/Combined/DesktopApp && python main.py```
 
 
-## Web API Usage for local machine or local VM
+## Web API/UI Usage for local machine or local VM
+<img src="miscellaneous/images/WebUI.png" alt="drawing" width="650"/>
+
 There are several ways to deploy the web interfaces: standalone built-in Flask server, standalone Gunicorn server running the Flask app, and an Nginx/Gunicorn server pair where the Nginx server works as a reverse proxy for the Gunicorn server running Flask (recommended). Below I discuss the preparation required for each path, then I provide the following instructions
 
 Here are the steps for deploying the model from the source code:
@@ -164,7 +170,7 @@ Here are the steps for deploying the model from the source code:
       - ```8000``` if ```gunicorn``` was specified in step 2
       - ```80``` if ```nginx``` was specified in step 2
 
-## Web API Usage for AWS Elastic Beanstalk
+## Web API/UI Usage for AWS Elastic Beanstalk
  1. Clone the git repository onto your computer: 
     ```
     git clone https://github.com/Matt-Conrad/CXR_View_Classification.git
@@ -174,9 +180,7 @@ Here are the steps for deploying the model from the source code:
  4. In the "Platform" section, set "Platform" = "Python", set "Platform branch" = "Python 3.6 running on 64-bit Amazon Linux", and set "Platform version" = "2.9.7"
  5. In the "Application code" section, select "Upload your code" and upload the */CXR_View_Classification/Python/Engine/aws_deploy/aws_deploy.zip* file. This zip contains all of the code from the *aws_deploy* folder.
  6. Select "Create environment" and wait for the environment to have Status: OK
- 7. Use the *send_script.py* script as instructed in step 3 of *Web API Usage for local machine or local VM*
-
-FOR COMPRESSION, YOU MUST COMPRESS BY HIGHLIGHTING THE FILES, NOT THE FOLDER
+ 7. To test the web API directly, use the *send_script.py* script as instructed in step 3 of *Web API Usage for local machine or local VM*. You can also use the web UI by going to *http://hostname:80/upload*. 
 
 ## Troubleshooting
  ### Logs

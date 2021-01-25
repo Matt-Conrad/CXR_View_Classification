@@ -7,6 +7,9 @@ import numpy as np
 import cv2
 import logging
 
+# For compressing this folder to a zip for deploying to AWS you need to compress by highlighting
+# the files, not the folder
+
 application = Flask(__name__)
 
 @application.route('/')
