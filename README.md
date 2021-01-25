@@ -1,9 +1,11 @@
-# Implementation of Chest X-ray Image View Classification
-This project is an implementation of the paper "Chest X-ray Image View Classification" by Xue et al found [here](https://www.researchgate.net/publication/283778178_Chest_X-ray_Image_View_Classification). Currently, the project is split into 2 parts: a desktop application for training the algorithm and a web API for deploying the trained algorithm. 
+# Chest X-ray Image View Classification
+The heart of this project is an image classifier based on [this paper](https://www.researchgate.net/publication/283778178_Chest_X-ray_Image_View_Classification) that can determine whether a Chest X-ray is a frontal or lateral view orientation. Additionally, there are a bunch of other technologies built around this core algorithm to facilitate use of the classifier. 
+
+The project can be split into 2 parts: a desktop application for training the algorithm and a web API for deploying the trained algorithm accompanied with a web UI. 
 
 The desktop app is a Qt GUI application that guides the user through the training steps including: downloading the image set, unpacking it, storing the metadata, extracting the features, data labaling, cross-validation, and classifier training. The application is optimally coded in C++, Python, and a combined Python/C++ solution. All implementations come with full logging and the Python implementation is equipped with a suite of pytest unit tests. 
 
-The web API contains the trained model and I outline steps below on how to deploy either to the local machine, a local VM, or to AWS Elastic Beanstalk.  
+The web API contains the trained model and accepts DICOM files to classify as either frontal or lateral and can be deployed either to the local machine, a local VM, or to AWS Elastic Beanstalk. The web API can be easily used with the complementary web UI. 
 
 ## Motivation
 The inspiration for this project arises from my experience in the medical imaging industry. A classifier such as this would be useful in industry. One use case being a lot of medical imaging software relies on DICOM tags such as laterality (0020,0060), view position (0018,5101), and patient orientation (0020,0020) to perform some action. However, this tag is not always there or has values of all images in the study or series as seen in the image set from [NLM History of Medicine](https://openi.nlm.nih.gov/faq#collection), which is the image set used in the cited paper. Thus, this automatic classifier can be used to label all of these images so that the medical software relying on these DICOM tags can perform their duty.
@@ -35,6 +37,7 @@ The main purpose of this project was to learn about a wide range of technologies
  - Github Issues for bug and task tracking
  - Jenkins for CI/CD
  - Shell scripting (Bash)
+ - HTML, CSS, JavaScript for web UI using bootstrap, cornerstone, and AJAX technologies
 
 ## Data
 As stated, I used the same data set that was in the paper ([NLM Image Set](https://openi.nlm.nih.gov/faq#collection)). This consists of 7470 chest X-ray images (CR) in the form of DICOM images. To organize the image set, I stored the metadata from the DICOM images into a PostgreSQL database using my [DicomToDatabase repository](https://github.com/Matt-Conrad/DicomToDatabase) I made. 
@@ -152,7 +155,7 @@ Here are the steps for deploying the model from the source code:
    - SERVER_ACCESS is the type of access for the server
       - ```localhost``` if you only want the server to be accessible by the machine it's running on
       - ```network``` if you want the server to be accessible by any machine on the network
- 3. You now have a running server or server pair. Use the send_script.py script to send a DCM file over HTTP to the endpoint: ```python send_script.py IP_ADDRESS:PORT```
+ 3. You now have a running server or server pair. Use the send_script.py script to send a DCM file over HTTP to the endpoint: ```python send_script.py IP_ADDRESS:PORT```. Make sure you have all or at least part of the *NLMCXR_dcm* folder in *CXR_View_Classification/datasets*.
    - ```IP_ADDRESS``` equals:
       - ```127.0.0.1``` if ```localhost``` was specified in step 2
       - Server's IP address if ```network``` was specified in step 2
@@ -167,11 +170,13 @@ Here are the steps for deploying the model from the source code:
     git clone https://github.com/Matt-Conrad/CXR_View_Classification.git
     ```
  2. Go to an AWS Elastic Beanstalk console > "Environments" Tab
- 3. Click "Create a new environment", select "Web server environment". Enter an application name and environment name in their respective boxes.
- 4. In the "Platform" section, select "Managed platform", set "Platform" = "Python", set "Platform branch" = "Python 3.6 running on 64-bit Amazon Linux", and set "Platform version" = "2.9.7"
+ 3. Click "Create Application". Enter an application name.
+ 4. In the "Platform" section, set "Platform" = "Python", set "Platform branch" = "Python 3.6 running on 64-bit Amazon Linux", and set "Platform version" = "2.9.7"
  5. In the "Application code" section, select "Upload your code" and upload the */CXR_View_Classification/Python/Engine/aws_deploy/aws_deploy.zip* file. This zip contains all of the code from the *aws_deploy* folder.
  6. Select "Create environment" and wait for the environment to have Status: OK
- 7. Copy the URL for the environment and open the *send_script.py* script. Uncomment line 38 and comment line 39. In line 38, paste the URL where the ```**ELASTIC_BEANSTALK_INSTANCE_URL**``` placeholder is. Make sure you have all or at least part of the *NLMCXR_dcm* folder (you can download it using the desktop app or directly from the website). Then run the script and it should send images over HTTP to the AWS EB instance: ```python send_script.py ELASTIC_BEANSTALK_INSTANCE_URL``` 
+ 7. Use the *send_script.py* script as instructed in step 3 of *Web API Usage for local machine or local VM*
+
+FOR COMPRESSION, YOU MUST COMPRESS BY HIGHLIGHTING THE FILES, NOT THE FOLDER
 
 ## Troubleshooting
  ### Logs

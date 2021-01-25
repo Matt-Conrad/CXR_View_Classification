@@ -10,8 +10,7 @@ import matplotlib.pyplot as plt
 import requests
 import sys
 
-# url = "http://" + sys.argv[1] + "/api/classify" # Send to a separate machine on network
-url = "http://localhost:5000/api/classify"
+url = "http://" + sys.argv[1] + "/api/classify" # Send to a separate machine on network
 
 # Randomize folder to be chosen from
 with open('test_images.csv', newline='') as f:

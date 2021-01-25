@@ -1,17 +1,21 @@
 """Contains the code that controls the web interfaces."""
 import os
-import logging
 from flask import Flask, render_template, abort, jsonify, request
 from joblib import load
 import pydicom as pdm
 import numpy as np
 import cv2
+import logging
 
 application = Flask(__name__)
 
 @application.route('/')
 def how_to():
-    return render_template('how_to_page.html')
+    return render_template('homePage.html')
+
+@application.route('/upload')
+def fileUploadPage():
+    return render_template('fileUpload.html')
 
 @application.route("/api/classify", methods=["POST"])
 def classify():
@@ -35,7 +39,7 @@ def classify():
     os.remove(temp_file)
 
     # Preprocess image
-    image = preprocessing(dcm)
+    image = preprocessing(dcm.pixel_array, dcm['BitsStored'].value, dcm['PhotometricInterpretation'].value)
 
     # Calculate the features
     (hor_profile, vert_profile) = calc_image_prof(image)
@@ -46,22 +50,22 @@ def classify():
     full_profile = np.transpose(full_profile)
 
     clf = load("full_set_classifier.joblib")
+
     result = clf.predict(full_profile)[0]
 
     return jsonify({'result': result}), 200
 
-
-def preprocessing(dcm_image):
+def preprocessing(image, bits_stored, photometric):
     """Runs the preprocessing steps on the image.
-
-    NOTE: This function is from the calculate_features.py file and is only here temporarily
     
     Parameters
     ----------
     image : ndarray
         Image data
-    record : psycopg2 record object?
-        The metadata record for the image
+    bits_stored : int
+        The number of bits used per pixel (e.g. 12 out of 16 bits if the int is uint16)
+    photometric : string
+        The photometric interpretation setting found in the DICOM file
     
     Returns
     -------
@@ -73,10 +77,10 @@ def preprocessing(dcm_image):
     ValueError
         Raise error if image is not MONOCHROME1 or MONOCHROME2 as expected
     """
-    image = dcm_image.pixel_array
+    logging.debug('Beginning preprocessing')
 
     # Normalize image
-    highest_possible_intensity = (np.power(2, dcm_image['BitsStored'].value) - 1)
+    highest_possible_intensity = (np.power(2, bits_stored) - 1)
     image_norm = image/highest_possible_intensity
 
     # These images aren't in Hounsfield units and are most likely already windowed (VOI LUT)
@@ -89,9 +93,9 @@ def preprocessing(dcm_image):
     # image_norm = contrast_stretch(image_norm, min_I, max_I)
 
     # Invert the image if it's MONOCHROME1
-    if dcm_image['PhotometricInterpretation'].value == 'MONOCHROME1':
+    if photometric == 'MONOCHROME1':
         image_norm = 1 - image_norm
-    elif dcm_image['PhotometricInterpretation'].value == 'MONOCHROME2':
+    elif photometric == 'MONOCHROME2':
         pass
     else:
         raise ValueError('Image is not MONOCHROME1 or MONOCHROME2 as expected.')
@@ -127,13 +131,15 @@ def preprocessing(dcm_image):
     
     return image_downsize
 
-def calc_image_prof(image):
+def calc_image_prof(image, size=(200, 200)):
     """Calculate the mean horizontal and vertical profiles.
     
     Parameters
     ----------
     image : ndarray
         Image data
+    size : tuple
+        Specific size of the intermediate square image that the profiles are calculated from
     
     Returns
     -------
@@ -141,7 +147,7 @@ def calc_image_prof(image):
         The mean horizontal and vertical profiles
     """
     logging.debug('Calculating the profiles of the image')
-    image_square = cv2.resize(image, (200, 200), interpolation=cv2.INTER_AREA)
+    image_square = cv2.resize(image, size, interpolation=cv2.INTER_AREA)
     
     hor_profile = np.mean(image_square, axis=0)
     vert_profile = np.mean(image_square, axis=1)
@@ -200,6 +206,7 @@ def contrast_stretch(image, min_I, max_I):
             raise
 
     return image_copy
+
 
 if __name__ == "__main__":
     application.run()

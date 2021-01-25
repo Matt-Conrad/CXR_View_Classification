@@ -11,7 +11,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def how_to():
-    return render_template('how_to_page.html')
+    return render_template('homePage.html')
 
 @app.route('/upload')
 def fileUploadPage():
