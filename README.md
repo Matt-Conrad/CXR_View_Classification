@@ -8,7 +8,7 @@ The desktop app is a Qt GUI application that guides the user through the trainin
 The web API contains the trained model and accepts DICOM files to classify as either frontal or lateral and can be deployed either to the local machine, a local VM, or to AWS Elastic Beanstalk. The web API can be easily used with the complementary web UI. 
 
 ## Motivation
-The inspiration for this project arises from my experience in the medical imaging industry. A classifier such as this would be useful in industry. One use case being a lot of medical imaging software relies on DICOM tags such as laterality (0020,0060), view position (0018,5101), and patient orientation (0020,0020) to perform some action. However, this tag is not always there or has values of all images in the study or series as seen in the image set from [NLM History of Medicine](https://openi.nlm.nih.gov/faq#collection), which is the image set used in the cited paper. Thus, this automatic classifier can be used to label all of these images so that the medical software relying on these DICOM tags can perform their duty.
+Medical images in the form of DICOM files can have tags such as laterality (0020,0060), view position (0018,5101), and patient orientation (0020,0020) that describe the orientation of a patient. However, this tag is not always there or this tag can have incorrect values. Examples of these issues can be seen in the image set from [NLM History of Medicine](https://openi.nlm.nih.gov/faq#collection), which is the image set used in the cited paper. Thus, this automatic classifier can be used to label all of these images.
  
 The main purpose of this project was to learn about a wide range of technologies and concepts and how to integrate them into one large project. Using this paper's algorithm as the core of the project, I utilized the following technologies and concepts to build the application and web API:
  - PostgreSQL (Python package: psycopg2, C++ library: libpqxx) to organize the metadata, features, and labels of all of the downloaded images
@@ -55,7 +55,7 @@ As one would expect, the C++ implementation is faster than the Python approach, 
 The suite of unit tests were created using Pytest and can be found in Python > DesktopApp > test. These tests mainly cover the backend functionality of the app such as downloading and feature calculation. To run the tests, the pip environment must be set up (see section *Using source code* on how to set that up). Once done, all you have to do is run ```pytest .``` from the test folder.
 
 Workflow testing of the app and executables was done on the following environments:
-   - Windows 10 laptop with Intel i7-4700MQ CPU and NVIDIA GeForce GT 755M GPU (Only source code testing done)
+   - Windows 10 laptop with AMD 3rd Generation Ryzen 9 4900HS and NVIDIA GeForce RTX 2060 Max-Q (Only source code testing done)
    - Fresh Ubuntu 18.04 virtual machine using VMware Workstation Player 15 on top of an Ubuntu 18.04 Desktop with AMD Ryzen 2600 CPU and NVIDIA RTX 2070 Super GPU
    - AWS Elastic Beanstalk web server on a Python 3.6 platform running on 64-bit Amazon Linux
    - Fresh Ubuntu 20.04 virtual machine using VMware Workstation Player 16 on top of an Ubuntu 20.04 Laptop with AMD 3rd Generation Ryzen 9 4900HS and NVIDIA GeForce RTX 2060 Max-Q
