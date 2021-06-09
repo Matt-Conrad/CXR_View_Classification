@@ -4,7 +4,7 @@ from metadata_to_db.dicomToDb import DicomToDatabase
 from ctypes import cdll
 import os
 
-import time
+# import time
 
 class StoreStage(Stage):
     def __init__(self, configHandler, dbHandler):
@@ -27,10 +27,10 @@ class StoreStage(Stage):
 
         @pyqtSlot()
         def run(self):
-            start = time.time()
+            # start = time.time()
             self.lib.Storer_run(self.obj)
-            end = time.time()
-            print(end - start)
+            # end = time.time()
+            # print(end - start)
 
     class StoreUpdater(Runnable):
         def __init__(self, configHandler, dbHandler):

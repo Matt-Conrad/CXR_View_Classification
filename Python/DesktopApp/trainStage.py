@@ -98,8 +98,8 @@ class TrainStage(Stage):
                 for row in fileNamesTest:
                     writer.writerow([row])
 
-            end = time.time()
-            print(end - start)
+            # end = time.time()
+            # print(end - start)
 
             logging.info('Done training SVM. K-Fold Cross Validation Accuracy: %s', str(accuracy))
             self.signals.attemptUpdateText.emit('K-Fold Cross Validation Accuracy: ' + str(accuracy))

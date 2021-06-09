@@ -36,8 +36,8 @@ class LabelStage(Stage):
             self.dbHandler.addTableToDb(self.configHandler.getTableName('label'), self.configHandler.getColumnsInfoFullPath(), "nonElementColumns", 'labels')
             self.importImageLabelData()
 
-            end = time.time()
-            print(end - start)
+            # end = time.time()
+            # print(end - start)
             
             self.signals.attemptUpdateProBarValue.emit(1)
             self.signals.attemptUpdateText.emit("Done importing")

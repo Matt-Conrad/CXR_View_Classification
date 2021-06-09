@@ -30,8 +30,8 @@ class StoreStage(Stage):
                 self.dbHandler.addTableToDb(metaTableName, columnsInfoPath, "nonElementColumns", "elements")
 
             self.dicomToDatabase.dicomToDb(self.dbHandler.dbInfo['database'], metaTableName, columnsInfoPath)
-            end = time.time()
-            print(end - start)
+            # end = time.time()
+            # print(end - start)
 
     class StoreUpdater(Runnable):
         def __init__(self, configHandler, dbHandler):

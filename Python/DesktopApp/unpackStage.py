@@ -33,8 +33,8 @@ class UnpackStage(Stage):
             tf.extractall(path=self.configHandler.getUnpackFolderPath())
 
             logging.info('Done unpacking')
-            end = time.time()
-            print(end - start)
+            # end = time.time()
+            # print(end - start)
 
     class UnpackUpdater(Runnable):
         """Controls logic of getting the dataset from online sources."""

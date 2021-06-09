@@ -7,7 +7,7 @@ from cxr_pipeline.preprocessing import preprocessing
 from PyQt5.QtCore import pyqtSlot
 from ctypes import cdll
 
-import time
+# import time
 
 class FeatCalcStage(Stage):
     """Downloads datasets from online sources."""
@@ -32,10 +32,10 @@ class FeatCalcStage(Stage):
 
         @pyqtSlot()
         def run(self):
-            start = time.time()
+            # start = time.time()
             self.lib.FeatureCalculator_run(self.obj)
-            end = time.time()
-            print(end - start)
+            # end = time.time()
+            # print(end - start)
 
     class FeatCalcUpdater(Runnable):
         def __init__(self, configHandler, dbHandler):

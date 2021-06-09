@@ -53,8 +53,8 @@ class FeatCalcStage(Stage):
                 self.signals.attemptUpdateProBarValue.emit(self.dbHandler.countRecords(self.featTableName))
 
             logging.info('Done calculating features from images')
-            end = time.time()
-            print(end - start)
+            # end = time.time()
+            # print(end - start)
             self.signals.attemptUpdateText.emit('Done calculating features')
             self.signals.finished.emit()
 

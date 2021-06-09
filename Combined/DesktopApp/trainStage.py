@@ -9,7 +9,7 @@ from sklearn import svm
 from joblib import dump
 from ctypes import cdll
 
-import time
+# import time
 
 class TrainStage(Stage):
     """Downloads datasets from online sources."""
@@ -36,10 +36,10 @@ class TrainStage(Stage):
             self.signals.attemptUpdateProBarBounds.emit(0, self.expectedNumFiles)
             self.signals.attemptUpdateProBarValue.emit(0)
 
-            start = time.time()
+            # start = time.time()
             self.lib.Trainer_run(self.obj)
-            end = time.time()
-            print(end - start)
+            # end = time.time()
+            # print(end - start)
 
             self.signals.attemptUpdateText.emit('K-Fold Cross Validation Accuracy: Placeholder')
             self.signals.attemptUpdateProBarValue.emit(self.expectedNumFiles)

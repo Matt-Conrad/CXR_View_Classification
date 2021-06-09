@@ -32,8 +32,8 @@ class DownloadStage(Stage):
                 
                 if os.path.getsize(self.tgzFilePath) == self.expectedSize:
                     logging.info('%s was downloaded properly', self.tgzFilePath)
-                    end = time.time()
-                    print(end - start)
+                    # end = time.time()
+                    # print(end - start)
                     self.signals.attemptUpdateProBarValue.emit(self.getTgzSize())
                     self.signals.attemptUpdateText.emit("Image download complete")
                     self.signals.finished.emit()
