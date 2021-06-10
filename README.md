@@ -79,111 +79,16 @@ Since there are 3 implementations of the app, there are many ways to build and r
    3. Build C++ side using provided Makefile and run Python source code
    4. Build C++ side using CMake and run Python source code
 
+You can find the steps for each in the [wiki](https://github.com/Matt-Conrad/CXR_View_Classification/wiki/Desktop-App-Usage-Steps).
+
 NOTE: Pre-built executables and shared libraries are compiled on Ubuntu 20.04 so they may only work on that OS. Additionally, scripts for building are targeted toward Ubuntu/Linux users.
 
- ### For all paths
- 1. Clone the git repository onto your computer: 
-    ```
-    git clone https://github.com/Matt-Conrad/CXR_View_Classification.git
-    ```
- 2. Set up Postgres if you don't already have it by running postgresSetup.sh: ```postgresSetup.sh```
- 2. (OPTIONAL) Change the default configuration if you wish. 
-      - The *postgresql* section contains the server host and port, desired name of the DB to be created, as well as user and password. The template is currently set up to create a DB named "db" on the localhost, so you can leave it as is or rename it if you wish. 
-      - Leave the *dicom_folder* section alone as it gets filled in automatically as the app goes through the steps. You can also rename the tables that will be created.
-      - You can leave the *table_info* section alone, or if you want to change the names of the tables you can here
-      - Feel free to leave the *logging* section alone. For more detail, go down to the *Logging* section of this README
-      - Currently the code is set up to operate with the subset. If you would like to switch to the full image set, you must change the *dataset_info* section to either be "full_set" or "subset"
-
- ### Python
- Here are the steps for using the app for the various paths.
-
- #### Running from source and building 
- 1. Run pythonSetup.sh file to set up Python: ```pythonSetup.sh [arg]```
-   - ```pythonSetup.sh source``` if you're going to run from source
-   - ```pythonSetup.sh build``` if you're going to build the file-based or folder-based executable
- 2. Activate the virtualenv: ```source CXR_env/bin/activate```
- 3. (Optional) If you're going to build the executable, run ```pyinstaller [arg]``` in *CXR_View_Classification/Python/pyinstaller*
-   - ```pyinstaller folder.spec``` if building folder-based executable
-   - ```pyinstaller one_file.spec``` if building file-based executable
- 4. Run the program:
-   - ```python main.py``` in *CXR_View_Classification/Python/DesktopApp* if you're running from source
-   - ```./CXR_Classify``` *CXR_View_Classification/Python/builds/dist_folder* executable for folder-based approach
-   - ```./CXR_Classify``` *CXR_View_Classification/Python/builds/dist_one_file* executable for file-based approach
-
- #### Run pre-built folder-based and file-based executables
- 1. Download and unzip the *FOLDER_NAME.zip* from the Github release
- 2. Execute the *CXR_Classify* executable in *FOLDER_NAME* folder
-   - Where FOLDER_NAME is *dist_folder* if using the folder-based executable and *dist_one_file* if using the file-based executable
-
- ### C++ Implementation
-
- #### Run pre-built executable
- 1. Run the cppSetup.sh script to set up C++ libraries: ```cppSetup.sh prebuilt```
- 2. Download the *cppBuild.zip* folder from the Github release and unzip it.
- 3. Execute the provided executable and go through the steps.
-
- #### Build using QMake and run the resulting executable
- 1. Run cppSetup.sh to set up C++ libraries: ```cppSetup.sh build```
- 2. Build executable using qmake:
-   - Create and change to build directory: cd ```mkdir CXR_View_Classification/Cpp/build && cd CXR_View_Classification/Cpp/build```
-   - Create build system using qmake: ```qmake ../CXR_classify/CXR_classify.pro CONFIG+=debug```
-   - Build the executable: ```make```
- 3. Execute the *CXR_View_Classification/Cpp/build/CXR_classify* executable and go through the steps.
-
- ### Combined Implementation
- The source code for this implementation can be found in *CXR_View_Classification/Combined/DesktopApp/src*. Along with the source code, there is also a Makefile and a CMakeList.txt file in there to aid building the executables. There are 3 equivalent ways to build this code: g++ commands, Make, and CMake. 
- 1. From the miscellaneous folder, run the build script with the desired argument to set up and build the shared libraries: ```combinedBuild.sh [arg]```
-   - ```combinedBuild.sh download``` if you're going to download the shared libraries
-   - ```combinedBuild.sh g++``` if you're going to build using the g++ method
-   - ```combinedBuild.sh make``` if you're going to build using the Make method
-   - ```combinedBuild.sh cmake``` if you're going to build using the CMake method
- 2. (Optional) If you're going the download route, then download the *combinedSharedLibraries.zip* folder from the Github release and unzip it and store the contents in ```CXR_View_Classification/Combined/DesktopApp/build```
- 3. Activate the virtualenv: ```source CXR_env/bin/activate```
- 4. (Optional) If you're doing the download route, add the Qt lib to LD_LIBRARY_PATH so program can find Qt shared: ```export LD_LIBRARY_PATH="/PATH/TO/CXR_env/lib/python3.6/site-packages/PyQt5/Qt/lib:$PATH"```
- 5. Run the app using Python: ```cd CXR_View_Classification/Combined/DesktopApp && python main.py```
-
-
-## Web API/UI Usage for local machine or local VM
+## Web API/UI Usage for local machine or local VM and AWS Elastic Beanstalk
 <img src="miscellaneous/images/WebUI.png" alt="drawing" width="650"/>
 
-There are several ways to deploy the web interfaces: standalone built-in Flask server, standalone Gunicorn server running the Flask app, and an Nginx/Gunicorn server pair where the Nginx server works as a reverse proxy for the Gunicorn server running Flask (recommended). Below I discuss the preparation required for each path, then I provide the following instructions
+There are several ways to deploy the web interfaces: standalone built-in Flask server, standalone Gunicorn server running the Flask app, and an Nginx/Gunicorn server pair where the Nginx server works as a reverse proxy for the Gunicorn server running Flask (recommended).
 
-Here are the steps for deploying the model from the source code:
- 1. Clone the git repository onto your computer: 
-    ```
-    git clone https://github.com/Matt-Conrad/CXR_View_Classification.git
-    ```
- 2. Start the desired server configuration by running: ```engineSetup.sh SERVER_TYPE SERVER_ACCESS``` where:
-   - SERVER_TYPE is the type of server you want to set up. 
-      - ```flask``` if you're trying to do the standalone Flask server
-      - ```gunicorn``` if you're trying to do the standalone Gunicorn server running the Flask app
-      - ```nginx``` if you're trying to do the Nginx/Gunicorn server pair
-   - SERVER_ACCESS is the type of access for the server
-      - ```localhost``` if you only want the server to be accessible by the machine it's running on
-      - ```network``` if you want the server to be accessible by any machine on the network
- 3. You now have a running server or server pair. Use the send_script.py script to send a DCM file over HTTP to the endpoint: ```python send_script.py IP_ADDRESS:PORT```. Make sure you have all or at least part of the *NLMCXR_dcm* folder in *CXR_View_Classification/datasets*.
-   - ```IP_ADDRESS``` equals:
-      - ```127.0.0.1``` if ```localhost``` was specified in step 2
-      - Server's IP address if ```network``` was specified in step 2
-   - ```PORT``` equals:
-      - ```5000``` if ```flask``` was specified in step 2
-      - ```8000``` if ```gunicorn``` was specified in step 2
-      - ```80``` if ```nginx``` was specified in step 2
-
-## Web API/UI Usage for AWS Elastic Beanstalk
- 1. Clone the git repository onto your computer: 
-    ```
-    git clone https://github.com/Matt-Conrad/CXR_View_Classification.git
-    ```
- 2. Go to an AWS Elastic Beanstalk console > "Environments" Tab
- 3. Click "Create Application". Enter an application name.
- 4. In the "Platform" section, set "Platform" = "Python", set "Platform branch" = "Python 3.6 running on 64-bit Amazon Linux", and set "Platform version" = "2.9.7"
- 5. In the "Application code" section, select "Upload your code" and upload the */CXR_View_Classification/Python/Engine/aws_deploy/aws_deploy.zip* file. This zip contains all of the code from the *aws_deploy* folder.
- 6. Select "Create environment" and wait for the environment to have Status: OK
- 7. To test the web API directly, use the *send_script.py* script as instructed in step 3 of *Web API Usage for local machine or local VM*. You can also use the web UI by going to *http://hostname:80/upload*. 
+THe steps for deploying the model from source code can be found in the the [wiki](https://github.com/Matt-Conrad/CXR_View_Classification/wiki/Web-API-UI-Usage-Steps).
 
 ## Troubleshooting
- ### Logs
- - When the source code or executables are run, they produce a log called the *CXR_Classification.log*. This log contains messages that alert the user of where it is at in the code. The *config.ini* file contains the setting, *level*, under the *logging* section for the level of logging the user would like to see in the log. Currently, this can be set to "info" or "debug". The default for this setting is "info".
- - Additionally, the log for the Nginx engine is set for */var/log/nginx/cxr_classifier.log* in the */etc/nginx/sites-available/default* config file as specified in step 6 of *Nginx/Gunicorn server pair (Recommended)* above.
 
