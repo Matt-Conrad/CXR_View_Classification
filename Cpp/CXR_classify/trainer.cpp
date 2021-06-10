@@ -10,7 +10,7 @@ Trainer::Trainer(ConfigHandler * configHandler, DatabaseHandler * dbHandler) : R
 
 void Trainer::run()
 {
-    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    // std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     logger->info("Training SVM");
 
     emit attemptUpdateText("Training classifier");
@@ -101,8 +101,8 @@ void Trainer::run()
 
     logger->info("Done training SVM. K-Fold Cross Validation Accuracy: {}", cvAcc);
 
-    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-    std::cout << "Time difference = " << (std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count())/1000000000.0 << "[s]" << std::endl;
+    // std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    // std::cout << "Time difference = " << (std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count())/1000000000.0 << "[s]" << std::endl;
     emit attemptUpdateText(result.c_str());
     emit attemptUpdateProBarValue(expected_num_files);
     emit finished();

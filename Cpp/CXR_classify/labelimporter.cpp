@@ -9,7 +9,7 @@ LabelImporter::LabelImporter(ConfigHandler * configHandler, DatabaseHandler * db
 
 void LabelImporter::run()
 {
-    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    // std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     logger->info("Importing label data from CSV");
 
     std::string elementsJson = configHandler->getColumnsInfoName();
@@ -36,8 +36,8 @@ void LabelImporter::run()
 
     logger->info("Done importing label data");
 
-    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-    std::cout << "Time difference = " << (std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count())/1000000000.0 << "[s]" << std::endl;
+    // std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    // std::cout << "Time difference = " << (std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count())/1000000000.0 << "[s]" << std::endl;
     emit attemptUpdateText("Finished importing image labels");
     emit finished();
 }

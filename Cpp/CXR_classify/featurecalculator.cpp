@@ -10,7 +10,7 @@ FeatureCalculator::FeatureCalculator(ConfigHandler * configHandler, DatabaseHand
 
 void FeatureCalculator::run()
 {
-    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    // std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     logger->info("Calculating features from images");
 
     emit attemptUpdateText("Calculating features");
@@ -31,8 +31,8 @@ void FeatureCalculator::run()
 
     threadpool->waitForDone();
 
-    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-    std::cout << "Time difference = " << (std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count())/1000000000.0 << "[s]" << std::endl;
+    // std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    // std::cout << "Time difference = " << (std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count())/1000000000.0 << "[s]" << std::endl;
     logger->info("Done calculating features from images");
     emit attemptUpdateText("Done calculating features");
     emit attemptUpdateProBarValue(dbHandler->countRecords(featTableName));

@@ -137,7 +137,7 @@ NOTE: Pre-built executables and shared libraries are compiled on Ubuntu 20.04 so
    - ```combinedBuild.sh g++``` if you're going to build using the g++ method
    - ```combinedBuild.sh make``` if you're going to build using the Make method
    - ```combinedBuild.sh cmake``` if you're going to build using the CMake method
- 2. (Optional) If you're going the download route, then download the *combinedSharedLibraries.zip* folder from the Github release and unzip it.
+ 2. (Optional) If you're going the download route, then download the *combinedSharedLibraries.zip* folder from the Github release and unzip it and store the contents in ```CXR_View_Classification/Combined/DesktopApp/build```
  3. Activate the virtualenv: ```source CXR_env/bin/activate```
  4. (Optional) If you're doing the download route, add the Qt lib to LD_LIBRARY_PATH so program can find Qt shared: ```export LD_LIBRARY_PATH="/PATH/TO/CXR_env/lib/python3.6/site-packages/PyQt5/Qt/lib:$PATH"```
  5. Run the app using Python: ```cd CXR_View_Classification/Combined/DesktopApp && python main.py```
