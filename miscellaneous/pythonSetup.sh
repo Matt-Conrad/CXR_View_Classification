@@ -2,7 +2,7 @@
 sudo add-apt-repository ppa:deadsnakes/ppa -y
 sudo apt-get update
 
-if [ "$1" == "source" ] || [ "$1" == "engine" ]
+if [[ "$1" == "source" || "$1" == "engine" ]]
 then
     sudo apt-get install python3.6 -y
 elif [ "$1" == "build" ]
@@ -20,7 +20,7 @@ source CXR_env/bin/activate
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd $DIR
-if [ "$1" == "source" ] || [ "$1" == "build" ]
+if [[ "$1" == "source" || "$1" == "build" ]]
 then
     pip install -r requirements.txt
 elif [ "$1" == "engine" ]
