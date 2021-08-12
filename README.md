@@ -88,7 +88,5 @@ NOTE: Pre-built executables and shared libraries are compiled on Ubuntu 20.04 so
 
 There are several ways to deploy the web interfaces: standalone built-in Flask server, standalone Gunicorn server running the Flask app, and an Nginx/Gunicorn server pair where the Nginx server works as a reverse proxy for the Gunicorn server running Flask (recommended).
 
-THe steps for deploying the model from source code can be found in the the [wiki](https://github.com/Matt-Conrad/CXR_View_Classification/wiki/Web-API-UI-Usage-Steps).
-
-## Troubleshooting
+The steps for deploying the model from source code can be found in the the [wiki](https://github.com/Matt-Conrad/CXR_View_Classification/wiki/Web-API-UI-Usage-Steps).
 
