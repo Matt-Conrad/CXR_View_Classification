@@ -59,7 +59,7 @@ else
     # Replace shared folder contents with most recent build
     rm -rf ${sharedFolderHostPath}/*
     cp -r `ls --ignore=.*` ${sharedFolderHostPath}
-    chmod -R a+rwx ${sharedFolderHostPath}
+    chmod -R a+rwx ${sharedFolderHostPath}/*
 fi
 
 # Turn on VM
@@ -85,7 +85,7 @@ sshCommandPrefix="echo ${VM_UBUNTU_CREDS_PSW} | sudo -S" # Take out sudo at some
 sharedFolderMountLocation="/mnt/hgfs"
 miscFolder="${sharedFolderMountLocation}/${sharedFolderGuestName}/miscellaneous"
 
-sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} /usr/bin/vmhgfs-fuse .host:/ ${sharedFolderMountLocation} -o subtype=vmhgfs-fuse,allow_other,uid=1000,gid=1000" #IDs are IDs of matt user on VM
+sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} /usr/bin/vmhgfs-fuse .host:/ ${sharedFolderMountLocation} -o subtype=vmhgfs-fuse,allow_other,uid=1000,gid=1000,umask=0000" #IDs are IDs of matt user on VM
 
 if [ $setupPostgresOnGuest == true ] 
 then
@@ -116,3 +116,5 @@ if [ $setupEngineOnGuest == true ]
 then
     sshpass "${sshpassArgs[@]}" ssh $endpoint "${sshArgs[@]}" "${sshCommandPrefix} ${miscFolder}/engineSetup.sh nginx network"
 fi
+
+chmod -R a+rwx ${sharedFolderHostPath}/*
