@@ -1,2 +1,4 @@
+github.com/lib/pq v1.10.3 h1:v9QZf2Sn6AmjXtQeFpdoq/eaNtYP6IN+7lcrygsIAtg=
+github.com/lib/pq v1.10.3/go.mod h1:AlVN5x4E4T544tWzH6hKfbfQvm3HdbOxrmggDNAPY9o=
 gopkg.in/ini.v1 v1.63.0 h1:2t0h8NA59dpVQpa5Yh8cIcR6nHAeBIEk0zlLVqfw4N4=
 gopkg.in/ini.v1 v1.63.0/go.mod h1:pNLf8WUiyNEtQjuu5G5vTm06TEv9tsIgeAvK8hOrP4k=
