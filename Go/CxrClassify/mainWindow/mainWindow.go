@@ -3,6 +3,11 @@ package mainWindow
 import (
 	"CxrClassify/configHandler"
 	"CxrClassify/databaseHandler"
+	"CxrClassify/downloadStage"
+	"CxrClassify/expectedSizes"
+	"fmt"
+	"io"
+	"net/http"
 	"os"
 
 	"github.com/therecipe/qt/core"
@@ -18,6 +23,20 @@ type MainWindow struct {
 	widgetStack *widgets.QStackedWidget
 
 	buttonsList [6]string
+
+	_ func(int, int) `slot:"updateProBarBounds"`
+	_ func(int)      `slot:"updateProBarValue"`
+	_ func(string)   `slot:"updateText"`
+	// _ func(string) string               `slot:"updateImage"`
+
+	// IMPORTED
+	_                  func(int)      `signal:"attemptUpdateProBarValue"`
+	_                  func(int, int) `signal:"attemptUpdateProBarBounds"`
+	_                  func(string)   `signal:"attemptUpdateText"`
+	filenameAbsPath    string
+	datasetType        string
+	Expected_size      int
+	Expected_num_files int
 }
 
 func NewMainWindow() *MainWindow {
@@ -28,6 +47,13 @@ func NewMainWindow() *MainWindow {
 	// Add logging
 
 	m.dbHandler = databaseHandler.NewDatabaseHandler(m.configHandler)
+
+	//IMPORTED
+	m.filenameAbsPath = m.configHandler.GetTgzFilePath()
+	m.datasetType = m.configHandler.GetDatasetType()
+	m.Expected_num_files = expectedSizes.Expected_num_files_in_dataset[m.configHandler.GetDatasetType()]
+	m.Expected_size = expectedSizes.Expected_sizes[m.configHandler.GetDatasetType()]
+	//
 
 	// TODO: Move this into the struct
 	m.buttonsList = [6]string{"downloadBtn", "unpackBtn", "storeBtn", "featureBtn", "labelBtn", "trainBtn"}
@@ -144,12 +170,25 @@ func (m MainWindow) initGuiState() {
 }
 
 func (m MainWindow) downloadStageUi() {
+	downloadStage := downloadStage.NewDownloadStage(m.configHandler)
+
 	m.disableAllStageButtons()
 	m.enableStageButton(0)
 
 	widgets.NewQPushButtonFromPointer(m.mainWidget.FindChild("downloadBtn", core.Qt__FindChildrenRecursively).Pointer()).ConnectClicked(func(checked bool) {
+		downloadStage.Run()
 		m.unpackStageUi()
 	})
+
+	// currentStage = new DownloadStage(configHandler);
+
+	// disableAllStageButtons();
+	// enableStageButton(0);
+
+	// connect(mainWidget->findChild<QPushButton *>("downloadBtn"), SIGNAL (clicked()), static_cast<DownloadStage *>(currentStage), SLOT (download()));
+	// connectToDashboard(static_cast<DownloadStage *>(currentStage)->downloader);
+	// connect(static_cast<DownloadStage *>(currentStage)->downloader, SIGNAL (finished()), this, SLOT(clearCurrentStage()));
+	// connect(static_cast<DownloadStage *>(currentStage)->downloader, SIGNAL (finished()), this, SLOT(unpackStageUi()));
 }
 
 func (m MainWindow) unpackStageUi() {
@@ -205,9 +244,9 @@ func (m MainWindow) secondPage() {
 	m.widgetStack.SetCurrentIndex(1)
 }
 
-// func (m MainWindow) connectToDashboard() {
+func (m MainWindow) connectToDashboard() {
 
-// }
+}
 
 func (m MainWindow) disableAllStageButtons() {
 	numOfButtons := len(m.buttonsList)
@@ -233,6 +272,90 @@ func (m MainWindow) updateProBarValue(value int) {
 	widgets.NewQProgressBarFromPointer(m.mainWidget.FindChild("proBar", core.Qt__FindChildrenRecursively).Pointer()).SetValue(value)
 }
 
-// func (m MainWindow) updateImage(text string) {
-// TODO
+// func (m MainWindow) updateImage(pixmap gui.QPixmap) {
+// 	widgets.NewQLabelFromPointer(m.mainWidget.FindChild("image", core.Qt__FindChildrenRecursively).Pointer()).ConnectSetPixmap()
 // }
+
+// IMPORTED
+
+func (m MainWindow) Run() {
+	fmt.Println("Checking if {} already exists")
+	info, err := os.Stat(m.filenameAbsPath)
+	if err == nil && !info.IsDir() {
+		fmt.Println("{} already exists")
+		fmt.Println("Checking if {} was downloaded properly")
+		if info.Size() == int64(m.Expected_size) {
+			fmt.Println("{} was downloaded properly")
+		} else {
+			fmt.Println("{} was not downloaded properly")
+			fmt.Println("Removing {}")
+			e := os.Remove(m.filenameAbsPath)
+			if e != nil {
+				fmt.Println("FAILED")
+			}
+			fmt.Println("Successfully removed {}")
+			m.download()
+		}
+	} else {
+		fmt.Println("{} does not exist")
+		m.download()
+	}
+}
+
+func (m MainWindow) download() int {
+	// Create the file
+	out, err := os.Create(m.filenameAbsPath)
+	if err != nil {
+		fmt.Println("1")
+		return 1
+	}
+	defer out.Close()
+
+	// Get the data
+	resp, err := http.Get(m.configHandler.GetUrl())
+	if err != nil {
+		fmt.Println("2")
+		return 1
+	}
+	defer resp.Body.Close()
+
+	// Check server response
+	if resp.StatusCode != http.StatusOK {
+		fmt.Println("3")
+		return 1
+	}
+
+	// Writer the body to file
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		fmt.Println("4")
+		return 1
+	}
+
+	return 0
+}
+
+func (m MainWindow) getTgzSize() int64 {
+	fi, err := os.Stat(m.filenameAbsPath)
+	if err != nil {
+		fmt.Println("5")
+	}
+
+	if m.datasetType == "full_set" {
+		return int64(fi.Size() / 100)
+	} else if m.datasetType == "subset" {
+		return fi.Size()
+	} else {
+		return 0
+	}
+}
+
+func (m MainWindow) getTgzMax() int64 {
+	if m.datasetType == "full_set" {
+		return int64(m.Expected_size / 100)
+	} else if m.datasetType == "subset" {
+		return int64(m.Expected_size)
+	} else {
+		return 0
+	}
+}
