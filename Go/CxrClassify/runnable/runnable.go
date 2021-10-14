@@ -1,9 +1,9 @@
 package runnable
 
 import (
-	"configHandler"
-	"databaseHandler"
-	"expectedSizes"
+	"CxrClassify/configHandler"
+	"CxrClassify/databaseHandler"
+	"CxrClassify/expectedSizes"
 
 	"github.com/therecipe/qt/core"
 )

@@ -20,4 +20,7 @@ Combined/SharedCode/build/*
 Python/SharedCode/build/*
 *build-CXR_classify-Desktop*
 *CXR_env
-
+qtbox
+Go/CxrClassify/vendor
+Go/CxrClassify/deploy
+moc*

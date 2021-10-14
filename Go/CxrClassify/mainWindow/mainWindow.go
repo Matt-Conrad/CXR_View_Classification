@@ -1,9 +1,9 @@
 package mainWindow
 
 import (
-	"configHandler"
-	"databaseHandler"
-	"downloadStage"
+	"CxrClassify/configHandler"
+	"CxrClassify/databaseHandler"
+	"CxrClassify/downloadStage"
 	"os"
 
 	"github.com/therecipe/qt/core"

@@ -1,8 +1,8 @@
 package downloader
 
 import (
-	"configHandler"
-	"runnable"
+	"CxrClassify/configHandler"
+	"CxrClassify/runnable"
 
 	"fmt"
 	"io"

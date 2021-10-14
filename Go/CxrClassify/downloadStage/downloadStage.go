@@ -1,9 +1,9 @@
 package downloadStage
 
 import (
-	"configHandler"
-	"downloader"
-	"stage"
+	"CxrClassify/configHandler"
+	"CxrClassify/downloader"
+	"CxrClassify/stage"
 )
 
 type DownloadStage struct {
