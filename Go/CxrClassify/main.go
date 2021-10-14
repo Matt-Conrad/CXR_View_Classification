@@ -1,5 +1,7 @@
 package main
 
+// REQUIRES export GO111module=off
+
 import (
 	"os"
 
@@ -12,9 +14,9 @@ func main() {
 	// Temporary set up
 	app := widgets.NewQApplication(len(os.Args), os.Args)
 
-	m := mainWindow.NewMainWindow()
+	mainWindow.NewMainWindow(nil, 0)
 
-	defer m.Close()
+	// defer m.Close()
 
 	// start the main Qt event loop
 	// and block until app.Exit() is called

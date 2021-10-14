@@ -1,7 +1,7 @@
 package databaseHandler
 
 import (
-	"CxrClassify/configHandler"
+	"configHandler"
 	"database/sql"
 	"encoding/json"
 	"fmt"

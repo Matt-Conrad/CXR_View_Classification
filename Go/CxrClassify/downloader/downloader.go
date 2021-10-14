@@ -1,8 +1,9 @@
 package downloader
 
 import (
-	"CxrClassify/configHandler"
-	"CxrClassify/runnable"
+	"configHandler"
+	"runnable"
+
 	"fmt"
 	"io"
 	"net/http"
@@ -10,51 +11,60 @@ import (
 )
 
 type Downloader struct {
-	filenameAbsPath string
-	datasetType     string
-	r               runnable.Runnable
+	runnable.Runnable
+
+	_ func() `constructor:"init"`
+
+	FilenameAbsPath string
+	DatasetType     string
 }
 
-func NewDownloader(configHandler *configHandler.ConfigHandler) *Downloader {
-	d := new(Downloader)
-	d.filenameAbsPath = configHandler.GetTgzFilePath()
-	d.datasetType = configHandler.GetDatasetType()
-	d.r = *runnable.NewRunnable(configHandler, nil)
+func (d *Downloader) init() {
 
-	return d
 }
 
-// func (d Downloader) QRunnable_PTR() *core.QRunnable {
-// 	return d.r.Qr
-// }
+func (d *Downloader) Setup(configHandler *configHandler.ConfigHandler) {
+	d.FilenameAbsPath = configHandler.GetTgzFilePath()
+	d.DatasetType = configHandler.GetDatasetType()
+	d.SetupRunnable(configHandler)
+}
 
 func (d Downloader) Run() {
 	fmt.Println("Checking if {} already exists")
-	info, err := os.Stat(d.filenameAbsPath)
+	info, err := os.Stat(d.FilenameAbsPath)
 	if err == nil && !info.IsDir() {
 		fmt.Println("{} already exists")
 		fmt.Println("Checking if {} was downloaded properly")
-		if info.Size() == int64(d.r.Expected_size) {
+		if info.Size() == int64(d.Expected_size) {
 			fmt.Println("{} was downloaded properly")
 		} else {
 			fmt.Println("{} was not downloaded properly")
 			fmt.Println("Removing {}")
-			e := os.Remove(d.filenameAbsPath)
+			e := os.Remove(d.FilenameAbsPath)
 			if e != nil {
 				fmt.Println("FAILED")
 			}
 			fmt.Println("Successfully removed {}")
-			d.download()
+			d.downloadDataset()
 		}
 	} else {
 		fmt.Println("{} does not exist")
-		d.download()
+		d.downloadDataset()
 	}
+	d.AttemptUpdateProBarValue(1)
+	// d.AttemptUpdateProBarValue(int(d.getTgzSize()))
+	d.AttemptUpdateText("Image download complete")
+	d.Finished()
 }
 
-func (d Downloader) download() int {
+func (d Downloader) downloadDataset() int {
+	d.AttemptUpdateText("Downloading images")
+	// d.AttemptUpdateProBarBounds(0, int(d.getTgzMax()))
+
+	d.AttemptUpdateProBarBounds(0, 1)
+
 	// Create the file
-	out, err := os.Create(d.filenameAbsPath)
+	out, err := os.Create(d.FilenameAbsPath)
 	if err != nil {
 		fmt.Println("1")
 		return 1
@@ -62,7 +72,7 @@ func (d Downloader) download() int {
 	defer out.Close()
 
 	// Get the data
-	resp, err := http.Get(d.r.ConfigHandler.GetUrl())
+	resp, err := http.Get(d.ConfigHandler.GetUrl())
 	if err != nil {
 		fmt.Println("2")
 		return 1
@@ -86,14 +96,14 @@ func (d Downloader) download() int {
 }
 
 func (d Downloader) getTgzSize() int64 {
-	fi, err := os.Stat(d.filenameAbsPath)
+	fi, err := os.Stat(d.FilenameAbsPath)
 	if err != nil {
 		fmt.Println("5")
 	}
 
-	if d.datasetType == "full_set" {
+	if d.DatasetType == "full_set" {
 		return int64(fi.Size() / 100)
-	} else if d.datasetType == "subset" {
+	} else if d.DatasetType == "subset" {
 		return fi.Size()
 	} else {
 		return 0
@@ -101,10 +111,10 @@ func (d Downloader) getTgzSize() int64 {
 }
 
 func (d Downloader) getTgzMax() int64 {
-	if d.datasetType == "full_set" {
-		return int64(d.r.Expected_size / 100)
-	} else if d.datasetType == "subset" {
-		return int64(d.r.Expected_size)
+	if d.DatasetType == "full_set" {
+		return int64(d.Expected_size / 100)
+	} else if d.DatasetType == "subset" {
+		return int64(d.Expected_size)
 	} else {
 		return 0
 	}

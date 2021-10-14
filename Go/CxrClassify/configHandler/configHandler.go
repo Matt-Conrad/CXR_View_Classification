@@ -1,7 +1,7 @@
 package configHandler
 
 import (
-	"CxrClassify/expectedSizes"
+	"expectedSizes"
 	"os"
 	"path/filepath"
 	"strings"

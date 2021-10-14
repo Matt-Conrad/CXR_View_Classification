@@ -1,13 +1,9 @@
 package mainWindow
 
 import (
-	"CxrClassify/configHandler"
-	"CxrClassify/databaseHandler"
-	"CxrClassify/downloadStage"
-	"CxrClassify/expectedSizes"
-	"fmt"
-	"io"
-	"net/http"
+	"configHandler"
+	"databaseHandler"
+	"downloadStage"
 	"os"
 
 	"github.com/therecipe/qt/core"
@@ -15,6 +11,8 @@ import (
 )
 
 type MainWindow struct {
+	widgets.QMainWindow
+
 	configHandler *configHandler.ConfigHandler
 	dbHandler     *databaseHandler.DatabaseHandler
 	window        *widgets.QMainWindow
@@ -24,48 +22,38 @@ type MainWindow struct {
 
 	buttonsList [6]string
 
+	_ func() `constructor:"init"`
+
 	_ func(int, int) `slot:"updateProBarBounds"`
 	_ func(int)      `slot:"updateProBarValue"`
 	_ func(string)   `slot:"updateText"`
 	// _ func(string) string               `slot:"updateImage"`
 
-	// IMPORTED
-	_                  func(int)      `signal:"attemptUpdateProBarValue"`
-	_                  func(int, int) `signal:"attemptUpdateProBarBounds"`
-	_                  func(string)   `signal:"attemptUpdateText"`
-	filenameAbsPath    string
-	datasetType        string
-	Expected_size      int
-	Expected_num_files int
+	downloadStage *downloadStage.DownloadStage
+	// downloadStage *downloadStage.DownloadStage
+	// downloadStage *downloadStage.DownloadStage
+	// downloadStage *downloadStage.DownloadStage
+	// downloadStage *downloadStage.DownloadStage
+	// downloadStage *downloadStage.DownloadStage
+
+	// currentStage []stage.StageInterface
 }
 
-func NewMainWindow() *MainWindow {
-	m := new(MainWindow)
-
+func (m *MainWindow) init() {
 	m.configHandler = configHandler.NewConfigHandler("./config.ini")
 
 	// Add logging
 
 	m.dbHandler = databaseHandler.NewDatabaseHandler(m.configHandler)
 
-	//IMPORTED
-	m.filenameAbsPath = m.configHandler.GetTgzFilePath()
-	m.datasetType = m.configHandler.GetDatasetType()
-	m.Expected_num_files = expectedSizes.Expected_num_files_in_dataset[m.configHandler.GetDatasetType()]
-	m.Expected_size = expectedSizes.Expected_sizes[m.configHandler.GetDatasetType()]
-	//
-
 	// TODO: Move this into the struct
 	m.buttonsList = [6]string{"downloadBtn", "unpackBtn", "storeBtn", "featureBtn", "labelBtn", "trainBtn"}
 
-	m.window = widgets.NewQMainWindow(nil, 0)
-	m.window.SetWindowTitle("CXR Classifier Training Walkthrough")
+	m.SetWindowTitle("CXR Classifier Training Walkthrough")
 
 	m.fillWindow()
 	m.initGuiState()
-	m.window.Show()
-
-	return m
+	m.Show()
 }
 
 func (m MainWindow) Close() {
@@ -146,7 +134,7 @@ func (m *MainWindow) fillWindow() {
 	mainLayout.AddWidget(widgetStack, 0, 0)
 	m.mainWidget.SetLayout(mainLayout)
 
-	m.window.SetCentralWidget(m.mainWidget)
+	m.SetCentralWidget(m.mainWidget)
 }
 
 func (m MainWindow) initGuiState() {
@@ -170,25 +158,20 @@ func (m MainWindow) initGuiState() {
 }
 
 func (m MainWindow) downloadStageUi() {
-	downloadStage := downloadStage.NewDownloadStage(m.configHandler)
+	m.downloadStage = downloadStage.NewDownloadStage(nil)
+	m.downloadStage.Setup(m.configHandler)
+
+	// m.currentStage = []stage.StageInterface{&downloadStage.DownloadStage{}}
 
 	m.disableAllStageButtons()
 	m.enableStageButton(0)
 
 	widgets.NewQPushButtonFromPointer(m.mainWidget.FindChild("downloadBtn", core.Qt__FindChildrenRecursively).Pointer()).ConnectClicked(func(checked bool) {
-		downloadStage.Run()
-		m.unpackStageUi()
+		m.downloadStage.DownloadData()
 	})
 
-	// currentStage = new DownloadStage(configHandler);
-
-	// disableAllStageButtons();
-	// enableStageButton(0);
-
-	// connect(mainWidget->findChild<QPushButton *>("downloadBtn"), SIGNAL (clicked()), static_cast<DownloadStage *>(currentStage), SLOT (download()));
-	// connectToDashboard(static_cast<DownloadStage *>(currentStage)->downloader);
-	// connect(static_cast<DownloadStage *>(currentStage)->downloader, SIGNAL (finished()), this, SLOT(clearCurrentStage()));
-	// connect(static_cast<DownloadStage *>(currentStage)->downloader, SIGNAL (finished()), this, SLOT(unpackStageUi()));
+	m.connectToDashboard()
+	m.downloadStage.Downloader.ConnectFinished(m.unpackStageUi)
 }
 
 func (m MainWindow) unpackStageUi() {
@@ -245,7 +228,9 @@ func (m MainWindow) secondPage() {
 }
 
 func (m MainWindow) connectToDashboard() {
-
+	m.downloadStage.Downloader.ConnectAttemptUpdateProBarBounds(m.updateProBarBounds)
+	m.downloadStage.Downloader.ConnectAttemptUpdateProBarValue(m.updateProBarValue)
+	m.downloadStage.Downloader.ConnectAttemptUpdateText(m.updateText)
 }
 
 func (m MainWindow) disableAllStageButtons() {
@@ -272,90 +257,6 @@ func (m MainWindow) updateProBarValue(value int) {
 	widgets.NewQProgressBarFromPointer(m.mainWidget.FindChild("proBar", core.Qt__FindChildrenRecursively).Pointer()).SetValue(value)
 }
 
-// func (m MainWindow) updateImage(pixmap gui.QPixmap) {
-// 	widgets.NewQLabelFromPointer(m.mainWidget.FindChild("image", core.Qt__FindChildrenRecursively).Pointer()).ConnectSetPixmap()
-// }
-
-// IMPORTED
-
-func (m MainWindow) Run() {
-	fmt.Println("Checking if {} already exists")
-	info, err := os.Stat(m.filenameAbsPath)
-	if err == nil && !info.IsDir() {
-		fmt.Println("{} already exists")
-		fmt.Println("Checking if {} was downloaded properly")
-		if info.Size() == int64(m.Expected_size) {
-			fmt.Println("{} was downloaded properly")
-		} else {
-			fmt.Println("{} was not downloaded properly")
-			fmt.Println("Removing {}")
-			e := os.Remove(m.filenameAbsPath)
-			if e != nil {
-				fmt.Println("FAILED")
-			}
-			fmt.Println("Successfully removed {}")
-			m.download()
-		}
-	} else {
-		fmt.Println("{} does not exist")
-		m.download()
-	}
-}
-
-func (m MainWindow) download() int {
-	// Create the file
-	out, err := os.Create(m.filenameAbsPath)
-	if err != nil {
-		fmt.Println("1")
-		return 1
-	}
-	defer out.Close()
-
-	// Get the data
-	resp, err := http.Get(m.configHandler.GetUrl())
-	if err != nil {
-		fmt.Println("2")
-		return 1
-	}
-	defer resp.Body.Close()
-
-	// Check server response
-	if resp.StatusCode != http.StatusOK {
-		fmt.Println("3")
-		return 1
-	}
-
-	// Writer the body to file
-	_, err = io.Copy(out, resp.Body)
-	if err != nil {
-		fmt.Println("4")
-		return 1
-	}
-
-	return 0
-}
-
-func (m MainWindow) getTgzSize() int64 {
-	fi, err := os.Stat(m.filenameAbsPath)
-	if err != nil {
-		fmt.Println("5")
-	}
-
-	if m.datasetType == "full_set" {
-		return int64(fi.Size() / 100)
-	} else if m.datasetType == "subset" {
-		return fi.Size()
-	} else {
-		return 0
-	}
-}
-
-func (m MainWindow) getTgzMax() int64 {
-	if m.datasetType == "full_set" {
-		return int64(m.Expected_size / 100)
-	} else if m.datasetType == "subset" {
-		return int64(m.Expected_size)
-	} else {
-		return 0
-	}
-}
+// // func (m MainWindow) updateImage(pixmap gui.QPixmap) {
+// // 	widgets.NewQLabelFromPointer(m.mainWidget.FindChild("image", core.Qt__FindChildrenRecursively).Pointer()).ConnectSetPixmap()
+// // }

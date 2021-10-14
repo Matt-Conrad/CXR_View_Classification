@@ -1,13 +1,19 @@
 package stage
 
+import (
+	"github.com/therecipe/qt/core"
+)
+
+// type StageInterface interface {
+// 	Setup(*configHandler.ConfigHandler)
+// }
+
 type Stage struct {
+	core.QObject
 	// threadpool *core.QThreadPool
+	_ func() `constructor:"init"`
 }
 
-func NewStage() *Stage {
-	s := new(Stage)
+func (s *Stage) init() {
 
-	// s.threadpool = core.NewQThreadPool(nil)
-
-	return s
 }
