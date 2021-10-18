@@ -11,8 +11,6 @@ type DownloadStage struct {
 
 	Downloader *downloader.Downloader
 
-	_ func() `slot:"Download"`
-
 	_ func() `constructor:"init"`
 }
 
@@ -25,6 +23,6 @@ func (d *DownloadStage) Setup(configHandler *configHandler.ConfigHandler) {
 	d.Downloader.Setup(configHandler)
 }
 
-func (d *DownloadStage) DownloadData() {
+func (d *DownloadStage) Download() {
 	d.Downloader.Run()
 }

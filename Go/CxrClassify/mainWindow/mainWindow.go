@@ -4,6 +4,8 @@ import (
 	"CxrClassify/configHandler"
 	"CxrClassify/databaseHandler"
 	"CxrClassify/downloadStage"
+	"CxrClassify/stage"
+	"CxrClassify/unpackStage"
 	"os"
 
 	"github.com/therecipe/qt/core"
@@ -30,7 +32,7 @@ type MainWindow struct {
 	// _ func(string) string               `slot:"updateImage"`
 
 	downloadStage *downloadStage.DownloadStage
-	// downloadStage *downloadStage.DownloadStage
+	unpackStage   *unpackStage.UnpackStage
 	// downloadStage *downloadStage.DownloadStage
 	// downloadStage *downloadStage.DownloadStage
 	// downloadStage *downloadStage.DownloadStage
@@ -140,7 +142,10 @@ func (m *MainWindow) fillWindow() {
 func (m MainWindow) initGuiState() {
 	// TODO: add setwindowicon
 
-	// m.downloadStageUi()
+	// TODO: figure out why it's not unpacking to binary location
+	// unpackFilePath := m.configHandler.GetUnpackFolderPath() + m.configHandler.GetTgzFilename()
+
+	// m.updateText(m.configHandler.GetTgzFilePath())
 
 	if m.dbHandler.TableExists(m.configHandler.GetTableName("label")) {
 		m.trainStageUi()
@@ -150,7 +155,7 @@ func (m MainWindow) initGuiState() {
 		m.calcFeatStageUi()
 	} else if _, err := os.Stat(m.configHandler.GetUnpackFolderPath()); err == nil {
 		m.storeStageUi()
-	} else if _, err := os.Stat(m.configHandler.GetTgzFilename()); err == nil {
+	} else if _, err := os.Stat(m.configHandler.GetTgzFilePath()); err == nil {
 		m.unpackStageUi()
 	} else {
 		m.downloadStageUi()
@@ -167,20 +172,26 @@ func (m MainWindow) downloadStageUi() {
 	m.enableStageButton(0)
 
 	widgets.NewQPushButtonFromPointer(m.mainWidget.FindChild("downloadBtn", core.Qt__FindChildrenRecursively).Pointer()).ConnectClicked(func(checked bool) {
-		m.downloadStage.DownloadData()
+		m.downloadStage.Download()
 	})
 
-	m.connectToDashboard()
+	m.connectToDashboard(m.downloadStage.Downloader)
 	m.downloadStage.Downloader.ConnectFinished(m.unpackStageUi)
 }
 
 func (m MainWindow) unpackStageUi() {
+	m.unpackStage = unpackStage.NewUnpackStage(nil)
+	m.unpackStage.Setup(m.configHandler)
+
 	m.disableAllStageButtons()
 	m.enableStageButton(1)
 
 	widgets.NewQPushButtonFromPointer(m.mainWidget.FindChild("unpackBtn", core.Qt__FindChildrenRecursively).Pointer()).ConnectClicked(func(checked bool) {
-		m.storeStageUi()
+		m.unpackStage.Unpack()
 	})
+
+	m.connectToDashboard(m.unpackStage.Unpacker)
+	m.unpackStage.Unpacker.ConnectFinished(m.storeStageUi)
 }
 
 func (m MainWindow) storeStageUi() {
@@ -227,10 +238,10 @@ func (m MainWindow) secondPage() {
 	m.widgetStack.SetCurrentIndex(1)
 }
 
-func (m MainWindow) connectToDashboard() {
-	m.downloadStage.Downloader.ConnectAttemptUpdateProBarBounds(m.updateProBarBounds)
-	m.downloadStage.Downloader.ConnectAttemptUpdateProBarValue(m.updateProBarValue)
-	m.downloadStage.Downloader.ConnectAttemptUpdateText(m.updateText)
+func (m MainWindow) connectToDashboard(test stage.StageInterface) {
+	test.ConnectAttemptUpdateProBarBounds(m.updateProBarBounds)
+	test.ConnectAttemptUpdateProBarValue(m.updateProBarValue)
+	test.ConnectAttemptUpdateText(m.updateText)
 }
 
 func (m MainWindow) disableAllStageButtons() {

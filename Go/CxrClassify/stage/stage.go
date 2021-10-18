@@ -4,9 +4,11 @@ import (
 	"github.com/therecipe/qt/core"
 )
 
-// type StageInterface interface {
-// 	Setup(*configHandler.ConfigHandler)
-// }
+type StageInterface interface {
+	ConnectAttemptUpdateProBarBounds(func(int, int))
+	ConnectAttemptUpdateProBarValue(func(int))
+	ConnectAttemptUpdateText(func(string))
+}
 
 type Stage struct {
 	core.QObject
