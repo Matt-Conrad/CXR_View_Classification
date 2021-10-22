@@ -5,6 +5,7 @@ import (
 	"CxrClassify/databaseHandler"
 	"CxrClassify/downloadStage"
 	"CxrClassify/stage"
+	"CxrClassify/storeStage"
 	"CxrClassify/unpackStage"
 	"os"
 
@@ -33,7 +34,7 @@ type MainWindow struct {
 
 	downloadStage *downloadStage.DownloadStage
 	unpackStage   *unpackStage.UnpackStage
-	// downloadStage *downloadStage.DownloadStage
+	storeStage    *storeStage.StoreStage
 	// downloadStage *downloadStage.DownloadStage
 	// downloadStage *downloadStage.DownloadStage
 	// downloadStage *downloadStage.DownloadStage
@@ -145,7 +146,7 @@ func (m MainWindow) initGuiState() {
 	// TODO: figure out why it's not unpacking to binary location
 	// unpackFilePath := m.configHandler.GetUnpackFolderPath() + m.configHandler.GetTgzFilename()
 
-	// m.updateText(m.configHandler.GetTgzFilePath())
+	// m.updateText(m.configHandler.GetUnpackFolderPath())
 
 	if m.dbHandler.TableExists(m.configHandler.GetTableName("label")) {
 		m.trainStageUi()
@@ -164,7 +165,7 @@ func (m MainWindow) initGuiState() {
 
 func (m MainWindow) downloadStageUi() {
 	m.downloadStage = downloadStage.NewDownloadStage(nil)
-	m.downloadStage.Setup(m.configHandler)
+	m.downloadStage.Setup(m.configHandler, m.dbHandler)
 
 	// m.currentStage = []stage.StageInterface{&downloadStage.DownloadStage{}}
 
@@ -181,7 +182,7 @@ func (m MainWindow) downloadStageUi() {
 
 func (m MainWindow) unpackStageUi() {
 	m.unpackStage = unpackStage.NewUnpackStage(nil)
-	m.unpackStage.Setup(m.configHandler)
+	m.unpackStage.Setup(m.configHandler, m.dbHandler)
 
 	m.disableAllStageButtons()
 	m.enableStageButton(1)
@@ -195,12 +196,18 @@ func (m MainWindow) unpackStageUi() {
 }
 
 func (m MainWindow) storeStageUi() {
+	m.storeStage = storeStage.NewStoreStage(nil)
+	m.storeStage.Setup(m.configHandler, m.dbHandler)
+
 	m.disableAllStageButtons()
 	m.enableStageButton(2)
 
 	widgets.NewQPushButtonFromPointer(m.mainWidget.FindChild("storeBtn", core.Qt__FindChildrenRecursively).Pointer()).ConnectClicked(func(checked bool) {
-		m.calcFeatStageUi()
+		m.storeStage.Store()
 	})
+
+	m.connectToDashboard(m.storeStage.Storer)
+	m.storeStage.Storer.ConnectFinished(m.calcFeatStageUi)
 }
 
 func (m MainWindow) calcFeatStageUi() {

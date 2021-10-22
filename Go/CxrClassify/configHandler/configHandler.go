@@ -141,5 +141,5 @@ func (c ConfigHandler) GetConfigFilePath() string {
 
 func (c ConfigHandler) PrependParentPath(fsItem string) string {
 	strArr := []string{c.GetParentFolder(), fsItem}
-	return strings.Join(strArr, "\\")
+	return strings.Join(strArr, string(os.PathSeparator))
 }

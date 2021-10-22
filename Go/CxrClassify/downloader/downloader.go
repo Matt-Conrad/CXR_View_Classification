@@ -2,6 +2,7 @@ package downloader
 
 import (
 	"CxrClassify/configHandler"
+	"CxrClassify/databaseHandler"
 	"CxrClassify/runnable"
 
 	"fmt"
@@ -23,10 +24,10 @@ func (d *Downloader) init() {
 
 }
 
-func (d *Downloader) Setup(configHandler *configHandler.ConfigHandler) {
+func (d *Downloader) Setup(configHandler *configHandler.ConfigHandler, databaseHandler *databaseHandler.DatabaseHandler) {
 	d.FilenameAbsPath = configHandler.GetTgzFilePath()
 	d.DatasetType = configHandler.GetDatasetType()
-	d.SetupRunnable(configHandler)
+	d.SetupRunnable(configHandler, databaseHandler)
 }
 
 func (d Downloader) Run() {

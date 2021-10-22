@@ -2,6 +2,7 @@ package unpackStage
 
 import (
 	"CxrClassify/configHandler"
+	"CxrClassify/databaseHandler"
 	"CxrClassify/stage"
 	"CxrClassify/unpacker"
 )
@@ -18,9 +19,9 @@ func (u *UnpackStage) init() {
 
 }
 
-func (u *UnpackStage) Setup(configHandler *configHandler.ConfigHandler) {
+func (u *UnpackStage) Setup(configHandler *configHandler.ConfigHandler, databaseHandler *databaseHandler.DatabaseHandler) {
 	u.Unpacker = unpacker.NewUnpacker(nil)
-	u.Unpacker.Setup(configHandler)
+	u.Unpacker.Setup(configHandler, databaseHandler)
 }
 
 func (u *UnpackStage) Unpack() {

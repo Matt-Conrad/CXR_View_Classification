@@ -2,6 +2,7 @@ package downloadStage
 
 import (
 	"CxrClassify/configHandler"
+	"CxrClassify/databaseHandler"
 	"CxrClassify/downloader"
 	"CxrClassify/stage"
 )
@@ -18,9 +19,9 @@ func (d *DownloadStage) init() {
 
 }
 
-func (d *DownloadStage) Setup(configHandler *configHandler.ConfigHandler) {
+func (d *DownloadStage) Setup(configHandler *configHandler.ConfigHandler, databaseHandler *databaseHandler.DatabaseHandler) {
 	d.Downloader = downloader.NewDownloader(nil)
-	d.Downloader.Setup(configHandler)
+	d.Downloader.Setup(configHandler, databaseHandler)
 }
 
 func (d *DownloadStage) Download() {

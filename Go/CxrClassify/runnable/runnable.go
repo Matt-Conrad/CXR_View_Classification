@@ -12,7 +12,7 @@ type Runnable struct {
 	core.QObject
 	// core.QRunnable
 
-	_ func(*configHandler.ConfigHandler) `constructor:"init"`
+	_ func() `constructor:"init"`
 
 	ConfigHandler   *configHandler.ConfigHandler
 	DatabaseHandler *databaseHandler.DatabaseHandler
@@ -32,8 +32,9 @@ func (r *Runnable) init() {
 
 }
 
-func (r *Runnable) SetupRunnable(configHandler *configHandler.ConfigHandler) {
+func (r *Runnable) SetupRunnable(configHandler *configHandler.ConfigHandler, databaseHandler *databaseHandler.DatabaseHandler) {
 	r.ConfigHandler = configHandler
+	r.DatabaseHandler = databaseHandler
 	r.Expected_num_files = expectedSizes.Expected_num_files_in_dataset[r.ConfigHandler.GetDatasetType()]
 	r.Expected_size = expectedSizes.Expected_sizes[r.ConfigHandler.GetDatasetType()]
 }

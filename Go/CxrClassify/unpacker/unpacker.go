@@ -2,6 +2,7 @@ package unpacker
 
 import (
 	"CxrClassify/configHandler"
+	"CxrClassify/databaseHandler"
 	"CxrClassify/runnable"
 	"archive/tar"
 	"compress/gzip"
@@ -21,8 +22,8 @@ func (u *Unpacker) init() {
 
 }
 
-func (u *Unpacker) Setup(configHandler *configHandler.ConfigHandler) {
-	u.SetupRunnable(configHandler)
+func (u *Unpacker) Setup(configHandler *configHandler.ConfigHandler, databaseHandler *databaseHandler.DatabaseHandler) {
+	u.SetupRunnable(configHandler, databaseHandler)
 	u.FolderAbsPath = u.ConfigHandler.GetUnpackFolderPath()
 }
 
