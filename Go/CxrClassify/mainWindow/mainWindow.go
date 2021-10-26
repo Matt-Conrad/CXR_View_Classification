@@ -4,6 +4,8 @@ import (
 	"CxrClassify/configHandler"
 	"CxrClassify/databaseHandler"
 	"CxrClassify/downloadStage"
+
+	"CxrClassify/featStage"
 	"CxrClassify/stage"
 	"CxrClassify/storeStage"
 	"CxrClassify/unpackStage"
@@ -32,10 +34,10 @@ type MainWindow struct {
 	_ func(string)   `slot:"updateText"`
 	// _ func(string) string               `slot:"updateImage"`
 
-	downloadStage *downloadStage.DownloadStage
-	unpackStage   *unpackStage.UnpackStage
-	storeStage    *storeStage.StoreStage
-	// downloadStage *downloadStage.DownloadStage
+	downloadStage          *downloadStage.DownloadStage
+	unpackStage            *unpackStage.UnpackStage
+	storeStage             *storeStage.StoreStage
+	featureCalculatorStage *featStage.FeatStage
 	// downloadStage *downloadStage.DownloadStage
 	// downloadStage *downloadStage.DownloadStage
 
@@ -211,6 +213,19 @@ func (m MainWindow) storeStageUi() {
 }
 
 func (m MainWindow) calcFeatStageUi() {
+	// m.featureCalculatorStage = featureCalculatorStage.NewFeatureCalculatorStage(nil)
+	// m.featureCalculatorStage.Setup(m.configHandler, m.dbHandler)
+
+	// m.disableAllStageButtons()
+	// m.enableStageButton(3)
+
+	// widgets.NewQPushButtonFromPointer(m.mainWidget.FindChild("featureBtn", core.Qt__FindChildrenRecursively).Pointer()).ConnectClicked(func(checked bool) {
+	// 	m.featureCalculatorStage.CalculateFeatures()
+	// })
+
+	// m.connectToDashboard(m.featureCalculatorStage.FeatureCalculator)
+	// m.featureCalculatorStage.FeatureCalculator.ConnectFinished(m.calcFeatStageUi)
+
 	m.disableAllStageButtons()
 	m.enableStageButton(3)
 
