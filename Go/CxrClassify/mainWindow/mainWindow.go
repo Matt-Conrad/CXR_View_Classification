@@ -213,25 +213,18 @@ func (m MainWindow) storeStageUi() {
 }
 
 func (m MainWindow) calcFeatStageUi() {
-	// m.featureCalculatorStage = featureCalculatorStage.NewFeatureCalculatorStage(nil)
-	// m.featureCalculatorStage.Setup(m.configHandler, m.dbHandler)
-
-	// m.disableAllStageButtons()
-	// m.enableStageButton(3)
-
-	// widgets.NewQPushButtonFromPointer(m.mainWidget.FindChild("featureBtn", core.Qt__FindChildrenRecursively).Pointer()).ConnectClicked(func(checked bool) {
-	// 	m.featureCalculatorStage.CalculateFeatures()
-	// })
-
-	// m.connectToDashboard(m.featureCalculatorStage.FeatureCalculator)
-	// m.featureCalculatorStage.FeatureCalculator.ConnectFinished(m.calcFeatStageUi)
+	m.featureCalculatorStage = featStage.NewFeatStage(nil)
+	m.featureCalculatorStage.Setup(m.configHandler, m.dbHandler)
 
 	m.disableAllStageButtons()
 	m.enableStageButton(3)
 
 	widgets.NewQPushButtonFromPointer(m.mainWidget.FindChild("featureBtn", core.Qt__FindChildrenRecursively).Pointer()).ConnectClicked(func(checked bool) {
-		m.labelStageUi()
+		m.featureCalculatorStage.CalculateFeatures()
 	})
+
+	m.connectToDashboard(m.featureCalculatorStage.FeatureCalculator)
+	m.featureCalculatorStage.FeatureCalculator.ConnectFinished(m.labelStageUi)
 }
 
 func (m MainWindow) labelStageUi() {

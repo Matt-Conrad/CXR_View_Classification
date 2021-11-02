@@ -5,7 +5,6 @@ import (
 	"CxrClassify/databaseHandler"
 	"CxrClassify/runnable"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -80,7 +79,6 @@ func (s Storer) Run() {
 
 			if fileExtension == ".dcm" {
 				dataset, _ := dicom.ParseFile(path, nil)
-				log.Println(path)
 
 				for k, v := range elements {
 					tagString := v.(map[string]interface{})["tag"].(string)
@@ -91,8 +89,6 @@ func (s Storer) Run() {
 
 					groupNameInt, _ := strconv.ParseUint(groupNameString, 16, 64)
 					elementNumInt, _ := strconv.ParseUint(elementNumString, 16, 64)
-
-					log.Println(fmt.Sprintf("%d %d", groupNameInt, elementNumInt))
 
 					_, err := dataset.FindElementByTag(tag.Tag{Group: uint16(groupNameInt), Element: uint16(elementNumInt)})
 
@@ -109,8 +105,6 @@ func (s Storer) Run() {
 					} else {
 						elements[k].(map[string]interface{})["value"] = "NULL"
 					}
-
-					log.Println(elements[k].(map[string]interface{})["value"].(string))
 				}
 
 				names := []string{"file_name", "file_path"}
@@ -130,14 +124,12 @@ func (s Storer) Run() {
 				storeCount++
 
 				s.AttemptUpdateProBarValue(storeCount)
-
-				log.Println(sqlQuery)
 			}
 
 			return nil
 		})
 	if err != nil {
-		log.Println("DFS")
+		log.Println("FAIL")
 	}
 
 	// sqlQuery := elements["patient_orientation"].(map[string]interface{})["db_datatype"].(string)

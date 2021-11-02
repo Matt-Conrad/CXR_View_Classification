@@ -6,6 +6,7 @@ require (
 	github.com/lib/pq v1.10.3
 	github.com/suyashkumar/dicom v1.0.4
 	github.com/therecipe/qt v0.0.0-20200904063919-c0c124a5770d
+	gocv.io/x/gocv v0.28.0
 	gopkg.in/ini.v1 v1.63.2
 )
 
