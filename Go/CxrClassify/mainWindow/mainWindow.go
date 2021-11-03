@@ -6,6 +6,7 @@ import (
 	"CxrClassify/downloadStage"
 
 	"CxrClassify/featStage"
+	"CxrClassify/labelStage"
 	"CxrClassify/stage"
 	"CxrClassify/storeStage"
 	"CxrClassify/unpackStage"
@@ -38,7 +39,7 @@ type MainWindow struct {
 	unpackStage            *unpackStage.UnpackStage
 	storeStage             *storeStage.StoreStage
 	featureCalculatorStage *featStage.FeatStage
-	// downloadStage *downloadStage.DownloadStage
+	labelStage             *labelStage.LabelStage
 	// downloadStage *downloadStage.DownloadStage
 
 	// currentStage []stage.StageInterface
@@ -228,12 +229,19 @@ func (m MainWindow) calcFeatStageUi() {
 }
 
 func (m MainWindow) labelStageUi() {
+	m.labelStage = labelStage.NewLabelStage(nil)
+	m.labelStage.Setup(m.configHandler, m.dbHandler)
+
 	m.disableAllStageButtons()
 	m.enableStageButton(4)
 
 	widgets.NewQPushButtonFromPointer(m.mainWidget.FindChild("labelBtn", core.Qt__FindChildrenRecursively).Pointer()).ConnectClicked(func(checked bool) {
-		m.trainStageUi()
+		m.labelStage.Label()
+		m.secondPage()
 	})
+
+	m.connectToDashboard(m.labelStage.ManualLabeler)
+	m.labelStage.ManualLabeler.ConnectFinished(m.trainStageUi)
 }
 
 func (m MainWindow) trainStageUi() {
