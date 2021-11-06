@@ -8,6 +8,7 @@ type StageInterface interface {
 	ConnectAttemptUpdateProBarBounds(func(int, int))
 	ConnectAttemptUpdateProBarValue(func(int))
 	ConnectAttemptUpdateText(func(string))
+	ConnectAttemptUpdateImage(func(string))
 }
 
 type Stage struct {

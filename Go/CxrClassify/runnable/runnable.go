@@ -24,6 +24,7 @@ type Runnable struct {
 	_ func(int)      `signal:"attemptUpdateProBarValue"`
 	_ func(int, int) `signal:"attemptUpdateProBarBounds"`
 	_ func(string)   `signal:"attemptUpdateText"`
+	_ func(string)   `signal:"attemptUpdateImage"`
 
 	// _ *configHandler.ConfigHandler `property:"configHandler"`
 }

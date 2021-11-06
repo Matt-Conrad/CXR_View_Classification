@@ -4,6 +4,8 @@ import (
 	"CxrClassify/configHandler"
 	"CxrClassify/databaseHandler"
 	"CxrClassify/downloadStage"
+	"image"
+	"log"
 
 	"CxrClassify/featStage"
 	"CxrClassify/labelStage"
@@ -13,7 +15,9 @@ import (
 	"os"
 
 	"github.com/therecipe/qt/core"
+	"github.com/therecipe/qt/gui"
 	"github.com/therecipe/qt/widgets"
+	"gocv.io/x/gocv"
 )
 
 type MainWindow struct {
@@ -30,10 +34,10 @@ type MainWindow struct {
 
 	_ func() `constructor:"init"`
 
-	_ func(int, int) `slot:"updateProBarBounds"`
-	_ func(int)      `slot:"updateProBarValue"`
-	_ func(string)   `slot:"updateText"`
-	// _ func(string) string               `slot:"updateImage"`
+	_ func(int, int)    `slot:"updateProBarBounds"`
+	_ func(int)         `slot:"updateProBarValue"`
+	_ func(string)      `slot:"updateText"`
+	_ func(gui.QPixmap) `slot:"updateImage"`
 
 	downloadStage          *downloadStage.DownloadStage
 	unpackStage            *unpackStage.UnpackStage
@@ -46,6 +50,13 @@ type MainWindow struct {
 }
 
 func (m *MainWindow) init() {
+	k, err := os.OpenFile("testlogfile", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("error opening file: %v", err)
+	}
+	defer k.Close()
+	log.SetOutput(k)
+
 	m.configHandler = configHandler.NewConfigHandler("./config.ini")
 
 	// Add logging
@@ -129,15 +140,15 @@ func (m *MainWindow) fillWindow() {
 	labelerWidget.SetLayout(labelLayout)
 
 	// Set up widget stack
-	widgetStack := widgets.NewQStackedWidget(nil)
-	widgetStack.AddWidget(stagesWidget)
-	widgetStack.AddWidget(labelerWidget)
+	m.widgetStack = widgets.NewQStackedWidget(nil)
+	m.widgetStack.AddWidget(stagesWidget)
+	m.widgetStack.AddWidget(labelerWidget)
 
 	// Full stack
 	m.mainWidget = widgets.NewQWidget(nil, 0)
 	mainLayout := widgets.NewQVBoxLayout()
 	mainLayout.AddWidget(dashboardWidget, 0, 0)
-	mainLayout.AddWidget(widgetStack, 0, 0)
+	mainLayout.AddWidget(m.widgetStack, 0, 0)
 	m.mainWidget.SetLayout(mainLayout)
 
 	m.SetCentralWidget(m.mainWidget)
@@ -236,12 +247,13 @@ func (m MainWindow) labelStageUi() {
 	m.enableStageButton(4)
 
 	widgets.NewQPushButtonFromPointer(m.mainWidget.FindChild("labelBtn", core.Qt__FindChildrenRecursively).Pointer()).ConnectClicked(func(checked bool) {
-		m.labelStage.Label()
 		m.secondPage()
+		m.labelStage.Label()
 	})
 
 	m.connectToDashboard(m.labelStage.ManualLabeler)
-	m.labelStage.ManualLabeler.ConnectFinished(m.trainStageUi)
+
+	// m.labelStage.ManualLabeler.ConnectFinished(m.trainStageUi)
 }
 
 func (m MainWindow) trainStageUi() {
@@ -265,6 +277,7 @@ func (m MainWindow) connectToDashboard(test stage.StageInterface) {
 	test.ConnectAttemptUpdateProBarBounds(m.updateProBarBounds)
 	test.ConnectAttemptUpdateProBarValue(m.updateProBarValue)
 	test.ConnectAttemptUpdateText(m.updateText)
+	test.ConnectAttemptUpdateImage(m.updateImage)
 }
 
 func (m MainWindow) disableAllStageButtons() {
@@ -291,6 +304,16 @@ func (m MainWindow) updateProBarValue(value int) {
 	widgets.NewQProgressBarFromPointer(m.mainWidget.FindChild("proBar", core.Qt__FindChildrenRecursively).Pointer()).SetValue(value)
 }
 
-// // func (m MainWindow) updateImage(pixmap gui.QPixmap) {
-// // 	widgets.NewQLabelFromPointer(m.mainWidget.FindChild("image", core.Qt__FindChildrenRecursively).Pointer()).ConnectSetPixmap()
-// // }
+func (m MainWindow) updateImage(filePath string) {
+	originalImage := gocv.IMRead(filePath, gocv.IMReadGrayScale)
+	imageSquare := gocv.NewMatWithSize(300, 300, gocv.MatTypeCV8U)
+	gocv.Resize(originalImage, &imageSquare, image.Pt(300, 300), 0, 0, gocv.InterpolationArea)
+
+	imageData, _ := gocv.IMEncode(".jpg", imageSquare)
+	qImage := gui.NewQImage()
+	qImage.LoadFromData(imageData.GetBytes(), len(imageData.GetBytes()), "JPG")
+
+	qPixmap := gui.NewQPixmap().FromImage(qImage, 0)
+
+	widgets.NewQLabelFromPointer(m.mainWidget.FindChild("image", core.Qt__FindChildrenRecursively).Pointer()).SetPixmap(qPixmap)
+}
