@@ -247,8 +247,19 @@ func (m MainWindow) labelStageUi() {
 	m.enableStageButton(4)
 
 	widgets.NewQPushButtonFromPointer(m.mainWidget.FindChild("labelBtn", core.Qt__FindChildrenRecursively).Pointer()).ConnectClicked(func(checked bool) {
-		m.secondPage()
 		m.labelStage.Label()
+	})
+
+	widgets.NewQPushButtonFromPointer(m.widgetStack.FindChild("frontalBtn", core.Qt__FindChildrenRecursively).Pointer()).ConnectClicked(func(checked bool) {
+		m.labelStage.ManualLabeler.Frontal()
+	})
+
+	widgets.NewQPushButtonFromPointer(m.widgetStack.FindChild("lateralBtn", core.Qt__FindChildrenRecursively).Pointer()).ConnectClicked(func(checked bool) {
+		m.labelStage.ManualLabeler.Lateral()
+	})
+
+	widgets.NewQPushButtonFromPointer(m.mainWidget.FindChild("labelBtn", core.Qt__FindChildrenRecursively).Pointer()).ConnectClicked(func(checked bool) {
+		m.secondPage()
 	})
 
 	m.connectToDashboard(m.labelStage.ManualLabeler)

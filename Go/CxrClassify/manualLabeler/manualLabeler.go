@@ -5,14 +5,17 @@ import (
 	"CxrClassify/databaseHandler"
 	"CxrClassify/runnable"
 	"database/sql"
-	"fmt"
 	"image/png"
 	"log"
+	"math"
 	"os"
+	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/suyashkumar/dicom"
 	"github.com/suyashkumar/dicom/pkg/tag"
+	"gocv.io/x/gocv"
 )
 
 type ManualLabeler struct {
@@ -25,7 +28,7 @@ type ManualLabeler struct {
 	labelTableName string
 
 	imageList *sql.Rows
-	// record pqxx::result::const_iterator
+	filePath  string
 }
 
 func (m *ManualLabeler) init() {
@@ -38,8 +41,8 @@ func (m *ManualLabeler) Setup(configHandler *configHandler.ConfigHandler, databa
 	m.labelTableName = m.ConfigHandler.GetTableName("label")
 }
 
-func (m ManualLabeler) Run() {
-	k, err := os.OpenFile("testlogfile", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+func (m *ManualLabeler) Run() {
+	k, err := os.OpenFile("testlogfile2", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
@@ -51,7 +54,7 @@ func (m ManualLabeler) Run() {
 	m.AttemptUpdateText("Please manually label images")
 	m.AttemptUpdateProBarBounds(0, m.Expected_num_files)
 
-	// m.DatabaseHandler.AddTableToDb(m.ConfigHandler.GetColumnsInfoName(), "labels", m.labelTableName)
+	m.DatabaseHandler.AddTableToDb(m.ConfigHandler.GetColumnsInfoName(), "labels", m.labelTableName)
 
 	m.displayNextImage()
 
@@ -64,24 +67,27 @@ func (m ManualLabeler) Run() {
 	// m.Finished()
 }
 
-func (m *ManualLabeler) queryImageList() {
-	sqlQuery := "SELECT file_path FROM " + m.ConfigHandler.GetTableName("metadata") + " ORDER BY file_path;"
+func (m *ManualLabeler) Frontal() {
+	m.storeLabel("F")
+	m.count++
+	m.displayNextImage()
+}
 
-	m.imageList, _ = m.DatabaseHandler.ExecuteQuery(m.DatabaseHandler.Connection, sqlQuery)
-
-	// defer m.imageList.Close()
+func (m *ManualLabeler) Lateral() {
+	m.storeLabel("L")
+	m.count++
+	m.displayNextImage()
 }
 
 func (m *ManualLabeler) displayNextImage() {
 	m.AttemptUpdateText("Image count: " + strconv.Itoa(m.count))
 	m.AttemptUpdateProBarValue(m.DatabaseHandler.CountRecords(m.ConfigHandler.GetTableName("label")))
 
-	var filePath string
 	if m.count < m.Expected_num_files {
 		m.imageList.Next()
-		m.imageList.Scan(&filePath)
+		m.imageList.Scan(&(m.filePath))
 
-		dataset, err := dicom.ParseFile(filePath, nil)
+		dataset, err := dicom.ParseFile(m.filePath, nil)
 		if err != nil {
 			log.Println(err)
 		}
@@ -99,7 +105,8 @@ func (m *ManualLabeler) displayNextImage() {
 			log.Println(err)
 		}
 
-		fileObj, err := os.Create(fmt.Sprintf("tmp.png"))
+		// Save image to transfer to gocv
+		fileObj, err := os.Create("tmp.png")
 		if err != nil {
 			log.Println(err)
 		}
@@ -111,6 +118,37 @@ func (m *ManualLabeler) displayNextImage() {
 		if err != nil {
 			log.Println(err)
 		}
+
+		time.Sleep(time.Second)
+
+		imageUnsigned := gocv.IMRead("tmp.png", gocv.IMReadAnyDepth)
+
+		// Image correction for display
+		pixelDataElement, err = dataset.FindElementByTag(tag.Tag{Group: 40, Element: 257})
+		if err != nil {
+			log.Println(err)
+		}
+		value := pixelDataElement.Value.String()
+		value = value[1 : len(value)-1]
+		bitsStored, err := strconv.ParseFloat(value, 64)
+		if err != nil {
+			log.Println(err)
+		}
+
+		highestPossibleIntensity := math.Pow(2, bitsStored) - 1
+
+		imageFloat := gocv.NewMat()
+
+		imageUnsigned.ConvertTo(&imageFloat, gocv.MatTypeCV32F)
+
+		imageFloat.DivideFloat(float32(highestPossibleIntensity)) // Conversion loses precision
+
+		imageFloat.MultiplyFloat(float32(255))
+
+		// Save image
+		gocv.IMWrite("tmp.png", imageFloat)
+
+		// Miscellaneous code
 
 		// originalImage := gocv.IMRead("tmp.png", gocv.IMReadGrayScale)
 		// imageSquare := gocv.NewMatWithSize(300, 300, gocv.MatTypeCV8U)
@@ -132,4 +170,19 @@ func (m *ManualLabeler) displayNextImage() {
 
 		m.AttemptUpdateImage("tmp.png")
 	}
+}
+
+func (m *ManualLabeler) storeLabel(decision string) {
+	fileName := filepath.Base(m.filePath)
+	sqlQuery := "INSERT INTO " + m.labelTableName + "  (file_name, file_path, image_view) VALUES ('" + fileName + "', '" + m.filePath + "', '" + decision + "');"
+
+	m.DatabaseHandler.ExecuteQuery(m.DatabaseHandler.Connection, sqlQuery)
+}
+
+func (m *ManualLabeler) queryImageList() {
+	sqlQuery := "SELECT file_path FROM " + m.ConfigHandler.GetTableName("metadata") + " ORDER BY file_path;"
+
+	m.imageList, _ = m.DatabaseHandler.ExecuteQuery(m.DatabaseHandler.Connection, sqlQuery)
+
+	// defer m.imageList.Close()
 }
