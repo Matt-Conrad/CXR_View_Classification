@@ -169,6 +169,10 @@ func (m *ManualLabeler) displayNextImage() {
 		// window.WaitKey(0)
 
 		m.AttemptUpdateImage("tmp.png")
+	} else {
+		m.AttemptUpdateText("Image labeling complete")
+		m.AttemptUpdateProBarValue(m.count)
+		m.Finished()
 	}
 }
 

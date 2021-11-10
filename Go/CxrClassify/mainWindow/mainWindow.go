@@ -4,6 +4,7 @@ import (
 	"CxrClassify/configHandler"
 	"CxrClassify/databaseHandler"
 	"CxrClassify/downloadStage"
+	"CxrClassify/trainStage"
 	"image"
 	"log"
 
@@ -44,7 +45,7 @@ type MainWindow struct {
 	storeStage             *storeStage.StoreStage
 	featureCalculatorStage *featStage.FeatStage
 	labelStage             *labelStage.LabelStage
-	// downloadStage *downloadStage.DownloadStage
+	trainStage             *trainStage.TrainStage
 
 	// currentStage []stage.StageInterface
 }
@@ -263,13 +264,26 @@ func (m MainWindow) labelStageUi() {
 	})
 
 	m.connectToDashboard(m.labelStage.ManualLabeler)
-
-	// m.labelStage.ManualLabeler.ConnectFinished(m.trainStageUi)
+	m.labelStage.ManualLabeler.ConnectFinished(m.firstPage)
+	m.labelStage.ManualLabeler.ConnectFinished(m.trainStageUi)
 }
 
 func (m MainWindow) trainStageUi() {
+	m.trainStage = trainStage.NewTrainStage(nil)
+	m.trainStage.Setup(m.configHandler, m.dbHandler)
+
+	m.widgetStack.SetFixedSize(m.widgetStack.CurrentWidget().SizeHint())
+	m.SetFixedSize(m.CentralWidget().SizeHint())
+
 	m.disableAllStageButtons()
 	m.enableStageButton(5)
+
+	widgets.NewQPushButtonFromPointer(m.mainWidget.FindChild("trainBtn", core.Qt__FindChildrenRecursively).Pointer()).ConnectClicked(func(checked bool) {
+		m.trainStage.Train()
+	})
+
+	m.connectToDashboard(m.trainStage.Trainer)
+
 }
 
 // func (m MainWindow) clearCurrentStage() {
