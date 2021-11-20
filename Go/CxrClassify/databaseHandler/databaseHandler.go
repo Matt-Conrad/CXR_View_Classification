@@ -61,6 +61,9 @@ func (d DatabaseHandler) OpenConnection(openDefault bool) *sql.DB {
 		params = fmt.Sprintf("host=%s port=%s dbname=%s user=%s password=%s sslmode=disable", d.host, d.port, d.database, d.user, d.password)
 	}
 
+	// TODO: replace DATABASE with parameter
+	log.Println("Opening connection to DB: %s", "DATABASE")
+
 	db, err := sql.Open("postgres", params)
 	if err != nil {
 		log.Fatal(err)
@@ -70,6 +73,8 @@ func (d DatabaseHandler) OpenConnection(openDefault bool) *sql.DB {
 }
 
 func (d DatabaseHandler) CloseConnection(connection *sql.DB) {
+	log.Println("Closing connection")
+	// TODO: add check for connection being nil
 	connection.Close()
 }
 
@@ -83,8 +88,14 @@ func (d DatabaseHandler) CheckServerConnection() {
 }
 
 func (d DatabaseHandler) CreateNewDb() {
+	log.Println("Attempting to drop a new DB")
 	sqlQuery := fmt.Sprintf("CREATE DATABASE %s;", d.database)
 	d.ExecuteNonTransQuery(d.DefaultConnection, sqlQuery)
+}
+
+func (d DatabaseHandler) dropDb() {
+	log.Println("Attempting to drop a DB")
+	// TODO: add logic
 }
 
 func (d DatabaseHandler) DbExists() bool {
@@ -98,6 +109,9 @@ func (d DatabaseHandler) DbExists() bool {
 			err = rows.Scan(&datname)
 		}
 	}
+
+	// TODO: replace RESULT with rows string conversion
+	log.Println("DB named %s existence: %s", datname, "RESULT")
 
 	if datname == d.database {
 		return true
@@ -124,9 +138,14 @@ func (d DatabaseHandler) TableExists(tableName string) bool {
 	} else {
 		return true
 	}
+
+	// TODO: check if this needs to go in if/else above
+	// TODO: replace RESULT with rows string conversion
+	log.Println("Table %s exists: %s", tableName, "RESULT")
 }
 
 func (d DatabaseHandler) AddTableToDb(columnsInfo, section, tableName string) {
+	log.Println("Attempting to add table")
 	jsonFile, err := os.Open(columnsInfo)
 
 	if err != nil {
@@ -167,6 +186,12 @@ func (d DatabaseHandler) CountRecords(tableName string) int {
 	return count
 }
 
+func (d DatabaseHandler) dropTable(dbName string) {
+	log.Println("Attempting to create a new DB")
+	// TODO: add logic
+	log.Println("Dropped table: TABLE_NAME")
+}
+
 func (d DatabaseHandler) ExecuteQuery(connection *sql.DB, query string) (*sql.Rows, error) {
 	rows, err := connection.Query(query)
 	return rows, err
@@ -175,9 +200,9 @@ func (d DatabaseHandler) ExecuteQuery(connection *sql.DB, query string) (*sql.Ro
 func (d DatabaseHandler) ExecuteNonTransQuery(connection *sql.DB, query string) sql.Result {
 	result, err := connection.Exec(query)
 	if err == nil {
-		fmt.Println("No error")
+		log.Println("No error")
 	} else {
-		fmt.Println("Error")
+		log.Println("Error")
 	}
 	return result
 }
