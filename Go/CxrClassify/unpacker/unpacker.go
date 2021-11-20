@@ -7,6 +7,7 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"io"
+	"log"
 	"os"
 )
 
@@ -32,11 +33,17 @@ func (u Unpacker) Run() {
 	u.AttemptUpdateProBarBounds(0, 10)
 	u.AttemptUpdateProBarValue(0)
 
-	r, err := os.Open(u.ConfigHandler.GetTgzFilePath())
+	tgzFilePath := u.ConfigHandler.GetTgzFilePath()
+
+	log.Printf("Unpacking dataset from %s", tgzFilePath)
+
+	r, err := os.Open(tgzFilePath)
 	if err != nil {
 		u.AttemptUpdateText("error")
 	}
 	u.ExtractTarGz(r)
+
+	log.Printf("Done unpacking")
 
 	u.AttemptUpdateProBarValue(10) //TODO: Change to use countDcms()
 	u.AttemptUpdateText("Images unpacked")

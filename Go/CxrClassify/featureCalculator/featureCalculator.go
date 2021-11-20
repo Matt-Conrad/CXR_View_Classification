@@ -45,6 +45,8 @@ func (f FeatureCalculator) Run() {
 	defer k.Close()
 	log.SetOutput(k)
 
+	log.Printf("Calculating features from images")
+
 	f.AttemptUpdateText("Calculating features")
 	f.AttemptUpdateProBarBounds(0, f.Expected_num_files)
 
@@ -58,7 +60,7 @@ func (f FeatureCalculator) Run() {
 	if err == nil {
 		count := 0
 		for rows.Next() {
-			log.Println(filePath)
+			log.Printf("Calculating for image number: %d File: %s", count+1, filePath)
 			err = rows.Scan(&filePath)
 			if err == nil {
 				dataset, err := dicom.ParseFile(filePath, nil)
@@ -204,6 +206,8 @@ func (f FeatureCalculator) Run() {
 
 				// Create SQL Query
 
+				log.Printf("Storing the calculated features into the database.")
+
 				horVecString := []string{}
 				vertVecString := []string{}
 
@@ -232,6 +236,8 @@ func (f FeatureCalculator) Run() {
 			count++
 		}
 	}
+
+	log.Println("Done calculating features from images")
 
 	f.AttemptUpdateText("Done calculating features")
 	f.AttemptUpdateProBarValue(f.DatabaseHandler.CountRecords(f.featTableName))

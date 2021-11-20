@@ -49,6 +49,8 @@ func (m *ManualLabeler) Run() {
 	defer k.Close()
 	log.SetOutput(k)
 
+	log.Println("Filling window")
+
 	m.queryImageList()
 
 	m.AttemptUpdateText("Please manually label images")
@@ -62,24 +64,27 @@ func (m *ManualLabeler) Run() {
 
 	// }
 
-	// m.AttemptUpdateText("Image labeling complete")
-	// m.AttemptUpdateProBarValue(m.count)
-	// m.Finished()
+	log.Println("End of query")
+	m.AttemptUpdateText("Image labeling complete")
+	m.Finished()
 }
 
 func (m *ManualLabeler) Frontal() {
+	log.Println("Front")
 	m.storeLabel("F")
 	m.count++
 	m.displayNextImage()
 }
 
 func (m *ManualLabeler) Lateral() {
+	log.Println("Lateral")
 	m.storeLabel("L")
 	m.count++
 	m.displayNextImage()
 }
 
 func (m *ManualLabeler) displayNextImage() {
+	log.Printf("Image count: %d", m.count)
 	m.AttemptUpdateText("Image count: " + strconv.Itoa(m.count))
 	m.AttemptUpdateProBarValue(m.DatabaseHandler.CountRecords(m.ConfigHandler.GetTableName("label")))
 
@@ -177,6 +182,7 @@ func (m *ManualLabeler) displayNextImage() {
 }
 
 func (m *ManualLabeler) storeLabel(decision string) {
+	log.Println("Getting the image list")
 	fileName := filepath.Base(m.filePath)
 	sqlQuery := "INSERT INTO " + m.labelTableName + "  (file_name, file_path, image_view) VALUES ('" + fileName + "', '" + m.filePath + "', '" + decision + "');"
 
@@ -184,6 +190,7 @@ func (m *ManualLabeler) storeLabel(decision string) {
 }
 
 func (m *ManualLabeler) queryImageList() {
+	log.Println("Storing label")
 	sqlQuery := "SELECT file_path FROM " + m.ConfigHandler.GetTableName("metadata") + " ORDER BY file_path;"
 
 	m.imageList, _ = m.DatabaseHandler.ExecuteQuery(m.DatabaseHandler.Connection, sqlQuery)

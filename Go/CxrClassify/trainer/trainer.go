@@ -37,9 +37,13 @@ func (t Trainer) Run() {
 	defer k.Close()
 	log.SetOutput(k)
 
+	log.Println("Training SVM")
+
 	t.AttemptUpdateText("Training classifier")
 	t.AttemptUpdateProBarBounds(0, t.Expected_num_files)
 	t.AttemptUpdateProBarValue(0)
+
+	log.Println("Extracting feature matrix and labels vecotr from DB")
 
 	sqlQuery := "SELECT file_name, hor_profile, vert_profile FROM " + t.ConfigHandler.GetTableName("features") + " ORDER BY file_path ASC;"
 
@@ -131,7 +135,7 @@ func (t Trainer) Run() {
 		count++
 	}
 
-	// log.Println(newInst)
+	log.Println("Splitting dataset and cross validating SVM for accuracy of classifier")
 
 	// rawData2, err := base.ParseCSVToInstances("iris.csv", false)
 	// if err != nil {
@@ -160,5 +164,10 @@ func (t Trainer) Run() {
 	if err != nil {
 		panic(fmt.Sprintf("Unable to get confusion matrix: %s", err.Error()))
 	}
+	log.Println("Done training SVM. Confusion Matrix: ")
 	log.Println(evaluation.GetSummary(confusionMat))
+
+	t.AttemptUpdateText("K-Fold Cross Validation Accuracy: NUMBER")
+	t.AttemptUpdateProBarValue(t.Expected_num_files)
+	t.Finished()
 }
