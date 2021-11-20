@@ -4,6 +4,7 @@ import (
 	"CxrClassify/configHandler"
 	"CxrClassify/databaseHandler"
 	"CxrClassify/runnable"
+	"log"
 
 	"fmt"
 	"io"
@@ -31,25 +32,25 @@ func (d *Downloader) Setup(configHandler *configHandler.ConfigHandler, databaseH
 }
 
 func (d Downloader) Run() {
-	fmt.Println("Checking if {} already exists")
+	log.Println("Checking if {} already exists")
 	info, err := os.Stat(d.FilenameAbsPath)
 	if err == nil && !info.IsDir() {
-		fmt.Println("{} already exists")
-		fmt.Println("Checking if {} was downloaded properly")
+		log.Println("{} already exists")
+		log.Println("Checking if {} was downloaded properly")
 		if info.Size() == int64(d.Expected_size) {
-			fmt.Println("{} was downloaded properly")
+			log.Println("{} was downloaded properly")
 		} else {
-			fmt.Println("{} was not downloaded properly")
-			fmt.Println("Removing {}")
+			log.Println("{} was not downloaded properly")
+			log.Println("Removing {}")
 			e := os.Remove(d.FilenameAbsPath)
 			if e != nil {
-				fmt.Println("FAILED")
+				log.Println("FAILED")
 			}
-			fmt.Println("Successfully removed {}")
+			log.Println("Successfully removed {}")
 			d.downloadDataset()
 		}
 	} else {
-		fmt.Println("{} does not exist")
+		log.Println("{} does not exist")
 		d.downloadDataset()
 	}
 	d.AttemptUpdateProBarValue(1)
@@ -59,6 +60,8 @@ func (d Downloader) Run() {
 }
 
 func (d Downloader) downloadDataset() int {
+	log.Printf("Downloading dataset from: %s", d.ConfigHandler.GetUrl())
+
 	d.AttemptUpdateText("Downloading images")
 	// d.AttemptUpdateProBarBounds(0, int(d.getTgzMax()))
 

@@ -60,7 +60,7 @@ func (m *MainWindow) init() {
 
 	m.configHandler = configHandler.NewConfigHandler("./config.ini")
 
-	// Add logging
+	log.Println("Constructing Main app")
 
 	m.dbHandler = databaseHandler.NewDatabaseHandler(m.configHandler)
 
@@ -72,6 +72,8 @@ func (m *MainWindow) init() {
 	m.fillWindow()
 	m.initGuiState()
 	m.Show()
+
+	log.Println("Done constructing Main app")
 }
 
 func (m MainWindow) Close() {
@@ -179,6 +181,7 @@ func (m MainWindow) initGuiState() {
 }
 
 func (m MainWindow) downloadStageUi() {
+	log.Println("Window initializing in Download phase")
 	m.downloadStage = downloadStage.NewDownloadStage(nil)
 	m.downloadStage.Setup(m.configHandler, m.dbHandler)
 
@@ -193,9 +196,11 @@ func (m MainWindow) downloadStageUi() {
 
 	m.connectToDashboard(m.downloadStage.Downloader)
 	m.downloadStage.Downloader.ConnectFinished(m.unpackStageUi)
+	log.Println("***Download phase initialized***")
 }
 
 func (m MainWindow) unpackStageUi() {
+	log.Println("Window initializing in Unpack phase")
 	m.unpackStage = unpackStage.NewUnpackStage(nil)
 	m.unpackStage.Setup(m.configHandler, m.dbHandler)
 
@@ -208,9 +213,11 @@ func (m MainWindow) unpackStageUi() {
 
 	m.connectToDashboard(m.unpackStage.Unpacker)
 	m.unpackStage.Unpacker.ConnectFinished(m.storeStageUi)
+	log.Println("***Unpack phase initialized***")
 }
 
 func (m MainWindow) storeStageUi() {
+	log.Println("Window initializing in Store phase")
 	m.storeStage = storeStage.NewStoreStage(nil)
 	m.storeStage.Setup(m.configHandler, m.dbHandler)
 
@@ -223,9 +230,11 @@ func (m MainWindow) storeStageUi() {
 
 	m.connectToDashboard(m.storeStage.Storer)
 	m.storeStage.Storer.ConnectFinished(m.calcFeatStageUi)
+	log.Println("***Store phase initialized***")
 }
 
 func (m MainWindow) calcFeatStageUi() {
+	log.Println("Window initializing in Feature Calculation phase")
 	m.featureCalculatorStage = featStage.NewFeatStage(nil)
 	m.featureCalculatorStage.Setup(m.configHandler, m.dbHandler)
 
@@ -238,9 +247,11 @@ func (m MainWindow) calcFeatStageUi() {
 
 	m.connectToDashboard(m.featureCalculatorStage.FeatureCalculator)
 	m.featureCalculatorStage.FeatureCalculator.ConnectFinished(m.labelStageUi)
+	log.Println("***Feature Calculation phase initialized***")
 }
 
 func (m MainWindow) labelStageUi() {
+	log.Println("Window initializing in Labeling phase")
 	m.labelStage = labelStage.NewLabelStage(nil)
 	m.labelStage.Setup(m.configHandler, m.dbHandler)
 
@@ -266,9 +277,11 @@ func (m MainWindow) labelStageUi() {
 	m.connectToDashboard(m.labelStage.ManualLabeler)
 	m.labelStage.ManualLabeler.ConnectFinished(m.firstPage)
 	m.labelStage.ManualLabeler.ConnectFinished(m.trainStageUi)
+	log.Println("***Labeling phase initialized***")
 }
 
 func (m MainWindow) trainStageUi() {
+	log.Println("Window initializing in Training phase")
 	m.trainStage = trainStage.NewTrainStage(nil)
 	m.trainStage.Setup(m.configHandler, m.dbHandler)
 
@@ -283,7 +296,7 @@ func (m MainWindow) trainStageUi() {
 	})
 
 	m.connectToDashboard(m.trainStage.Trainer)
-
+	log.Println("***Training phase initialized***")
 }
 
 // func (m MainWindow) clearCurrentStage() {
