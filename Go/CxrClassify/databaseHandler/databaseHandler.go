@@ -134,14 +134,13 @@ func (d DatabaseHandler) TableExists(tableName string) bool {
 	}
 
 	if version == "" {
+		log.Println("Table %s does not exist", tableName)
 		return false
 	} else {
+		// TODO: replace RESULT with rows string conversion
+		log.Println("Table %s exists: %s", tableName, "RESULT")
 		return true
 	}
-
-	// TODO: check if this needs to go in if/else above
-	// TODO: replace RESULT with rows string conversion
-	log.Println("Table %s exists: %s", tableName, "RESULT")
 }
 
 func (d DatabaseHandler) AddTableToDb(columnsInfo, section, tableName string) {
