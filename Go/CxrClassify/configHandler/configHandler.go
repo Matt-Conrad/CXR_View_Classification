@@ -48,7 +48,7 @@ func (c ConfigHandler) prepConfigIni() {
 }
 
 func (c *ConfigHandler) readConfigFile() {
-	log.Println("Reading config file: %s", c.GetConfigFilePath())
+	log.Println("Reading config file: %s", c.GetConfigFilename())
 	if _, err := os.Stat(c.configFilename); err == nil {
 		cfg, _ := ini.Load(c.configFilename)
 		c.configFile = *cfg
