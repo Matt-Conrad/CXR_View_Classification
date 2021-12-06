@@ -42,7 +42,7 @@ func (m *ManualLabeler) Setup(configHandler *configHandler.ConfigHandler, databa
 }
 
 func (m *ManualLabeler) Run() {
-	k, err := os.OpenFile("testlogfile2", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	k, err := os.OpenFile("testlogfile", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
@@ -64,9 +64,9 @@ func (m *ManualLabeler) Run() {
 
 	// }
 
-	log.Println("End of query")
-	m.AttemptUpdateText("Image labeling complete")
-	m.Finished()
+	// log.Println("End of query")
+	// m.AttemptUpdateText("Image labeling complete")
+	// m.Finished()
 }
 
 func (m *ManualLabeler) Frontal() {
