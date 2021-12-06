@@ -3,7 +3,7 @@ The heart of this project is an image classifier based on [this paper](https://w
 
 The project can be split into 2 parts: a desktop application for training the algorithm and a deployable web API with an accompanying web UI for utilizing the trained algorithm. 
 
-The desktop app is a Qt GUI application that guides the user through the training steps including: downloading the image set, unpacking it, storing the metadata, extracting the features, data labaling, cross-validation, and classifier training. The application is optimally coded in C++, Python, and a combined Python/C++ solution. All implementations come with full logging and the Python implementation is equipped with a suite of pytest unit tests. 
+The desktop app is a Qt GUI application that guides the user through the training steps including: downloading the image set, unpacking it, storing the metadata, extracting the features, data labaling, cross-validation, and classifier training. The application is optimally coded in C++, Python, Go, and a combined Python/C++ solution. All implementations come with full logging and the Python implementation is equipped with a suite of pytest unit tests. 
 
 The web API contains the trained model and accepts DICOM files to classify as either frontal or lateral and can be deployed either to the local machine, a local VM, or to AWS Elastic Beanstalk. The web API can be easily used with the complementary web UI. 
 
@@ -38,6 +38,7 @@ The main purpose of this project was to learn about a wide range of technologies
  - Jenkins for CI/CD
  - Shell scripting (Bash)
  - HTML, CSS, JavaScript for web UI using bootstrap, cornerstone, and AJAX technologies
+ - Docker for containers
 
 ## Data
 As stated, I used the same data set that was in the paper ([NLM Image Set](https://openi.nlm.nih.gov/faq#collection)). This consists of 7470 chest X-ray images (CR) in the form of DICOM images. To organize the image set, I stored the metadata from the DICOM images into a PostgreSQL database using my [DicomToDatabase repository](https://github.com/Matt-Conrad/DicomToDatabase) I made. 

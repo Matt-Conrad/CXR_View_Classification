@@ -2,6 +2,7 @@ package configHandler
 
 import (
 	"CxrClassify/expectedSizes"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -47,11 +48,19 @@ func (c ConfigHandler) prepConfigIni() {
 }
 
 func (c *ConfigHandler) readConfigFile() {
+	log.Println("Reading config file: %s", c.GetConfigFilename())
 	if _, err := os.Stat(c.configFilename); err == nil {
-		// path/to/whatever exists
 		cfg, _ := ini.Load(c.configFilename)
 		c.configFile = *cfg
+		log.Println("Config file read")
+	} else {
+		// TODO: throw error
 	}
+}
+
+func (c *ConfigHandler) writeConfigFile() {
+	log.Println("Writing config file: %s", c.GetConfigFilePath())
+	// TODO: add logic
 }
 
 func (c ConfigHandler) setUrl(url string) {
