@@ -8,7 +8,7 @@ class TestCxrConfigHandler:
 
     # Test get functions
     def test_getUrl(self):
-        assert self.cxrConfigHandler.getUrl() == "https://github.com/Matt-Conrad/CXR_View_Classification/raw/develop/datasets/NLMCXR_subset_dataset.tgz"
+        assert self.cxrConfigHandler.getUrl() == "https://github.com/Matt-Conrad/CXR_View_Classification/raw/master/datasets/NLMCXR_subset_dataset.tgz"
 
     def test_getParentFolder(self):
         assert self.cxrConfigHandler.getParentFolder() == os.path.dirname(self.cxrConfigHandler.getConfigFilePath())

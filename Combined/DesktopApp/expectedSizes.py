@@ -10,6 +10,6 @@ EXPECTED_NUM_FILES = {
     }
 
 SOURCE_URL = {
-        'subset': 'https://github.com/Matt-Conrad/CXR_View_Classification/raw/develop/datasets/NLMCXR_subset_dataset.tgz',
+        'subset': 'https://github.com/Matt-Conrad/CXR_View_Classification/raw/master/datasets/NLMCXR_subset_dataset.tgz',
         'full_set': 'https://openi.nlm.nih.gov/imgs/collections/NLMCXR_dcm.tgz'
     }
