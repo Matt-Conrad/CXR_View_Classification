@@ -1,4 +1,4 @@
-package manualLabeler
+package labelStage
 
 import (
 	"CxrClassify/configHandler"

@@ -4,13 +4,12 @@ import (
 	"CxrClassify/configHandler"
 	"CxrClassify/databaseHandler"
 	"CxrClassify/stage"
-	"CxrClassify/unpacker"
 )
 
 type UnpackStage struct {
 	stage.Stage
 
-	Unpacker *unpacker.Unpacker
+	Unpacker *Unpacker
 
 	_ func() `constructor:"init"`
 }
@@ -20,7 +19,7 @@ func (u *UnpackStage) init() {
 }
 
 func (u *UnpackStage) Setup(configHandler *configHandler.ConfigHandler, databaseHandler *databaseHandler.DatabaseHandler) {
-	u.Unpacker = unpacker.NewUnpacker(nil)
+	u.Unpacker = NewUnpacker(nil)
 	u.Unpacker.Setup(configHandler, databaseHandler)
 }
 

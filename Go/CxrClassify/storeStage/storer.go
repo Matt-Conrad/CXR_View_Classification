@@ -1,4 +1,4 @@
-package storer
+package storeStage
 
 import (
 	"CxrClassify/configHandler"

@@ -1,4 +1,4 @@
-package featureCalculator
+package featStage
 
 import (
 	"CxrClassify/configHandler"

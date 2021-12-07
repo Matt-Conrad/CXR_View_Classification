@@ -1,4 +1,4 @@
-package trainer
+package trainStage
 
 import (
 	"testing"
