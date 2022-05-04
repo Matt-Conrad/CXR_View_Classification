@@ -63,11 +63,13 @@ func (f FeatureCalculator) Run() {
 			log.Printf("Calculating for image number: %d File: %s", count+1, filePath)
 			err = rows.Scan(&filePath)
 			if err == nil {
+				// Read file
 				dataset, err := dicom.ParseFile(filePath, nil)
 				if err != nil {
 					log.Println(err)
 				}
 
+				// Extract image
 				pixelDataElement, err := dataset.FindElementByTag(tag.PixelData)
 				if err != nil {
 					log.Println(err)
@@ -81,6 +83,7 @@ func (f FeatureCalculator) Run() {
 					log.Println(err)
 				}
 
+				// Convert from image.Image to 16-bit gocv.Mat
 				buf := new(bytes.Buffer)
 				err = png.Encode(buf, pixelData)
 				if err != nil {
@@ -94,6 +97,7 @@ func (f FeatureCalculator) Run() {
 					log.Println(err)
 				}
 
+				// Read in the bits stored
 				pixelDataElement, err = dataset.FindElementByTag(tag.Tag{Group: 40, Element: 257})
 				if err != nil {
 					log.Println(err)
@@ -105,18 +109,23 @@ func (f FeatureCalculator) Run() {
 					log.Println(err)
 				}
 
+				// Calculate highest possible intensity for the image
 				highestPossibleIntensity := math.Pow(2, bitsStored) - 1
 
+				// Convert image from 16U to 32F
 				imageFloat := gocv.NewMat()
 				defer imageFloat.Close()
 				imageUnsigned.ConvertTo(&imageFloat, gocv.MatTypeCV32F)
 
+				// Normalize image by highest possible intensity (0-1 range)
 				imageFloat.DivideFloat(float32(highestPossibleIntensity)) // Conversion loses precision
 
+				// Sort the intensities
 				imageFloatFlat := imageFloat.Reshape(1, 1)
 				imageNormSorted := gocv.NewMatWithSize(imageFloatFlat.Rows(), imageFloatFlat.Cols(), gocv.MatTypeCV32F)
 				gocv.Sort(imageFloatFlat, &imageNormSorted, gocv.SortAscending)
 
+				// Find 1st and 99th percentiles
 				nPixels := float32(imageUnsigned.Rows() * imageUnsigned.Cols())
 
 				firstIndex := int(0.01 * nPixels)
@@ -134,10 +143,8 @@ func (f FeatureCalculator) Run() {
 					for j := 0; j < enhancedImage.Cols(); j++ {
 
 						if enhancedImage.GetFloatAt(i, j) < firstPercentile {
-							// log.Printf("Float: %f", enhancedImage.GetFloatAt(i, j))
 							enhancedImage.SetFloatAt(i, j, 0.0)
 						} else if enhancedImage.GetFloatAt(i, j) > nineninePercentile {
-							// log.Printf("Float: %f", enhancedImage.GetFloatAt(i, j))
 							enhancedImage.SetFloatAt(i, j, 1.0)
 						}
 
@@ -151,15 +158,10 @@ func (f FeatureCalculator) Run() {
 				medianIndex := int(0.50 * nPixels)
 				median := enhancedImageSort.GetFloatAt(0, medianIndex)
 
-				// min, max, _, _ := gocv.MinMaxLoc(enhancedImageFlat)
-
-				// log.Printf("Min: %f, Max: %f", min, max)
-				// log.Println(median)
-
 				// Threshold the image at median
 				enhancedImageDouble := gocv.NewMat()
 				defer enhancedImageDouble.Close()
-				enhancedImage.ConvertTo(&enhancedImageDouble, gocv.MatTypeCV32F)
+				enhancedImage.ConvertTo(&enhancedImageDouble, gocv.MatTypeCV32F) // NOTE: Maybe unnecessary conversion
 				imageBinarized := gocv.NewMatWithSize(enhancedImage.Rows(), enhancedImage.Cols(), gocv.MatTypeCV32F)
 				gocv.Threshold(enhancedImageDouble, &imageBinarized, median, 1.0, gocv.ThresholdBinary)
 
@@ -175,10 +177,6 @@ func (f FeatureCalculator) Run() {
 				} else {
 					log.Println("ERROR")
 				}
-
-				// window := gocv.NewWindow("Hello")
-				// window.IMShow(imageCropped)
-				// window.WaitKey(0)
 
 				// Scale image
 				scalePercent := 0.5
@@ -216,15 +214,6 @@ func (f FeatureCalculator) Run() {
 				f.DatabaseHandler.ExecuteQuery(connection, sqlQuery)
 
 				connection.Close()
-
-				// cv::Mat imageCropped;
-				// if (!points.empty()) {
-				// 	imageCropped = imageFloat(bb);
-				// } else {
-				// 	imageCropped = imageFloat;
-				// }
-
-				// log.Println(median)
 			}
 			count++
 		}
