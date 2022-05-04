@@ -4,6 +4,7 @@ import (
 	"CxrClassify/configHandler"
 	"CxrClassify/databaseHandler"
 	"CxrClassify/runnable"
+	"bytes"
 	"fmt"
 	"image"
 	"image/png"
@@ -13,7 +14,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/suyashkumar/dicom"
 	"github.com/suyashkumar/dicom/pkg/tag"
@@ -81,25 +81,18 @@ func (f FeatureCalculator) Run() {
 					log.Println(err)
 				}
 
-				// bounds := pixelData.Bounds()
-				// width, height := bounds.Max.X, bounds.Max.Y
-
-				fileObj, err := os.Create(fmt.Sprintf("tmp.png"))
-				if err != nil {
-					log.Println(err)
-				}
-				err = png.Encode(fileObj, pixelData)
-				if err != nil {
-					log.Println(err)
-				}
-				err = fileObj.Close()
+				buf := new(bytes.Buffer)
+				err = png.Encode(buf, pixelData)
 				if err != nil {
 					log.Println(err)
 				}
 
-				time.Sleep(time.Second)
+				bounds := pixelData.Bounds()
 
-				imageUnsigned := gocv.IMRead("tmp.png", gocv.IMReadAnyDepth)
+				imageUnsigned, err := gocv.NewMatFromBytes(bounds.Dy(), bounds.Dx(), gocv.MatTypeCV16UC1, buf.Bytes())
+				if err != nil {
+					log.Println(err)
+				}
 
 				pixelDataElement, err = dataset.FindElementByTag(tag.Tag{Group: 40, Element: 257})
 				if err != nil {
