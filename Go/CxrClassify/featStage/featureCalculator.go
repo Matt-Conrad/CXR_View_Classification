@@ -71,10 +71,10 @@ func (f FeatureCalculator) Run() {
 			if err == nil {
 				wg.Add(1)
 
-				go func(p string) {
+				go func(p string, c *sql.DB) {
 					defer wg.Done()
-					f.processor(p, connection)
-				}(filePath)
+					f.processor(p, c)
+				}(filePath, connection)
 			} else {
 				log.Println(err)
 			}
@@ -122,12 +122,12 @@ func (f *FeatureCalculator) processor(filePath string, connection *sql.DB) {
 	}
 
 	bounds := pixelData.Bounds()
-
-	imageUnsigned, err := gocv.NewMatFromBytes(bounds.Dy(), bounds.Dx(), gocv.MatTypeCV16UC1, buf.Bytes())
+	var b = buf.Bytes()
+	imageUnsigned, err := gocv.NewMatFromBytes(bounds.Dy(), bounds.Dx(), gocv.MatTypeCV16UC1, b)
 	if err != nil {
 		log.Println(err)
 	}
-
+	defer imageUnsigned.Close()
 	// Read in the bits stored
 	pixelDataElement, err = dataset.FindElementByTag(tag.Tag{Group: 40, Element: 257})
 	if err != nil {
@@ -146,6 +146,13 @@ func (f *FeatureCalculator) processor(filePath string, connection *sql.DB) {
 	// Convert image from 16U to 32F
 	imageFloat := gocv.NewMat()
 	defer imageFloat.Close()
+
+	// NOTE: For some reason, one must convert the []byte array to string
+	// otherwise the goroutine crashes. log.Println([]byte) also works for
+	// some reason
+	test := string(b)
+	_ = test
+
 	imageUnsigned.ConvertTo(&imageFloat, gocv.MatTypeCV32F)
 
 	// Normalize image by highest possible intensity (0-1 range)
