@@ -124,10 +124,11 @@ func (f *FeatureCalculator) processor(filePath string, connection *sql.DB) {
 	bounds := pixelData.Bounds()
 	var b = buf.Bytes()
 	imageUnsigned, err := gocv.NewMatFromBytes(bounds.Dy(), bounds.Dx(), gocv.MatTypeCV16UC1, b)
+	defer imageUnsigned.Close()
 	if err != nil {
 		log.Println(err)
 	}
-	defer imageUnsigned.Close()
+
 	// Read in the bits stored
 	pixelDataElement, err = dataset.FindElementByTag(tag.Tag{Group: 40, Element: 257})
 	if err != nil {
@@ -160,7 +161,11 @@ func (f *FeatureCalculator) processor(filePath string, connection *sql.DB) {
 
 	// Sort the intensities
 	imageFloatFlat := imageFloat.Reshape(1, 1)
+	defer imageFloatFlat.Close()
+
 	imageNormSorted := gocv.NewMatWithSize(imageFloatFlat.Rows(), imageFloatFlat.Cols(), gocv.MatTypeCV32F)
+	defer imageNormSorted.Close()
+
 	gocv.Sort(imageFloatFlat, &imageNormSorted, gocv.SortAscending)
 
 	// Find 1st and 99th percentiles
@@ -174,6 +179,8 @@ func (f *FeatureCalculator) processor(filePath string, connection *sql.DB) {
 
 	// Perform the contrast stretch
 	enhancedImage := imageFloat.Clone()
+	defer enhancedImage.Close()
+
 	enhancedImage.SubtractFloat(firstPercentile)
 	enhancedImage.DivideFloat(nineninePercentile - firstPercentile)
 
@@ -191,25 +198,38 @@ func (f *FeatureCalculator) processor(filePath string, connection *sql.DB) {
 
 	// Calculate the median
 	enhancedImageFlat := enhancedImage.Reshape(1, 1)
+	defer enhancedImageFlat.Close()
+
 	enhancedImageSort := gocv.NewMatWithSize(enhancedImageFlat.Rows(), enhancedImageFlat.Cols(), gocv.MatTypeCV32F)
+	defer enhancedImageSort.Close()
+
 	gocv.Sort(enhancedImageFlat, &enhancedImageSort, gocv.SortAscending)
+
 	medianIndex := int(0.50 * nPixels)
 	median := enhancedImageSort.GetFloatAt(0, medianIndex)
 
 	// Threshold the image at median
 	enhancedImageDouble := gocv.NewMat()
 	defer enhancedImageDouble.Close()
+
 	enhancedImage.ConvertTo(&enhancedImageDouble, gocv.MatTypeCV32F) // NOTE: Maybe unnecessary conversion
+
 	imageBinarized := gocv.NewMatWithSize(enhancedImage.Rows(), enhancedImage.Cols(), gocv.MatTypeCV32F)
+	defer imageBinarized.Close()
+
 	gocv.Threshold(enhancedImageDouble, &imageBinarized, median, 1.0, gocv.ThresholdBinary)
 
 	// Crop image
 	points := gocv.NewMat()
+	defer points.Close()
+
 	gocv.FindNonZero(imageBinarized, &points)
+
 	pointVec := gocv.NewPointVectorFromMat(points)
 	bb := gocv.BoundingRect(pointVec)
 
 	imageCropped := gocv.NewMat()
+	defer imageCropped.Close()
 	if pointVec.Size() > 0 {
 		imageCropped = enhancedImageDouble.Region(bb)
 	} else {
@@ -222,15 +242,19 @@ func (f *FeatureCalculator) processor(filePath string, connection *sql.DB) {
 	newHeight := int(float64(imageCropped.Rows()) * scalePercent)
 
 	imageDownsize := gocv.NewMatWithSize(newHeight, newWidth, gocv.MatTypeCV64F)
+	defer imageDownsize.Close()
 	gocv.Resize(imageCropped, &imageDownsize, image.Pt(newWidth, newHeight), 0.5, 0.5, gocv.InterpolationArea)
 
 	imageResize := gocv.NewMatWithSize(200, 200, gocv.MatTypeCV64F)
+	defer imageResize.Close()
 	gocv.Resize(imageDownsize, &imageResize, image.Pt(200, 200), 0, 0, gocv.InterpolationArea)
 
 	horProfile := gocv.NewMatWithSize(1, 200, gocv.MatTypeCV64F)
+	defer horProfile.Close()
 	gocv.Reduce(imageResize, &horProfile, 0, gocv.ReduceAvg, gocv.MatTypeCV64F)
 
 	vertProfile := gocv.NewMatWithSize(200, 1, gocv.MatTypeCV64F)
+	defer vertProfile.Close()
 	gocv.Reduce(imageResize, &vertProfile, 1, gocv.ReduceAvg, gocv.MatTypeCV64F)
 
 	// Create SQL Query
