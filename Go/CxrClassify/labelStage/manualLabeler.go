@@ -153,26 +153,6 @@ func (m *ManualLabeler) displayNextImage() {
 		// Save image
 		gocv.IMWrite("tmp.png", imageFloat)
 
-		// Miscellaneous code
-
-		// originalImage := gocv.IMRead("tmp.png", gocv.IMReadGrayScale)
-		// imageSquare := gocv.NewMatWithSize(300, 300, gocv.MatTypeCV8U)
-		// gocv.Resize(originalImage, &imageSquare, image.Pt(300, 300), 0, 0, gocv.InterpolationArea)
-
-		// // bounds := pixelData.Bounds()
-		// // width, height := bounds.Max.X, bounds.Max.Y
-		// imageData, _ := imageSquare.DataPtrUint8()
-		// qImage := gui.NewQImageFromPointer(unsafe.Pointer(&imageData))
-		// // gui.NewQImage4(string(imageData), width, height, gui.QImage__Format_Grayscale8)
-		// qPixmap := gui.NewQPixmap().FromImage(qImage, 0)
-		// // gui.NewQPixmap3("tmp.png", gui.QImage__Format_Grayscale8, nil)
-
-		// qPixmap.Save("TEss", "PNG", -1)
-		// m.AttemptUpdateImage(qPixmap)
-		// window := gocv.NewWindow("Hello")
-		// window.IMShow(imageSquare)
-		// window.WaitKey(0)
-
 		m.AttemptUpdateImage("tmp.png")
 	} else {
 		m.AttemptUpdateText("Image labeling complete")
