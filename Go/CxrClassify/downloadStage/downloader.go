@@ -5,7 +5,6 @@ import (
 	"CxrClassify/databaseHandler"
 	"CxrClassify/runnable"
 	"log"
-	"sync"
 	"time"
 
 	"io"
@@ -58,75 +57,45 @@ func (d Downloader) Run() {
 		}
 	} else {
 		log.Println("{} does not exist")
-		messages := make(chan string)
 
-		msg := ""
+		log.Printf("Downloading dataset from: %s", d.ConfigHandler.GetUrl())
 
-		go d.downloadDataset(messages)
+		d.AttemptUpdateText("Downloading images")
+		d.AttemptUpdateProBarBounds(0, int(d.getTgzMax()))
 
-		log.Println("asdf")
+		go d.download()
 
-		for msg == "" {
-			log.Println("dfsdf")
-			select {
-			case msg = <-messages:
-				log.Println(msg)
-				d.AttemptUpdateText(msg)
-			default:
-				log.Println("f")
+		go func() {
+
+			exists := false
+			for !exists {
+				_, error := os.Stat("NLMCXR_subset_dataset.tgz")
+
+				// check if error is "file not exists"
+				if os.IsNotExist(error) {
+					log.Printf("file does not exist\n")
+				} else {
+					log.Printf("file exist\n")
+					exists = true
+				}
 			}
-		}
 
-		// d.AttemptUpdateText(msg)
+			var downloaded int64 = -1
+			for downloaded < d.getTgzMax() {
+				downloaded = d.getTgzSize()
+				d.update(downloaded)
+				time.Sleep(time.Second)
+			}
+
+			d.updateText("Image yo complete")
+		}()
 	}
 	// d.AttemptUpdateProBarValue(int(d.getTgzSize()))
 	// d.AttemptUpdateText("Image yo complete")
 	d.Finished()
 }
 
-func (d Downloader) downloadDataset(msg chan string) int {
-	log.Printf("Downloading dataset from: %s", d.ConfigHandler.GetUrl())
-
-	msg <- "Downloading images"
-	d.AttemptUpdateProBarBounds(0, int(d.getTgzMax()))
-
-	// Writer the body to file
-	var wg sync.WaitGroup
-
-	wg.Add(1)
-	go d.download(&wg)
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		exists := false
-		for !exists {
-			_, error := os.Stat("NLMCXR_subset_dataset.tgz")
-
-			// check if error is "file not exists"
-			if os.IsNotExist(error) {
-				log.Printf("file does not exist\n")
-			} else {
-				log.Printf("file exist\n")
-				exists = true
-			}
-		}
-
-		var downloaded int64 = -1
-		for downloaded < d.getTgzMax() {
-			downloaded = d.getTgzSize()
-			d.update(downloaded)
-			time.Sleep(time.Second)
-		}
-	}()
-
-	wg.Wait()
-
-	return 0
-}
-
-func (d Downloader) download(wg *sync.WaitGroup) int {
+func (d Downloader) download() int {
 	// Create the file
 	out, err := os.Create(d.FilenameAbsPath)
 	if err != nil {
@@ -159,7 +128,7 @@ func (d Downloader) download(wg *sync.WaitGroup) int {
 	}
 	log.Println("4")
 
-	wg.Done()
+	// wg.Done()
 
 	return 0
 }
@@ -182,6 +151,11 @@ func (d Downloader) getTgzSize() int64 {
 func (d *Downloader) update(value int64) {
 	log.Println(value)
 	d.AttemptUpdateProBarValue(int(value))
+}
+
+func (d *Downloader) updateText(text string) {
+	log.Println(text)
+	d.AttemptUpdateText(text)
 }
 
 func (d Downloader) getTgzMax() int64 {
