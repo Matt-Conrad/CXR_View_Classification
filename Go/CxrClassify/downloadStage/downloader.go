@@ -88,7 +88,6 @@ func (d Downloader) downloadDataset(msg chan string) int {
 	log.Printf("Downloading dataset from: %s", d.ConfigHandler.GetUrl())
 
 	msg <- "Downloading images"
-	d.AttemptUpdateText("Downloading images")
 	d.AttemptUpdateProBarBounds(0, int(d.getTgzMax()))
 
 	// Writer the body to file
@@ -182,8 +181,7 @@ func (d Downloader) getTgzSize() int64 {
 
 func (d *Downloader) update(value int64) {
 	log.Println(value)
-	// d.AttemptUpdateProBarValue(int(value))
-	d.AttemptUpdateProBarValue(int(d.getTgzSize()))
+	d.AttemptUpdateProBarValue(int(value))
 }
 
 func (d Downloader) getTgzMax() int64 {
