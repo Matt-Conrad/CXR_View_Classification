@@ -4,6 +4,7 @@ import (
 	"CxrClassify/configHandler"
 	"CxrClassify/databaseHandler"
 	"CxrClassify/runnable"
+	"fmt"
 	"log"
 	"time"
 
@@ -46,6 +47,8 @@ func (d Downloader) Run() {
 		log.Println("Checking if {} was downloaded properly")
 		if info.Size() == int64(d.Expected_size) {
 			log.Println("{} was downloaded properly")
+			d.AttemptUpdateText("Image download complete")
+			d.Finished()
 		} else {
 			log.Println("{} was not downloaded properly")
 			log.Println("Removing {}")
@@ -83,54 +86,42 @@ func (d Downloader) Run() {
 			var downloaded int64 = -1
 			for downloaded < d.getTgzMax() {
 				downloaded = d.getTgzSize()
-				d.update(downloaded)
+				d.AttemptUpdateProBarValue(int(downloaded))
 				time.Sleep(time.Second)
 			}
 
-			d.updateText("Image yo complete")
+			d.AttemptUpdateText("Image download complete")
+			d.Finished()
 		}()
 	}
-	// d.AttemptUpdateProBarValue(int(d.getTgzSize()))
-	// d.AttemptUpdateText("Image yo complete")
-	d.Finished()
 }
 
-func (d Downloader) download() int {
+func (d Downloader) download() error {
 	// Create the file
 	out, err := os.Create(d.FilenameAbsPath)
 	if err != nil {
-		log.Println("1")
-		return 1
+		return err
 	}
 	defer out.Close()
-	log.Println("1")
 
 	// Get the data
 	resp, err := http.Get(d.ConfigHandler.GetUrl())
 	if err != nil {
-		log.Println("2")
-		return 1
+		return err
 	}
 	defer resp.Body.Close()
-	log.Println("2")
 
 	// Check server response
 	if resp.StatusCode != http.StatusOK {
-		log.Println("3")
-		return 1
+		return fmt.Errorf("unexpected error code")
 	}
-	log.Println("3")
 
 	_, err = io.Copy(out, resp.Body)
 	if err != nil {
-		log.Println("4")
-		return 1
+		return err
 	}
-	log.Println("4")
 
-	// wg.Done()
-
-	return 0
+	return nil
 }
 
 func (d Downloader) getTgzSize() int64 {
@@ -146,16 +137,6 @@ func (d Downloader) getTgzSize() int64 {
 	} else {
 		return 0
 	}
-}
-
-func (d *Downloader) update(value int64) {
-	log.Println(value)
-	d.AttemptUpdateProBarValue(int(value))
-}
-
-func (d *Downloader) updateText(text string) {
-	log.Println(text)
-	d.AttemptUpdateText(text)
 }
 
 func (d Downloader) getTgzMax() int64 {
